@@ -1,3 +1,5 @@
+from __future__ import annotations  # L'appelle à un HandleNode retourne un autre HandleNode
+
 import struct
 
 supportedMerges = {
@@ -7,9 +9,15 @@ supportedMerges = {
     8: "Q"
 }
 
+
 class UnsupportedMerge(ValueError):
-    def __init__(self, bytes: int):
-        super().__init__("Merge n'est pas supporté pour " + str(bytes) + " octets")
+    def __init__(self, size: int):
+        super().__init__("Merge n'est pas supporté pour " + str(size) + " octets")
+
+
+class EmptyBuffer(BufferError):
+    def __init__(self, size: int):
+        super().__init__("Il reste moins de " + str(size) + " octets dans le buffer")
 
 
 def merge(data: bytes) -> int:
@@ -30,15 +38,24 @@ class Data(object):
         self.buffer = buffer
 
     def take(self) -> int:
+        if len(self.buffer) == 0:
+            raise EmptyBuffer(1)
+
         byte, self.buffer = self.buffer[0], self.buffer[1:]
         return byte
 
-    def takeNumeric(self, size: int):
+    def takeNumeric(self, size: int) -> int:
+        if len(self.buffer) < size:
+            raise EmptyBuffer(size)
+
         numeric, self.buffer = merge(self.buffer[:size]), self.buffer[size:]
         return numeric
 
     def takeString(self) -> str:
-        pass
+        size = self.takeNumeric(2)  # Vérification qu'il reste au moins 2 octets lors de la lecture te la taille
+        raw, self.buffer = self.buffer[:size], self.buffer[size:]
+
+        return raw.decode()
 
 
 class HandleNode(object):
@@ -47,5 +64,5 @@ class HandleNode(object):
     def __init__(self, children: dict):
         self.children = children
 
-    def __call__(self, data: Data):
-        pass
+    def __call__(self, data: Data) -> HandleNode:
+        return self.children[data.take()](data)
