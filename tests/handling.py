@@ -48,5 +48,34 @@ class DataTakeString(unittest.TestCase):
         self.assertEqual(handling.Data(b"\x00\x0cHello world!").takeString(), "Hello world!")
 
 
+def makeTreeLevel(depth: int, sequence: list = []) -> handling.HandlerNode:
+    children = {}
+
+    for id in range(4):
+        if depth == 0:
+            children[id] = lambda _, id=id: sequence + [id]
+        else:
+            children[id] = makeTreeLevel(depth - 1, sequence + [id])
+
+    return handling.HandlerNode(children)
+
+
+class HandlerNodeCall(unittest.TestCase):
+    def setUp(self):
+        self.tree = makeTreeLevel(3)
+
+    def test_UnknownBranch(self):
+        with self.assertRaises(handling.UnknownBranch):
+            self.tree(handling.Data(b"\x01\x05\x00\x01"))
+
+    def test_EmptyBuffer(self):
+        with self.assertRaises(handling.EmptyBuffer):
+            self.tree(handling.Data(b"\x00" * 3))
+
+    def test_SuccessfulCall(self):
+        data = handling.Data(b"\x03\x01\x02\x00")
+        self.assertEqual(self.tree(data), [3, 1, 2, 0])
+
+
 if __name__ == "__main__":
     unittest.main()

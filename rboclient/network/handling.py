@@ -1,5 +1,3 @@
-from __future__ import annotations  # L'appelle à un HandleNode retourne un autre HandleNode
-
 import struct
 
 supportedMerges = {
@@ -18,6 +16,11 @@ class UnsupportedMerge(ValueError):
 class EmptyBuffer(BufferError):
     def __init__(self, size: int):
         super().__init__("Il reste moins de " + str(size) + " octets dans le buffer")
+
+
+class UnknownBranch(KeyError):
+    def __init__(self, id: int):
+        super().__init__("Branche " + str(id) + " inconnue")
 
 
 def merge(data: bytes) -> int:
@@ -58,11 +61,16 @@ class Data(object):
         return raw.decode()
 
 
-class HandleNode(object):
+class HandlerNode(object):
     "Nœud dans l'arbre de résolution d'un paquet."
 
     def __init__(self, children: dict):
         self.children = children
 
-    def __call__(self, data: Data) -> HandleNode:
-        return self.children[data.take()](data)
+    def __call__(self, data: Data):
+        id = data.take()
+
+        try:
+            return self.children[id](data)
+        except KeyError:
+            raise UnknownBranch(id)
