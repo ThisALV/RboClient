@@ -15,6 +15,30 @@ class Merge(unittest.TestCase):
         self.assertEqual(handling.merge(b"\xff" * 8), 2 ** 64 - 1)
 
 
+class Decompose(unittest.TestCase):
+    def test_Empty(self):
+        self.assertEqual(handling.decompose(b""), [])
+
+    def test_TooSmallData(self):
+        with self.assertRaises(handling.InvalidFormat):
+            handling.decompose(b"\x00\x04\x00")
+
+    def test_TooLargeData(self):
+        with self.assertRaises(handling.InvalidFormat):
+            handling.decompose(b"\x00\x03\xff\x00")
+
+    def test_SuccessfulDecompose(self):
+        frames = [
+            handling.Data(b"\x01\x02\x03"),
+            handling.Data(b"Hello world!"),
+            handling.Data(b"")
+        ]
+
+        packet = b"\x00\x05\x01\x02\x03\x00\x0eHello world!\x00\x02"
+
+        self.assertEqual(handling.decompose(packet), frames)
+
+
 class DataTake(unittest.TestCase):
     def test_Empty(self):
         with self.assertRaises(handling.EmptyBuffer):

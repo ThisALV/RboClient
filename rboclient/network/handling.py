@@ -1,3 +1,5 @@
+from __future__ import annotations  # Pour le type hint de Data.__eq__
+
 import struct
 
 supportedMerges = {
@@ -23,6 +25,11 @@ class UnknownBranch(KeyError):
         super().__init__("Branche " + str(id) + " inconnue")
 
 
+class InvalidFormat(EOFError):
+    def __init__(self, reason: str):
+        super().__init__("Format de protocole invalide : " + reason)
+
+
 def merge(data: bytes) -> int:
     "Regroupe des octets dans un ordre gros-boutiste pour former un seul entier non-signé."
 
@@ -34,11 +41,32 @@ def merge(data: bytes) -> int:
     return struct.unpack("!" + format, data)[0]
 
 
+def decompose(packet: bytes) -> list:
+    frames = []
+
+    while len(packet) >= 2:
+        size = merge(packet[:2])
+        if len(packet) < size:
+            raise InvalidFormat("Manque de données")
+
+        frames.append(Data(packet[2:size]))
+
+        packet = packet[size:]
+
+    if len(packet) != 0:
+        raise InvalidFormat("Données excessives")
+
+    return frames
+
+
 class Data(object):
     "Encapsule un buffer contenant les données d'un paquet, pouvant être prélevées une par une."
 
     def __init__(self, buffer: bytes):
         self.buffer = buffer
+
+    def __eq__(self, rhs: Data) -> bool:
+        return self.buffer == rhs.buffer
 
     def take(self) -> int:
         if len(self.buffer) == 0:
