@@ -42,6 +42,8 @@ def merge(data: bytes) -> int:
 
 
 def decompose(packet: bytes) -> list:
+    "Décompose un paquets de données en plusieurs trames à l'aide du protocole de Rbo."
+
     frames = []
 
     while len(packet) >= 2:
