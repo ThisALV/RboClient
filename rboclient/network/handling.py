@@ -77,6 +77,9 @@ class Data(object):
         byte, self.buffer = self.buffer[0], self.buffer[1:]
         return byte
 
+    def takeBool(self) -> bool:
+        return self.take() != 0
+
     def takeNumeric(self, size: int) -> int:
         if len(self.buffer) < size:
             raise EmptyBuffer(size)

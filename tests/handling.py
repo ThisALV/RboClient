@@ -48,6 +48,14 @@ class DataTake(unittest.TestCase):
         self.assertEqual(handling.Data(b"\x01\x02\x03").take(), 1)
 
 
+class DataTakeBool(unittest.TestCase):
+    def test_Zero(self):
+        self.assertFalse(handling.Data(b"\x00").takeBool())
+
+    def test_NonZero(self):
+        self.assertTrue(handling.Data(b"\x37").takeBool())
+
+
 class DataTakeNumeric(unittest.TestCase):
     def setUp(self):
         self.data = handling.Data(b"\x01\x02\x03")
