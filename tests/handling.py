@@ -8,11 +8,17 @@ class Merge(unittest.TestCase):
         with self.assertRaises(handling.UnsupportedMerge):
             handling.merge(b"\x00\x00\x00")
 
-    def test_Byte(self):
+    def test_UnsignedByte(self):
         self.assertEqual(handling.merge(b"\x0f"), 15)
 
-    def test_Long(self):
+    def test_UnsignedLong(self):
         self.assertEqual(handling.merge(b"\xff" * 8), 2 ** 64 - 1)
+
+    def test_SignedByte(self):
+        self.assertEqual(handling.merge(b"\x80", signed=True), -128)
+
+    def test_SignedShort(self):
+        self.assertEqual(handling.merge(b"\xff\xff", signed=True), -1)
 
 
 class Decompose(unittest.TestCase):

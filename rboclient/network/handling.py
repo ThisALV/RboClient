@@ -30,13 +30,16 @@ class InvalidFormat(EOFError):
         super().__init__("Format de protocole invalide : " + reason)
 
 
-def merge(data: bytes) -> int:
+def merge(data: bytes, signed: bool = False) -> int:
     "Regroupe des octets dans un ordre gros-boutiste pour former un seul entier non-signé."
 
     try:
         format = supportedMerges[len(data)]
     except KeyError:
         raise UnsupportedMerge(len(data))
+
+    if signed:
+        format = format.lower()
 
     return struct.unpack("!" + format, data)[0]
 
