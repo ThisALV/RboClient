@@ -74,12 +74,16 @@ class Event(object):
 class HandlerLeaf(object):
     "Feuille de l'arbre pouvant être appelée pour retourner les données à utiliser lors du dispatch de l'event."
 
-    def __init__(self, name: str, handler):
+    @staticmethod
+    def nothing(_: handling.Data) -> dict:
+        return {}
+
+    def __init__(self, name: str, handler=HandlerLeaf.nothing):
         self.name = name
         self.handler = handler
 
-    def __call__(self, data: handling.Data) -> Event:
-        return Event(self.name, self.handler(data))
+    def __call__(self, data: handling.Data, tags: list) -> Event:
+        return Event("_".join(tags + [self.name]), self.handler(data))
 
 
 class RboConnectionInterface(protocol.Factory, EventDispatcher):

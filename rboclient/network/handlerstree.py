@@ -1,13 +1,19 @@
 from rboclient.network.protocol import HandlerLeaf
 from rboclient.network.handling import HandlerNode, Data
 
-from enum import IntEnum, auto
+from enum import Enum, IntEnum, auto
+import json
 
 
 class YesNoQuestion(IntEnum):
     MissingParticipants = auto(),
     RetryCheckpoint = auto(),
     KickUnknownPlayers = auto()
+
+
+class Attacker(Enum):
+    Player = auto(),
+    Enemy = auto()
 
 
 def nothing() -> dict:
@@ -32,7 +38,60 @@ def ids(data: Data) -> dict:
 
 
 def range(data: Data) -> dict:
-    return {"min": data.take(), "max": data.take()}
+    return {"msg": data.takeString(), "min": data.take(), "max": data.take()}
+
+
+def possibilities(data: Data) -> dict:
+    args = {"msg": data.takeString(), "options": {}}
+    count = data.take()
+
+    for i in range(count):
+        args["count"][data.take()] = data.takeString()
+
+
+def msg(data: Data) -> dict:
+    return {"msg": data.takeString()}
+
+
+def text(data: Data) -> dict:
+    return {"text": data.takeString()}
+
+
+def playerStateChanges(data: Data) -> dict:
+    return {"id": data.take(), "changes": json.loads(data.takeString())}
+
+
+def globalStat(data: Data) -> dict:
+    return {
+        "name": data.takeString(),
+        "min": data.takeNumeric(4, signed=True),
+        "max": data.takeNumeric(4, signed=True),
+        "value": data.takeNumeric(4, signed=True),
+        "hidden": data.takeBool(),
+        "main": data.takeBool()
+    }
+
+
+def reply(data: Data) -> dict:
+    return {"id": data.take(), "reply": data.take()}
+
+
+def enemiesGroup(data: Data) -> dict:
+    return {"group": json.loads(data.takeString())}
+
+
+def atk(data: Data) -> dict:
+    args = {"playersId": data.take(), "enemiesName": data.takeString()}
+    dmg = data.takeNumeric(4, signed=True)
+
+    args["attacker"] = Attacker.Player if dmg >= 0 else Attacker.Enemy
+    args["dmg"] = abs(dmg)
+
+    return args
+
+
+def scene(data: Data) -> dict:
+    return {"scene": data.takeNumeric(2)}
 
 
 registering = HandlerNode({
@@ -48,24 +107,50 @@ lobby = HandlerNode({
     1: HandlerLeaf("member_ready", id),
     2: HandlerLeaf("member_disconnected", id),
     3: HandlerLeaf("member_crashed", id),
-    4: HandlerLeaf("preparing_session", nothing),
+    4: HandlerLeaf("preparing_session"),
     5: HandlerLeaf("prepare_session", id),
-    6: HandlerLeaf("asking_checkpoint", nothing),
+    6: HandlerLeaf("asking_checkpoint"),
     7: HandlerLeaf("asking_yes_no", yesNoQuestion),
-    8: HandlerLeaf("session_prepared", nothing),
+    8: HandlerLeaf("session_prepared"),
     9: HandlerNode({
-        0: HandlerLeaf("session_done", nothing),
-        1: HandlerLeaf("session_crashed", nothing),
-        2: HandlerLeaf("checkpoint_error", nothing),
+        0: HandlerLeaf("done"),
+        1: HandlerLeaf("crash"),
+        2: HandlerLeaf("checkpoint_error"),
         3: HandlerLeaf("less_members", ids),
-        4: HandlerLeaf("UnknownPlayers", ids)
-    }),
-    10: HandlerLeaf("master_disconnected", nothing),
-    11: HandlerLeaf("lobby_open", nothing)
+        4: HandlerLeaf("unknown_players", ids)
+    }, "result"),
+    10: HandlerLeaf("master_disconnected"),
+    11: HandlerLeaf("lobby_open")
 })
 
 session = HandlerNode({
     0: HandlerNode({
-
-    })
+        0: HandlerLeaf("range", range),
+        1: HandlerLeaf("possibilities", possibilities),
+        2: HandlerLeaf("confirm"),
+        3: HandlerLeaf("yes_no", msg),
+        4: HandlerLeaf("end")
+    }, "request"),
+    1: HandlerLeaf("text", text),
+    2: HandlerLeaf("player_update", playerStateChanges),
+    3: HandlerLeaf("global_stat_update", globalStat),
+    4: HandlerLeaf("player_die", id),
+    5: HandlerLeaf("scene_switch", scene),
+    6: HandlerLeaf("player_reply", reply),
+    7: HandlerNode({
+        0: HandlerLeaf("validated"),
+        1: HandlerLeaf("late"),
+        2: HandlerLeaf("out_of_range"),
+        3: HandlerLeaf("invalid_length"),
+        4: HandlerLeaf("confirm_expected")
+    }, "reply"),
+    8: HandlerNode({
+        0: HandlerLeaf("init", enemiesGroup),
+        1: HandlerLeaf("atk", atk),
+        2: HandlerLeaf("end", nothing)
+    }, "battle"),
+    9: HandlerLeaf("player_crash", id),
+    10: HandlerLeaf("leader_switch", id),
+    11: HandlerLeaf("session_start"),
+    12: HandlerLeaf("session_stop")
 })
