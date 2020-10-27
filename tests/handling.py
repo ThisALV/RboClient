@@ -94,7 +94,7 @@ def makeTreeLevel(depth: int, sequence: list = []) -> handling.HandlerNode:
 
     for id in range(4):
         if depth == 0:
-            children[id] = lambda _, id=id: sequence + [id]
+            children[id] = lambda _, tags, id=id: sequence + [id]
         else:
             children[id] = makeTreeLevel(depth - 1, sequence + [id])
 
@@ -116,6 +116,19 @@ class HandlerNodeCall(unittest.TestCase):
     def test_SuccessfulCall(self):
         data = handling.Data(b"\x03\x01\x02\x00")
         self.assertEqual(self.tree(data), [3, 1, 2, 0])
+
+    def test_SuccessfulWithTags(self):
+        tree = handling.HandlerNode({
+            3: handling.HandlerNode({
+                0: handling.HandlerNode({
+                    1: handling.HandlerNode({
+                        5: (lambda _, tags: tags)
+                    })
+                }, "two")
+            }, "one")
+        })
+
+        self.assertEqual(tree(handling.Data(b"\x03\x00\x01\x05")), ["one", "two"])
 
 
 if __name__ == "__main__":

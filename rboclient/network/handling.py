@@ -100,13 +100,18 @@ class Data(object):
 class HandlerNode(object):
     "Nœud dans l'arbre de résolution d'un paquet."
 
-    def __init__(self, children: dict):
+    def __init__(self, children: dict, tag: str = ""):
         self.children = children
+        self.tag = tag
 
-    def __call__(self, data: Data):
+    def __call__(self, data: Data, tags: list = []):
         id = data.take()
 
+        nextTags = tags
+        if self.tag != "":
+            nextTags += [self.tag]
+
         try:
-            return self.children[id](data)
+            return self.children[id](data, tags)
         except KeyError:
             raise UnknownBranch(id)
