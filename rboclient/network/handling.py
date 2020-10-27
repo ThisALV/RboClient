@@ -83,11 +83,11 @@ class Data(object):
     def takeBool(self) -> bool:
         return self.take() != 0
 
-    def takeNumeric(self, size: int) -> int:
+    def takeNumeric(self, size: int, signed: bool = False) -> int:
         if len(self.buffer) < size:
             raise EmptyBuffer(size)
 
-        numeric, self.buffer = merge(self.buffer[:size]), self.buffer[size:]
+        numeric, self.buffer = merge(self.buffer[:size], signed), self.buffer[size:]
         return numeric
 
     def takeString(self) -> str:

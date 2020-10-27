@@ -73,6 +73,9 @@ class DataTakeNumeric(unittest.TestCase):
     def test_Larger(self):
         self.assertEqual(self.data.takeNumeric(2), 258)
 
+    def test_SignedAndLarger(self):
+        self.assertEqual(handling.Data(b"\xff\x00\x00").takeNumeric(1, signed=True), -1)
+
 
 class DataTakeString(unittest.TestCase):
     def test_TooSmall(self):
