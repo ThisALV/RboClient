@@ -1,17 +1,79 @@
 #:kivy 2.0.0
 
-<PrefsButton@Button>:
-    text: "Préférences"
+#:set tbarButtonSize (mm(10), mm(9))
+#:set tbarHeight mm(11)
+#:set quitBtnSide tbarHeight - mm(2)
 
-<HomeCtxOptions>:
-    prefsButton: button
-    PrefsButton:
+<HomeCtxActions>:
+    anchor_x: "left"
+    button: button
+    padding: [mm(1), 0]
+    Button:
         id: button
+        size_hint: (None, None)
+        size: tbarButtonSize
+        font_name: "DejaVuSans"
+        font_size: mm(6.8)
+        text: "\u2699"
+
+<LobbyCtxActions>:
+    button: button
+    Button:
+        id: button
+        text: "Prêt"
+
+<QuitButton>:
+    font_name: "DejaVuSans"
+    font_size: mm(8)
+    text: "\u00d7"
+    canvas.before:
+        Color:
+            rgb: 1, 0, 0
+        Rectangle:
+            pos: self.pos
+            size: self.size
 
 <TitleBar>:
+    orientation: "horizontal"
+    canvas.before:
+        Color:
+            rgb: .05, .05, .05
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    AnchorLayout:
+        anchor_x: "center"
+        Label:
+            text: root.title
+            color: [1, 1, 1, 1]
+            bold: True
+    AnchorLayout:
+        anchor_x: "right"
+        padding: [(tbarHeight - quitBtnSide) / 2, 0]
+        QuitButton:
+            size_hint: (None, None)
+            size: (quitBtnSide, quitBtnSide)
+            
 
+<Home>:
+    size: (cm(10), cm(7.5))
+    size_hint: (1, 1)
+    canvas.before:
+        Color:
+            rgb: .2, .2, .2
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    Label:
+        text: "Hello world!"
 
 <Main>:
     titleBar: titleBar
+    orientation: "vertical"
     TitleBar:
         id: titleBar
+        size_hint: (1, None)
+        height: tbarHeight
+
+Main:
+
