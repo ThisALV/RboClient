@@ -1,6 +1,7 @@
 from kivy.config import Config
 
 Config.set("graphics", "borderless", 1)
+Config.set("graphics", "resizable", 0)
 Config.set("kivy", "exit_on_escape", 0)
 
 Config.set("graphics", "position", "custom")

@@ -2,6 +2,7 @@
 
 #:set tbarButtonSize (mm(8.3), mm(7.2))
 #:set tbarHeight mm(8)
+#:set tbarColor .1, .1, .1
 #:set quitBtnSide tbarHeight - mm(2)
 
 <HomeCtxActions>:
@@ -32,7 +33,7 @@
     orientation: "horizontal"
     canvas.before:
         Color:
-            rgb: .1, .1, .1
+            rgb: tbarColor
         Rectangle:
             pos: self.pos
             size: self.size
@@ -49,19 +50,6 @@
         QuitButton:
             size_hint: (None, None)
             size: (quitBtnSide, quitBtnSide)
-            
-
-<Home>:
-    size: (cm(10), cm(7.5))
-    size_hint: (1, 1)
-    canvas.before:
-        Color:
-            rgb: .2, .2, .2
-        Rectangle:
-            pos: self.pos
-            size: self.size
-    Label:
-        text: "Hello world!"
 
 <Main>:
     titleBar: titleBar
