@@ -1,11 +1,14 @@
 import kivy
 import kivy.input
 from kivy.app import App
+from kivy.core.window import Window
+from kivy.logger import Logger
 from kivy.lang.builder import Builder
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.label import Label
+from kivy.metrics import mm
 from kivy.properties import ObjectProperty, StringProperty, BooleanProperty
 
 kivy.require("2.0.0")
@@ -21,7 +24,7 @@ class LobbyCtxActions(AnchorLayout):
 
 class QuitButton(Label):
     def on_touch_down(self, touch: kivy.input.MotionEvent):
-        if super().collide_point(*touch.pos):
+        if self.collide_point(*touch.pos):
             App.get_running_app().stop()
             return True
 
@@ -38,6 +41,7 @@ class TitleBar(BoxLayout):
     title = StringProperty("Rbo - Connexion")
 
     def __init__(self, **kwargs):
+        self.register_event_type("on_move")
         super().__init__(**kwargs)
 
         self.actionsCtx = None
@@ -49,6 +53,43 @@ class TitleBar(BoxLayout):
 
         self.actionsCtx = TitleBar.contexts[context]()
         self.add_widget(self.actionsCtx)
+
+    def on_touch_down(self, touch: kivy.input.MotionEvent):
+        if super().on_touch_down(touch):
+            return True
+
+        touch.grab(self)
+        self.initPos = touch.pos
+        self.lastDiff = [0] * 2
+
+        return True
+
+    def on_move(self, **direction):
+        Logger.debug("TitleBar : Move -> x:{x} ; x:{y}".format(**direction))
+
+    def on_touch_move(self, touch: kivy.input.MotionEvent):
+        if touch.grab_current is not self:
+            return super().on_touch_move(touch)
+
+        Logger.debug("TitleBar : Move = X:{} ; Y:{}".format(*touch.pos))
+
+        for i in range(2):
+            self.lastDiff[i] = touch.pos[i] - (self.initPos[i] - self.lastDiff[i])
+
+        self.initPos = touch.pos
+        self.dispatch("on_move", x=self.lastDiff[0], y=self.lastDiff[1])
+
+        return True
+
+    def on_touch_up(self, touch: kivy.input.MotionEvent):
+        if touch.grab_current is not self:
+            return super().on_touch_move(touch)
+
+        self.initPos = None
+        self.lastDiff = None
+
+        touch.ungrab(self)
+        return True
 
 
 class Home(FloatLayout):
@@ -84,3 +125,12 @@ class ClientApp(App):
     def on_start(self):
         super().on_start()
         self.root.dispatch("on_start")
+
+        self.root.titleBar.bind(on_move=self.move)
+
+    def move(self, _, **direction):
+        if direction["y"] > mm(5.5):
+            direction["y"] *= 2
+
+        Window.left += direction["x"]
+        Window.top -= direction["y"]
