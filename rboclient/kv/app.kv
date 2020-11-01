@@ -1,7 +1,7 @@
 #:kivy 2.0.0
 
-#:set tbarButtonSize (mm(10), mm(9))
-#:set tbarHeight mm(11)
+#:set tbarButtonSize (mm(8.3), mm(7.2))
+#:set tbarHeight mm(8)
 #:set quitBtnSide tbarHeight - mm(2)
 
 <HomeCtxActions>:
@@ -13,7 +13,7 @@
         size_hint: (None, None)
         size: tbarButtonSize
         font_name: "DejaVuSans"
-        font_size: mm(6.8)
+        font_size: mm(5.8)
         text: "\u2699"
 
 <LobbyCtxActions>:
@@ -24,20 +24,15 @@
 
 <QuitButton>:
     font_name: "DejaVuSans"
-    font_size: mm(8)
+    font_size: mm(6.5)
+    color: [.7, 0, 0, 1]
     text: "\u00d7"
-    canvas.before:
-        Color:
-            rgb: 1, 0, 0
-        Rectangle:
-            pos: self.pos
-            size: self.size
 
 <TitleBar>:
     orientation: "horizontal"
     canvas.before:
         Color:
-            rgb: .05, .05, .05
+            rgb: .1, .1, .1
         Rectangle:
             pos: self.pos
             size: self.size
@@ -47,6 +42,7 @@
             text: root.title
             color: [1, 1, 1, 1]
             bold: True
+            font_size: mm(5)
     AnchorLayout:
         anchor_x: "right"
         padding: [(tbarHeight - quitBtnSide) / 2, 0]
