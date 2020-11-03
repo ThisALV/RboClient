@@ -10,14 +10,11 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
-from kivy.metrics import mm, cm
 from kivy.properties import ObjectProperty, StringProperty, BooleanProperty
 
 kivy.require("2.0.0")
 
-
-Window.minimum_width = cm(30)
-Window.minimum_height = cm(10)
+Window.size = (900, 650)
 
 
 class HomeCtxActions(AnchorLayout):
@@ -134,7 +131,7 @@ class ClientApp(App):
         self.root.titleBar.bind(on_move=self.move)
 
     def move(self, _, **direction):
-        if direction["y"] > mm(2):
+        if direction["y"] > 5:
             direction["y"] *= 2
 
         Window.left += direction["x"]
