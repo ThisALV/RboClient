@@ -1,5 +1,62 @@
 #:kivy 2.0.0
 
+<HomeInputRow>:
+    orientation: "horizontal"
+    size_hint: (1, None)
+    height: 40
+
+<HostInput>:
+    address: address.text
+    port: port.text
+    HomeInput:
+        id: address
+        hint_text: "Adresse"
+    Label:
+        text: ":"
+        size_hint: (None, 1)
+        width: 10
+        padding_y: 15
+        font_size: 30
+        valign: "center"
+        color: [.7, .7, .7, 1]
+    NumericHomeInput:
+        id: port
+        hint_text: "Port"
+        digits: 5
+        size_hint: (.4, 1)
+
+<HomeOption>:
+    orientation: "horizontal"
+    size_hint: (1, None)
+    height: 30
+    padding_y: 20
+    enabled: checkbox.active
+    CheckBox:
+        id: checkbox
+        size_hint: (.1, 1)
+        color: [1, .5, 0, 1]
+    Label:
+        text: root.label
+        color: [.8, .8, .8, 1]
+        haligh: "left"
+        valign: "center"
+        font_size: 20
+        text_size: (self.width, self.height)
+        size: self.texture_size
+
+<PlayerInput>:
+    playerID: pId.text
+    name: name.text
+    spacing: 10
+    NumericHomeInput:
+        id: pId
+        size_hint: (.2, 1)
+        hint_text: "ID"
+        digits: 3
+    HomeInput:
+        id: name
+        hint_text: "Nom du joueur"
+
 <HomeInput>:
     multiline: False
     font_size: self.height - 15
@@ -7,27 +64,6 @@
     foreground_color: [1, 1, 1, 1]
     hint_text_color: [.7, .7, .7, 1]
     write_tab: False
-
-<PortInput>:
-    hint_text: "Port"
-
-<LocalhostOption>:
-    orientation: "horizontal"
-    size_hint: (1, None)
-    height: 30
-    padding_y: 20
-    CheckBox:
-        id: checkbox
-        size_hint: (.1, 1)
-        color: [1, .5, 0, 1]
-    Label:
-        text: "Hôte local ?"
-        color: [.8, .8, .8, 1]
-        haligh: "left"
-        valign: "center"
-        font_size: 20
-        text_size: (self.width, self.height)
-        size: self.texture_size
 
 <Home>:
     anchor_x: "center"
@@ -51,30 +87,34 @@
             RoundedRectangle:
                 pos: self.pos
                 size: self.size
-        BoxLayout:
+        HostInput:
             id: host
-            orientation: "horizontal"
-            size_hint: (1, None)
-            height: 40
-            HomeInput:
-                id: address
-                hint_text: "Adresse"
-            Label:
-                text: ":"
-                size_hint: (None, 1)
-                width: 10
-                padding_y: 15
-                font_size: 30
-                valign: "center"
-                color: [.7, .7, .7, 1]
-            PortInput:
-                id: port
-                size_hint: (.4, 1)
         AnchorLayout:
             id: isLocalhost
             anchor_x: "left"
             anchor_y: "center"
             size_hint: (1, None)
             height: 40
-            LocalhostOption:
+            HomeOption:
                 id: option
+                label: "Hôte local ?"
+        AnchorLayout:
+            anchor_x: "center"
+            anchor_y: "center"
+            size_hint: (1, None)
+            height: 30
+            FloatLayout:
+                size_hint: (1, None)
+                height: 4
+                canvas.before:
+                    Color:
+                        rgb: .8, .8, .8, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [4,]
+        PlayerInput:
+            id: player
+        HomeOption:
+            id: master
+            label: "Maître de la room ?"
