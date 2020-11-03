@@ -1,3 +1,5 @@
+from rboclient.gui.home import Home
+
 import kivy
 import kivy.input
 from kivy.app import App
@@ -59,7 +61,7 @@ class TitleBar(BoxLayout):
         self.add_widget(self.actionsCtx)
 
     def on_touch_down(self, touch: kivy.input.MotionEvent):
-        if super().on_touch_down(touch):
+        if super().on_touch_down(touch) or not self.collide_point(*touch.pos):
             return True
 
         touch.grab(self)
@@ -94,10 +96,6 @@ class TitleBar(BoxLayout):
 
         touch.ungrab(self)
         return True
-
-
-class Home(AnchorLayout):
-    pass
 
 
 class Game(BoxLayout):

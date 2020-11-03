@@ -1,5 +1,36 @@
 #:kivy 2.0.0
 
+<HomeInput>:
+    size_hint: (1, None)
+    multiline: False
+    height: mm(15)
+    font_size: mm(10)
+    background_color: [.05, .05, .05, 1]
+    foreground_color: [1, 1, 1, 1]
+    hint_text_color: [.7, .7, .7, 1]
+    write_tab: False
+
+<PortInput>:
+    hint_text: "Port"
+
+<LocalhostOption>:
+    orientation: "horizontal"
+    size_hint: (1, None)
+    height: mm(15)
+    padding_y: mm(5)
+    CheckBox:
+        id: checkbox
+        size_hint: (.1, 1)
+        color: [1, .5, 0, 1]
+    Label:
+        text: "Hôte local ?"
+        color: [.8, .8, .8, 1]
+        haligh: "left"
+        valign: "center"
+        font_size: mm(7)
+        text_size: (self.width, self.height)
+        size: self.texture_size
+
 <Home>:
     anchor_x: "center"
     anchor_y: "center"
@@ -12,11 +43,35 @@
     BoxLayout:
         id: form
         orientation: "vertical"
-        size_hint: (.4, .8)
-        padding: (mm(3), mm(5.5))
+        size_hint: (.4, .55)
+        padding: (mm(4), mm(6))
         canvas.before:
             Color:
                 rgb: tbarColor
             RoundedRectangle:
                 pos: self.pos
                 size: self.size
+        BoxLayout:
+            id: host
+            orientation: "horizontal"
+            spacing: mm(2)
+            HomeInput:
+                id: address
+                hint_text: "Adresse"
+            Label:
+                text: ":"
+                padding_y: mm(3)
+                font_size: mm(10)
+                color: [.7, .7, .7, 1]
+                size_hint: (None, None)
+                text_size: (None, self.height)
+                size: self.texture_size
+            PortInput:
+                id: port
+                size_hint: (.4, None)
+        AnchorLayout:
+            id: isLocalhost
+            anchor_x: "left"
+            anchor_y: "center"
+            LocalhostOption:
+                id: option
