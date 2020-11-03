@@ -5,11 +5,14 @@
 #:set tbarColor .1, .1, .1
 #:set quitBtnSide tbarHeight - 5
 
+<RboBtn@Button>:
+    background_color: [1, .6, 0, 1]
+
 <HomeCtxActions>:
     anchor_x: "left"
     button: button
     padding: [2, 0]
-    Button:
+    RboBtn:
         id: button
         size_hint: (None, None)
         size: tbarButtonSize
