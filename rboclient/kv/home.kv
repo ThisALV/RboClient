@@ -84,6 +84,9 @@
 <Home>:
     anchor_x: "center"
     anchor_y: "center"
+    form: form
+    hostInput: form.host
+    playerInput: form.player
     canvas.before:
         Color:
             rgb: .2, .2, .2
@@ -97,6 +100,8 @@
         size: (375, 450)
         padding: (30, 40)
         spacing: 10
+        host: host
+        player: player
         canvas.before:
             Color:
                 rgb: tbarColor
@@ -122,6 +127,7 @@
             label: "Maître de la room ?"
         Separator:
         AnchorLayout:
+            id: login
             anchor_x: "center"
             anchoy_y: "center"
             size_hint: (1, None)
@@ -132,7 +138,7 @@
                     pos: self.pos
                     size: self.size
             RboBtn:
-                id: login
                 size_hint: (.5, .5)
                 text: "Connexion"
                 font_size: 25
+                on_release: root.login()

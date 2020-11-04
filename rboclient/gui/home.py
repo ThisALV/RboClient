@@ -1,15 +1,23 @@
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
-from kivy.properties import NumericProperty, StringProperty, BooleanProperty
+from kivy.properties import NumericProperty, StringProperty, BooleanProperty, ObjectProperty
+from kivy.event import EventDispatcher
+from kivy.logger import Logger
 
 
 class HomeInput(TextInput):
-    pass
+    def on_text_validate(self):
+        self.parent.dispatch("on_validate")
 
 
 class HomeInputRow(BoxLayout):
-    pass
+    def __init__(self, **kwargs):
+        self.register_event_type("on_validate")
+        super().__init__(**kwargs)
+
+    def on_validate(self):
+        pass
 
 
 class HomeOption(BoxLayout):
@@ -46,4 +54,14 @@ class NumericHomeInput(HomeInput):
 
 
 class Home(AnchorLayout):
-    pass
+    hostInput = ObjectProperty()
+    playerInput = ObjectProperty()
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        for inputRow in [self.hostInput, self.playerInput]:
+            inputRow.bind(on_validate=self.login)
+
+    def login(self, _: EventDispatcher = None):
+        Logger.debug("Home : Connexion...")
