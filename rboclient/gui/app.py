@@ -4,6 +4,7 @@ import kivy
 import kivy.input
 from kivy.app import App
 from kivy.core.window import Window
+from kivy.clock import Clock
 from kivy.logger import Logger
 from kivy.lang.builder import Builder
 from kivy.uix.boxlayout import BoxLayout
@@ -47,6 +48,7 @@ class TitleBar(BoxLayout):
         self.register_event_type("on_move")
         super().__init__(**kwargs)
 
+        self.moving = False
         self.actionsCtx = None
         self.switch("home")
 
@@ -62,6 +64,8 @@ class TitleBar(BoxLayout):
             return True
 
         touch.grab(self)
+
+        self.moving = True
         self.initPos = touch.pos
         self.lastDiff = [0] * 2
 
@@ -88,6 +92,7 @@ class TitleBar(BoxLayout):
         if touch.grab_current is not self:
             return super().on_touch_move(touch)
 
+        self.moving = False
         self.initPos = None
         self.lastDiff = None
 
@@ -119,6 +124,9 @@ class Main(BoxLayout):
 
 class ClientApp(App):
     def build(self):
+        Window.bind(on_cursor_leave=self.readjustUp, on_cursor_enter=self.stopReadjustment)
+        self.readjusting = False
+
         for kv in ["home"]:
             Builder.load_file(kv + ".kv")
 
@@ -129,6 +137,24 @@ class ClientApp(App):
         self.root.dispatch("on_start")
 
         self.root.titleBar.bind(on_move=self.move)
+
+    def readjustUp(self, _):
+        if self.root.titleBar.moving:
+            Logger.debug("ClientApp : Lost window, readjusting...")
+
+            self.readjusting = True
+            Clock.schedule_once(self.readjustment, .01)
+
+    def readjustment(self, *_):
+        Window.top -= 30
+
+        if self.readjusting:
+            Clock.schedule_once(self.readjustment, .01)
+        else:
+            Logger.debug("ClientApp : Readjusted.")
+
+    def stopReadjustment(self, _):
+        self.readjusting = False
 
     def move(self, _, **direction):
         if direction["y"] > 5:
