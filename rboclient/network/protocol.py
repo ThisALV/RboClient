@@ -2,6 +2,7 @@ from enum import Enum, auto
 from rboclient.network import handling
 
 import kivy
+import kivy.support
 from kivy.logger import Logger, LOG_LEVELS
 from kivy.event import EventDispatcher
 
@@ -24,7 +25,7 @@ class Mode(Enum):
 class RboConnection(protocol.Protocol):
     "Connexion à un Lobby ou à une Session et protocole de communication pour Rbo."
 
-    def __init__(self, interface: RboConnectionInterface):
+    def __init__(self, interface: "RboConnectionInterface"):
         super().__init__()
 
         self.interface = interface
@@ -78,7 +79,7 @@ class HandlerLeaf(object):
     def nothing(_: handling.Data) -> dict:
         return {}
 
-    def __init__(self, name: str, handler=HandlerLeaf.nothing):
+    def __init__(self, name: str, handler=nothing):
         self.name = name
         self.handler = handler
 
