@@ -23,6 +23,7 @@
         id: port
         hint_text: "Port"
         digits: 5
+        max: 65535
         size_hint: (.4, 1)
 
 <HomeOption>:
@@ -45,14 +46,15 @@
         size: self.texture_size
 
 <PlayerInput>:
-    playerID: pId.text
+    playerID: playerID.text
     name: name.text
     spacing: 10
     NumericHomeInput:
-        id: pId
+        id: playerID
         size_hint: (.25, 1)
         hint_text: "ID"
         digits: 3
+        max: 255
     HomeInput:
         id: name
         hint_text: "Nom du joueur"
@@ -61,8 +63,6 @@
     multiline: False
     font_size: self.height - 15
     background_color: [.05, .05, .05, 1]
-    foreground_color: [1, 1, 1, 1]
-    hint_text_color: [.7, .7, .7, 1]
     write_tab: False
 
 <Separator@AnchorLayout>:
