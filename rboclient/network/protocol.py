@@ -44,10 +44,13 @@ class RboConnection(protocol.Protocol):
 
         self.interface.dispatch("on_disconnected", reason)
 
-    def dataReceived(self, data):
+    def dataReceived(self, data: bytes):
         for frame in handling.decompose(data):
             event = self.interface.handlers[self.mode](frame)
             self.interface.dispatch("on_" + event.name, **event.args)
+
+    def send(self, data: bytes):
+        self.transport.write(data)
 
 
 def listLeaves(tree: dict) -> list:
@@ -90,7 +93,7 @@ class HandlerLeaf(object):
 class RboConnectionInterface(protocol.Factory, EventDispatcher):
     "Interface permettant d'interagir avec l'activité réseau et d'utiliser la connexion établie."
 
-    def __init__(self, id: int, name: str, handlers: dict):
+    def __init__(self, id: int, name: str, handlers: dict[Mode, handling.HandlerNode]):
         for event in listLeaves(handlers):
             realName = "on_" + event.name
 
@@ -111,20 +114,26 @@ class RboConnectionInterface(protocol.Factory, EventDispatcher):
         self.handlers = handlers
 
     @staticmethod
-    def trace(msg: str):
-        Logger.log(LOG_LEVELS["trace"], "ConnectionInterface: " + msg)
+    def debug(msg: str) -> None:
+        Logger.debug("ConnectionInterface : " + msg)
 
     def buildProtocol(self, host: twisted.internet.address.IAddress):
-        RboConnectionInterface.trace("Construction du protocole pour une connexion avec " + str(host))
+        RboConnectionInterface.debug("Construction du protocole pour une connexion avec " + str(host))
 
         self.connection = RboConnection(self)
         return self.connection
 
-    def switchMode(self, mode: Mode):
+    def switchMode(self, mode: Mode) -> None:
         self.connection.mode = mode
 
     def on_connected(self):
-        RboConnectionInterface.trace("Connecté.")
+        RboConnectionInterface.debug("Connecté")
 
     def on_disconnected(self, reason: twisted.python.failure.Failure):
-        RboConnectionInterface.trace("Déconnecté : " + reason.getErrorMessage())
+        RboConnectionInterface.debug("Déconnecté : " + reason.getErrorMessage())
+
+    def register(self, id: int, name: str) -> None:
+        self.connection.send(id.to_bytes(1, "big", signed=False) + name.encode())
+
+    def reply(self, reply: int) -> None:
+        self.connection.send(reply.to_bytes(1, "big", signed=False))
