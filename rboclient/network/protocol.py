@@ -132,8 +132,8 @@ class RboConnectionInterface(protocol.Factory, EventDispatcher):
     def on_disconnected(self, reason: twisted.python.failure.Failure):
         RboConnectionInterface.debug("Déconnecté : " + reason.getErrorMessage())
 
-    def register(self, id: int, name: str) -> None:
-        self.connection.send(id.to_bytes(1, "big", signed=False) + name.encode())
+    def register(self) -> None:
+        self.connection.send(self.id.to_bytes(1, "big", signed=False) + self.name.encode())
 
     def reply(self, reply: int) -> None:
         self.connection.send(reply.to_bytes(1, "big", signed=False))
