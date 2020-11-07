@@ -93,7 +93,7 @@ class HandlerLeaf(object):
 class RboConnectionInterface(protocol.Factory, EventDispatcher):
     "Interface permettant d'interagir avec l'activité réseau et d'utiliser la connexion établie."
 
-    def __init__(self, id: int, name: str, handlers: dict[Mode, handling.HandlerNode]):
+    def __init__(self, id: int, name: str, handlers: "dict[Mode, handling.HandlerNode]"):
         for event in listLeaves(handlers):
             realName = "on_" + event.name
 
