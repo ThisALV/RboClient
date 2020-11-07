@@ -6,9 +6,9 @@ import json
 
 
 class YesNoQuestion(IntEnum):
-    MissingParticipants = auto(),
-    RetryCheckpoint = auto(),
-    KickUnknownPlayers = auto()
+    MissingParticipants = 0,
+    RetryCheckpoint = 1,
+    KickUnknownPlayers = 2
 
 
 class Attacker(Enum):
