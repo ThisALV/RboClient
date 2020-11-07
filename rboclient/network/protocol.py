@@ -53,12 +53,12 @@ class RboConnection(protocol.Protocol):
         self.transport.write(data)
 
 
-def listLeaves(tree: dict) -> list:
+def listLeaves(tree: handling.HandlerNode) -> list:
     "Liste les feuilles d'un arbre de HanlderNodes."
 
     leaves = []
 
-    for branch in tree.values():
+    for branch in tree.children.values():
         if type(branch) == handling.HandlerNode:
             leaves += listLeaves(branch)
         else:
@@ -94,18 +94,19 @@ class RboConnectionInterface(protocol.Factory, EventDispatcher):
     "Interface permettant d'interagir avec l'activité réseau et d'utiliser la connexion établie."
 
     def __init__(self, id: int, name: str, handlers: "dict[Mode, handling.HandlerNode]"):
-        for event in listLeaves(handlers):
-            realName = "on_" + event.name
+        for tree in handlers.values():
+            for event in listLeaves(tree):
+                realName = "on_" + event.name
 
-            self.add_custom_event(realName)
+                def defaultHandler(self, **_):
+                    RboConnectionInterface.trace(realName)
 
-            def defaultHandler(self, **_):
-                RboConnectionInterface.trace(realName)
+                setattr(self, realName, defaultHandler)
 
-            setattr(self, realName, defaultHandler)
+                self.register_event_type(realName)
 
         for event in ["connected", "disconnected"]:
-            self.add_custom_event("on_" + event)
+            self.register_event_type("on_" + event)
 
         super().__init__()
 
