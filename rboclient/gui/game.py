@@ -8,6 +8,8 @@ class Lobby(FloatLayout):
 
 
 class Game(FloatLayout):
+    "Conteneur de l'écran de la partie."
+
     def __init__(self, rboCI: RboCI, **kwargs):
         super().__init__(**kwargs)
         self.step = Lobby()

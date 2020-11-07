@@ -91,6 +91,8 @@ class NumericHomeInput(HomeInput):
 
 
 class Home(AnchorLayout):
+    "Conteneur de la page d'accueil."
+
     hostInput = ObjectProperty()
     playerInput = ObjectProperty()
 

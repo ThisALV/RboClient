@@ -45,6 +45,8 @@ class QuitButton(Label):
 
 
 class TitleBar(BoxLayout):
+    "Barre de titre sur-mesure."
+
     contexts = {
         "home": HomeCtxActions,
         "lobby": LobbyCtxActions,
@@ -110,6 +112,8 @@ class TitleBar(BoxLayout):
 
 
 class Main(BoxLayout):
+    "Conteneur principal de l'application."
+
     titleBar = ObjectProperty()
     handlers = {
         Mode.REGISTERING: handlerstree.registering,
@@ -162,6 +166,8 @@ class Main(BoxLayout):
 
 
 class ClientApp(App):
+    "Application du client."
+
     def build(self):
         Window.bind(on_cursor_leave=self.readjustUp, on_cursor_enter=self.stopReadjustment)
         self.readjusting = False
