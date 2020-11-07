@@ -110,8 +110,8 @@ class Home(AnchorLayout):
 
         if valid:
             self.dispatch("on_login",
-                          host=(self.hostInput.address, self.hostInput.port),
-                          player=(self.playerInput.playerID, self.playerInput.name))
+                          host=(self.hostInput.address, int(self.hostInput.port)),
+                          player=(int(self.playerInput.playerID), self.playerInput.name))
 
     def on_login(self, **_):
         Logger.debug("Home : Connexion...")
