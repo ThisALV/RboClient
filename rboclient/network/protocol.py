@@ -87,6 +87,14 @@ class HandlerLeaf(object):
         return Event("_".join(tags + [self.name]), **self.handler(data))
 
 
+class DefaultHandler:
+    def __init__(self, name: str):
+        self.name = name
+
+    def __call__(self) -> None:
+        Logger.debug("RboCI : " + self.name)
+
+
 class RboConnectionInterface(protocol.Factory, EventDispatcher):
     "Interface permettant d'interagir avec l'activité réseau et d'utiliser la connexion établie."
 
@@ -95,11 +103,7 @@ class RboConnectionInterface(protocol.Factory, EventDispatcher):
             for event in listLeaves(tree):
                 realName = "on_" + event.name
 
-                def defaultHandler(*_, **__):
-                    Logger.debug("RboCI : " + realName)
-
-                setattr(self, realName, defaultHandler)
-
+                setattr(self, realName, DefaultHandler(realName))
                 self.register_event_type(realName)
 
         for event in ["connected", "disconnected"]:
