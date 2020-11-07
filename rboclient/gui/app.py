@@ -1,10 +1,16 @@
+import rboclient
 from rboclient.gui.home import Home
+from rboclient.gui.game import Game
+from rboclient.network.protocol import RboConnectionInterface as RboCI
+from rboclient.network.protocol import Mode
+from rboclient.network import handlerstree
 
 import kivy
 import kivy.input
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.clock import Clock
+from kivy.event import EventDispatcher
 from kivy.logger import Logger
 from kivy.lang.builder import Builder
 from kivy.uix.boxlayout import BoxLayout
@@ -12,6 +18,9 @@ from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
 from kivy.properties import ObjectProperty, StringProperty, BooleanProperty
+
+from twisted.internet import protocol, endpoints, reactor
+from twisted.python.failure import Failure
 
 kivy.require("2.0.0")
 
@@ -100,26 +109,56 @@ class TitleBar(BoxLayout):
         return True
 
 
-class Game(BoxLayout):
-    pass
-
-
 class Main(BoxLayout):
     titleBar = ObjectProperty()
-    inGame = BooleanProperty(False)
+    handlers = {
+        Mode.REGISTERING: handlerstree.registering,
+        Mode.LOBBY: handlerstree.lobby,
+        Mode.SESSION: handlerstree.session
+    }
 
     def __init__(self, **kwargs):
         self.register_event_type("on_start")
         super().__init__(**kwargs)
 
+        self.content = None
+
     def on_start(self):
+        self.home()
+
+    def home(self) -> None:
+        if self.content is not None:
+            self.remove_widget(self.content)
+
         self.content = Home()
+        self.content.bind(on_login=self.login)
+
         self.add_widget(self.content)
 
-    def on_inGame(self, inGame: bool):
-        self.remove_widget(self.content)
-        self.content = Game() if inGame else Home()
-        self.add_widget(self.content)
+    def ioError(self, reason: Failure) -> None:
+        Logger.error("Main : {}".format(reason.getErrorMessage()))
+        self.connection = None
+
+    def registrationError(self, _: EventDispatcher) -> None:
+        Logger.error("Main : Inscription échouée")
+
+    def login(self, _: EventDispatcher, host: "tuple[str, int]", player: "tuple[int, str]") -> None:
+        server = endpoints.TCP4ClientEndpoint(reactor, *host)
+        self.connection = RboCI(*player, Main.handlers)
+
+        connecting = server.connect(self.connection)
+        connecting.addErrback(self.ioError)
+        connecting.addCallback(self.registering)
+
+    def registering(self, _: rboclient.network.protocol.RboConnection) -> None:
+        self.connection.bind(on_registered=self.game,
+                             on_invalid_request=self.registrationError,
+                             on_unavailable_id=self.registrationError,
+                             on_unavailable_name=self.registrationError,
+                             on_unavailable_session=self.registrationError)
+
+    def game(self, _: EventDispatcher) -> None:
+        Logger.debug("Main : Game !")
 
 
 class ClientApp(App):
