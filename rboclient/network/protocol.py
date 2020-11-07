@@ -116,7 +116,7 @@ class RboConnectionInterface(protocol.Factory, EventDispatcher):
         Logger.debug("RboCI : " + msg)
 
     def buildProtocol(self, host: twisted.internet.address.IAddress):
-        RboConnectionInterface.debug("Construction du protocole pour une connexion avec " + str(host))
+        RboConnectionInterface.debug("Building protocol for connection to " + str(host))
 
         self.connection = RboConnection(self)
         return self.connection
@@ -125,10 +125,10 @@ class RboConnectionInterface(protocol.Factory, EventDispatcher):
         self.connection.mode = mode
 
     def on_connected(self):
-        RboConnectionInterface.debug("Connecté")
+        RboConnectionInterface.debug("Connected")
 
     def on_disconnected(self, reason: twisted.python.failure.Failure):
-        RboConnectionInterface.debug("Déconnecté : " + reason.getErrorMessage())
+        RboConnectionInterface.debug("Disconnected : " + reason.getErrorMessage())
 
     def reply(self, reply: int) -> None:
         self.connection.send(reply.to_bytes(1, "big", signed=False))

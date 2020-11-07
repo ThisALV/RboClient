@@ -4,25 +4,42 @@ from kivy.uix.textinput import TextInput
 from kivy.properties import NumericProperty, StringProperty, BooleanProperty, ObjectProperty
 from kivy.event import EventDispatcher
 from kivy.logger import Logger
+from kivy.event import EventDispatcher
 
 from math import inf
 
 
 class HomeInput(TextInput):
+    defaultBackground = [.05, .05, .05, 1]
+
     defaultForeground = [1, 1, 1, 1]
     invalidForeground = [.7, 0, 0, 1]
 
     defaultHint = [.7, .7, .7, 1]
     invalidHint = [.5, 0, 0, 1]
 
+    disabledForeground = [.8, .8, .8, 1]
+    disabledBackground = [.2, .2, .2, 1]
+
     def __init__(self, **kwargs):
-        super().__init__(foreground_color=HomeInput.defaultForeground, hint_text_color=HomeInput.defaultHint, **kwargs)
+        super().__init__(background_color=HomeInput.defaultBackground,
+                         foreground_color=HomeInput.defaultForeground,
+                         hint_text_color=HomeInput.defaultHint,
+                         **kwargs)
 
     def valid(self) -> bool:
         return len(self.text) != 0
 
     def on_text_validate(self):
         self.parent.dispatch("on_validate")
+
+    def on_is_focusable(self, _: EventDispatcher, focusable: bool):
+        if focusable:
+            self.foreground_color = HomeInput.defaultForeground
+            self.background_color = HomeInput.defaultBackground
+        else:
+            self.foreground_color = HomeInput.disabledForeground
+            self.background_color = HomeInput.disabledBackground
 
 
 class HomeInputRow(BoxLayout):
@@ -55,7 +72,22 @@ class HomeInputRow(BoxLayout):
 
 class HomeOption(BoxLayout):
     label = StringProperty()
+    input = ObjectProperty()
+    field = StringProperty()
+    fill = StringProperty()
+
     enabled = BooleanProperty(False)
+
+    def on_enabled(self, _: EventDispatcher, enabled: bool):
+        target = self.input.ids[self.field]
+
+        if enabled:
+            self.previousText = target.text
+            target.is_focusable = False
+            target.text = self.fill
+        else:
+            target.text = self.previousText
+            target.is_focusable = True
 
 
 class HostInput(HomeInputRow):

@@ -62,7 +62,6 @@
 <HomeInput>:
     multiline: False
     font_size: self.height - 15
-    background_color: [.05, .05, .05, 1]
     write_tab: False
 
 <Separator@AnchorLayout>:
@@ -110,21 +109,21 @@
                 size: self.size
         HostInput:
             id: host
-        AnchorLayout:
-            id: isLocalhost
-            anchor_x: "left"
-            anchor_y: "center"
-            size_hint: (1, None)
-            height: 40
-            HomeOption:
-                id: option
-                label: "Hôte local ?"
+        HomeOption:
+            id: option
+            label: "Hôte local ?"
+            input: root.hostInput
+            field: "address"
+            fill: "localhost"
         Separator:
         PlayerInput:
             id: player
         HomeOption:
             id: master
             label: "Maître de la room ?"
+            input: root.playerInput
+            field: "playerID"
+            fill: "0"
         Separator:
         AnchorLayout:
             id: login
