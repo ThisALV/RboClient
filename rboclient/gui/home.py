@@ -13,13 +13,13 @@ class HomeInput(TextInput):
     defaultBackground = [.05, .05, .05, 1]
 
     defaultForeground = [1, 1, 1, 1]
-    invalidForeground = [.7, 0, 0, 1]
+    invalidForeground = [1, 0, 0, 1]
 
     defaultHint = [.7, .7, .7, 1]
     invalidHint = [.5, 0, 0, 1]
 
-    disabledForeground = [.8, .8, .8, 1]
-    disabledBackground = [.2, .2, .2, 1]
+    disabledForeground = [.6, .6, .6, 1]
+    disabledBackground = [.1, .1, .1, 1]
 
     def __init__(self, **kwargs):
         super().__init__(background_color=HomeInput.defaultBackground,
