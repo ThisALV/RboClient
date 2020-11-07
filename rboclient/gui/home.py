@@ -148,4 +148,4 @@ class Home(AnchorLayout):
                           player=(int(self.playerInput.playerID), self.playerInput.name))
 
     def on_login(self, **_):
-        Logger.debug("Home : Connexion...")
+        Logger.debug("Home : Connecting...")

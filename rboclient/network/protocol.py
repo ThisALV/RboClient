@@ -32,7 +32,7 @@ class RboConnection(protocol.Protocol):
         self.mode = Mode.LOGGING
 
     def connectionMade(self):
-        Logger.info("Connection: Connexion établie avec " + str(self.transport.getPeer()))
+        Logger.debug("Connection : Connection establish with " + str(self.transport.getPeer()))
 
         self.mode = Mode.REGISTERING
         self.interface.dispatch("on_connected")
@@ -40,7 +40,7 @@ class RboConnection(protocol.Protocol):
         self.transport.write(self.interface.id.to_bytes(1, "big") + self.interface.name.encode())
 
     def connectionLost(self, reason: twisted.python.failure.Failure):
-        Logger.info("Connection: Déconnexion : " + reason.getErrorMessage())
+        Logger.debug("Connection : Disconnecting : " + reason.getErrorMessage())
 
         self.interface.dispatch("on_disconnected", reason)
 
@@ -96,7 +96,7 @@ class RboConnectionInterface(protocol.Factory, EventDispatcher):
                 realName = "on_" + event.name
 
                 def defaultHandler(*_, **__):
-                    RboConnectionInterface.debug(realName)
+                    Logger.debug("RboCI : " + realName)
 
                 setattr(self, realName, defaultHandler)
 
@@ -111,12 +111,8 @@ class RboConnectionInterface(protocol.Factory, EventDispatcher):
         self.name = name
         self.handlers = handlers
 
-    @staticmethod
-    def debug(msg: str) -> None:
-        Logger.debug("RboCI : " + msg)
-
     def buildProtocol(self, host: twisted.internet.address.IAddress):
-        RboConnectionInterface.debug("Building protocol for connection to " + str(host))
+        Logger.debug("RboCI : Building protocol for connection to " + str(host))
 
         self.connection = RboConnection(self)
         return self.connection
@@ -125,10 +121,10 @@ class RboConnectionInterface(protocol.Factory, EventDispatcher):
         self.connection.mode = mode
 
     def on_connected(self):
-        RboConnectionInterface.debug("Connected")
+        Logger.info("RboCI : Connected")
 
     def on_disconnected(self, reason: twisted.python.failure.Failure):
-        RboConnectionInterface.debug("Disconnected : " + reason.getErrorMessage())
+        Logger.info("RboCI : Disconnected : " + reason.getErrorMessage())
 
     def reply(self, reply: int) -> None:
         self.connection.send(reply.to_bytes(1, "big", signed=False))
