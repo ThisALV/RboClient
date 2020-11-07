@@ -96,7 +96,7 @@
         id: form
         orientation: "vertical"
         size_hint: (None, None)
-        size: (375, 450)
+        size: (375, 420)
         padding: (30, 40)
         spacing: 10
         host: host
@@ -125,19 +125,9 @@
             field: "playerID"
             fill: "0"
         Separator:
-        AnchorLayout:
-            id: login
-            anchor_x: "center"
-            anchoy_y: "center"
+        RboBtn:
             size_hint: (1, None)
-            canvas.before:
-                Color:
-                    rgb: .05, .05, .05
-                RoundedRectangle:
-                    pos: self.pos
-                    size: self.size
-            RboBtn:
-                size_hint: (.5, .5)
-                text: "Connexion"
-                font_size: 25
-                on_release: root.login()
+            height: 50
+            text: "Connexion"
+            font_size: 25
+            on_release: root.login()
