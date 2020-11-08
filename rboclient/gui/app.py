@@ -75,10 +75,10 @@ class LobbyCtxActions(BoxLayout):
         return super().on_touch_up(touch)
 
     def on_ready(self):
-        pass
+        Logger.debug("TitleBar : Ready requested.")
 
     def on_disconnect(self):
-        pass
+        Logger.debug("TitleBar : Logout requested.")
 
 
 class QuitButton(Label):
@@ -214,6 +214,8 @@ class Main(BoxLayout):
     def game(self, _: EventDispatcher, members: "dict[int, tuple[str, bool]]") -> None:
         Logger.debug("Main : Game !")
 
+        self.titleBar.switch("lobby")
+
         game = Game(self.connection, members)
         game.bind(on_close=self.home)
         self.connection = None
@@ -221,8 +223,6 @@ class Main(BoxLayout):
         self.remove_widget(self.content)
         self.content = game
         self.add_widget(self.content)
-
-        self.titleBar.switch("lobby")
 
 
 class ClientApp(App):
