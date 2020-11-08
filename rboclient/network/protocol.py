@@ -49,6 +49,9 @@ class RboConnection(protocol.Protocol):
             event = self.interface.handlers[self.mode](frame)
             self.interface.dispatch("on_" + event.name, **event.args)
 
+    def send(self, data: bytes) -> None:
+        self.transport.write(data)
+
 
 def listLeaves(tree: handling.HandlerNode) -> list:
     "Liste les feuilles d'un arbre de HanlderNodes."
@@ -132,3 +135,9 @@ class RboConnectionInterface(protocol.Factory, EventDispatcher):
 
     def reply(self, reply: int) -> None:
         self.connection.send(reply.to_bytes(1, "big", signed=False))
+
+    def ready(self) -> None:
+        self.connection.send("\x00")
+
+    def disconnect(self) -> None:
+        self.connection.send("\x01")
