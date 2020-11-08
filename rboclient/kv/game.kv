@@ -1,2 +1,26 @@
 #:kivy 2.0.0
 
+<LobbyCtxActions>:
+    orientation: "horizontal"
+    RboBtn:
+        id: disconnect
+        text: "DC"
+    RboBtn:
+        id: ready
+        text: "Prêt"
+
+<Game>:
+    canvas.before:
+        Color:
+            rgb: .1, .1, .1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    AnchorLayout:
+        anchor_x: "center"
+        anchor_y: "center"
+        Label:
+            text_size: (500, None)
+            font_size: 30
+            size: self.texture_size
+            text: root.membersStr

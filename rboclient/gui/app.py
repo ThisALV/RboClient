@@ -33,27 +33,41 @@ class HomeCtxActions(AnchorLayout):
 
 
 class LobbyCtxActions(BoxLayout):
-    disconnect = ObjectProperty()
-    ready = ObjectProperty()
+    actions = ["disconnect", "ready"]
 
     def __init__(self, **kwargs):
-        self.actions = {
-            self.disconnect: "disconnect",
-            self.ready: "ready"
-        }
-
-        for event in self.actions.values():
+        for event in LobbyCtxActions.actions:
             self.register_event_type("on_" + event)
 
         super().__init__(**kwargs)
 
+        self.grabbing = None
+
     def on_touch_down(self, touch: MotionEvent):
-        for (button, event) in self.actions:
+        for action in LobbyCtxActions.actions:
+            button = self.ids[action]
+
             if button.collide_point(*touch.pos):
-                self.dispatch("on_" + event)
+                button.state = "down"
+                touch.grab(self)
+                self.grabbing = button
+
+                self.dispatch("on_" + action)
+
                 return True
 
         return super().on_touch_down(touch)
+
+    def on_touch_up(self, touch: MotionEvent):
+        if touch.grab_current is self:
+            self.grabbing.state = "normal"
+            self.grabbing = None
+
+            touch.ungrab(self)
+
+            return True
+
+        return super().on_touch_up(touch)
 
     def on_ready(self):
         pass
@@ -95,7 +109,7 @@ class TitleBar(BoxLayout):
             self.remove_widget(self.actionsCtx)
 
         self.actionsCtx = TitleBar.contexts[context]()
-        self.add_widget(self.actionsCtx)
+        self.add_widget(self.actionsCtx, 2)
 
     def on_touch_down(self, touch: MotionEvent):
         if super().on_touch_down(touch) or not self.collide_point(*touch.pos):
@@ -215,7 +229,7 @@ class ClientApp(App):
         Window.bind(on_cursor_leave=self.readjustUp, on_cursor_enter=self.stopReadjustment)
         self.readjusting = False
 
-        for kv in ["home"]:
+        for kv in ["home", "game"]:
             Builder.load_file(kv + ".kv")
 
         return Builder.load_file("app.kv")

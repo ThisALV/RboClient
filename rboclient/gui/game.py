@@ -4,6 +4,7 @@ from kivy.app import App
 from kivy.logger import Logger
 from kivy.event import EventDispatcher
 from kivy.uix.floatlayout import FloatLayout
+from kivy.properties import StringProperty
 
 
 class IGError:
@@ -44,11 +45,14 @@ class Lobby(Step, FloatLayout):
 class Game(FloatLayout):
     "Conteneur de l'écran de la partie."
 
+    membersStr = StringProperty()
+
     def __init__(self, rboCI: RboCI, members: "dict[int, tuple[str, bool]]", **kwargs):
         self.register_event_type("on_close")
         super().__init__(**kwargs)
 
         Logger.debug("Game : Creating game with " + str(members))
+        self.membersStr = str(members)
 
         self.rboCI = rboCI
         self.step = Lobby(self.rboCI)
