@@ -32,6 +32,11 @@ class HomeCtxActions(AnchorLayout):
     button = ObjectProperty()
 
 
+class LobbyCtxAction(AnchorLayout):
+    button = ObjectProperty()
+    text = StringProperty()
+
+
 class LobbyCtxActions(BoxLayout):
     actions = ["disconnect", "ready"]
 
@@ -45,7 +50,7 @@ class LobbyCtxActions(BoxLayout):
 
     def on_touch_down(self, touch: MotionEvent):
         for action in LobbyCtxActions.actions:
-            button = self.ids[action]
+            button = self.ids[action].button
 
             if button.collide_point(*touch.pos):
                 button.state = "down"
