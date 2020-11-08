@@ -138,7 +138,7 @@ class RboConnectionInterface(protocol.Factory, EventDispatcher):
         self.connection.send(reply.to_bytes(1, "big", signed=False))
 
     def ready(self) -> None:
-        self.connection.send("\x00")
+        self.connection.send(b"\x00")
 
     def disconnect(self) -> None:
-        self.connection.send("\x01")
+        self.connection.send(b"\x01")
