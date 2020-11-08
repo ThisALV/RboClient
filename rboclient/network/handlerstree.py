@@ -37,7 +37,7 @@ def ids(data: Data) -> dict:
     return {"ids": [data.take() for i in range(count)]}
 
 
-def range(data: Data) -> dict:
+def rangeRequest(data: Data) -> dict:
     return {"msg": data.takeString(), "min": data.take(), "max": data.take()}
 
 
@@ -97,9 +97,11 @@ def scene(data: Data) -> dict:
 def members(data: Data) -> dict:
     count = data.take()
 
-    data["members"] = {}
+    args = {"members": {}}
     for i in range(count):
-        data["members"][data.take()] = (data.takeString(), data.takeBool())
+        args["members"][data.take()] = (data.takeString(), data.takeBool())
+
+    return args
 
 
 registering = HandlerNode({
@@ -133,7 +135,7 @@ lobby = HandlerNode({
 
 session = HandlerNode({
     0: HandlerNode({
-        0: HandlerLeaf("range", range),
+        0: HandlerLeaf("range", rangeRequest),
         1: HandlerLeaf("possibilities", possibilities),
         2: HandlerLeaf("confirm"),
         3: HandlerLeaf("yes_no", msg),

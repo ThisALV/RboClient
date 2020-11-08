@@ -42,6 +42,7 @@ class RboConnection(protocol.Protocol):
     def connectionLost(self, reason: twisted.python.failure.Failure):
         Logger.debug("Connection : Disconnecting : " + reason.getErrorMessage())
 
+        self.mode = Mode.DISCONNECTED
         self.interface.dispatch("on_disconnected", reason)
 
     def dataReceived(self, data: bytes):
