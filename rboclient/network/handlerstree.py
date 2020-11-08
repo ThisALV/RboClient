@@ -94,8 +94,16 @@ def scene(data: Data) -> dict:
     return {"scene": data.takeNumeric(2)}
 
 
+def members(data: Data) -> dict:
+    count = data.take()
+
+    data["members"] = {}
+    for i in range(count):
+        data["members"][data.take()] = (data.takeString(), data.takeBool())
+
+
 registering = HandlerNode({
-    0: HandlerLeaf("registered"),
+    0: HandlerLeaf("registered", members),
     1: HandlerLeaf("invalid_request"),
     2: HandlerLeaf("unavailable_id"),
     3: HandlerLeaf("unavailable_name"),

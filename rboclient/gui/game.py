@@ -10,7 +10,7 @@ class Lobby(FloatLayout):
 class Game(FloatLayout):
     "Conteneur de l'écran de la partie."
 
-    def __init__(self, rboCI: RboCI, **kwargs):
+    def __init__(self, rboCI: RboCI, members: "dict[int, tuple[str, bool]]", **kwargs):
         super().__init__(**kwargs)
         self.step = Lobby()
         self.rboCI = rboCI

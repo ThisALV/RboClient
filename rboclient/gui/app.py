@@ -161,8 +161,13 @@ class Main(BoxLayout):
                              on_unavailable_name=self.registrationError,
                              on_unavailable_session=self.registrationError)
 
-    def game(self, _: EventDispatcher) -> None:
+    def game(self, _: EventDispatcher, members: "dict[int, tuple[str, bool]]") -> None:
         Logger.debug("Main : Game !")
+
+        game = Game(self.connection, members)
+        self.remove_widget(self.content)
+        self.content = game
+        self.add_widget(self.content)
 
 
 class ClientApp(App):
