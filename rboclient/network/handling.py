@@ -12,22 +12,22 @@ supportedMerges = {
 
 class UnsupportedMerge(ValueError):
     def __init__(self, size: int):
-        super().__init__("Merge n'est pas supporté pour " + str(size) + " octets")
+        super().__init__("Merge isn't supported for " + str(size) + " bytes")
 
 
 class EmptyBuffer(BufferError):
     def __init__(self, size: int):
-        super().__init__("Il reste moins de " + str(size) + " octets dans le buffer")
+        super().__init__("Buffer data length is less than " + str(size))
 
 
 class UnknownBranch(KeyError):
     def __init__(self, id: int):
-        super().__init__("Branche " + str(id) + " inconnue")
+        super().__init__("Unknown branch " + str(id))
 
 
 class InvalidFormat(EOFError):
     def __init__(self, reason: str):
-        super().__init__("Format de protocole invalide : " + reason)
+        super().__init__("Invalid format for protocol : " + reason)
 
 
 def merge(data: bytes, signed: bool = False) -> int:
@@ -52,14 +52,14 @@ def decompose(packet: bytes) -> list:
     while len(packet) >= 2:
         size = merge(packet[:2])
         if len(packet) < size:
-            raise InvalidFormat("Manque de données")
+            raise InvalidFormat("Data is missing")
 
         frames.append(Data(packet[2:size]))
 
         packet = packet[size:]
 
     if len(packet) != 0:
-        raise InvalidFormat("Données excessives")
+        raise InvalidFormat("Too many data")
 
     return frames
 
