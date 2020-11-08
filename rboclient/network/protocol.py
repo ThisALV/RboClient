@@ -95,8 +95,8 @@ class DefaultHandler:
     def __init__(self, name: str):
         self.name = name
 
-    def __call__(self) -> None:
-        Logger.debug("RboCI : " + self.name)
+    def __call__(self, **args) -> None:
+        Logger.debug("RboCI : {} -> {}".format(self.name, args))
 
 
 class RboConnectionInterface(protocol.Factory, EventDispatcher):
