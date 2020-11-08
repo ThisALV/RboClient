@@ -1,6 +1,6 @@
 import rboclient
 from rboclient.gui.home import Home
-from rboclient.gui.game import Game
+from rboclient.gui.game import Game, IGError
 from rboclient.network.protocol import RboConnectionInterface as RboCI
 from rboclient.network.protocol import Mode
 from rboclient.network import handlerstree
@@ -11,6 +11,7 @@ from kivy.app import App
 from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.event import EventDispatcher
+from kivy.input.motionevent import MotionEvent
 from kivy.logger import Logger
 from kivy.lang.builder import Builder
 from kivy.uix.boxlayout import BoxLayout
@@ -31,12 +32,38 @@ class HomeCtxActions(AnchorLayout):
     button = ObjectProperty()
 
 
-class LobbyCtxActions(AnchorLayout):
-    button = ObjectProperty()
+class LobbyCtxActions(BoxLayout):
+    disconnect = ObjectProperty()
+    ready = ObjectProperty()
+
+    def __init__(self, **kwargs):
+        self.actions = {
+            self.disconnect: "disconnect",
+            self.ready: "ready"
+        }
+
+        for event in self.actions.values():
+            self.register_event_type("on_" + event)
+
+        super().__init__(**kwargs)
+
+    def on_touch_down(self, touch: MotionEvent):
+        for (button, event) in self.actions:
+            if button.collide_point(*touch.pos):
+                self.dispatch("on_" + event)
+                return True
+
+        return super().on_touch_down(touch)
+
+    def on_ready(self):
+        pass
+
+    def on_disconnect(self):
+        pass
 
 
 class QuitButton(Label):
-    def on_touch_down(self, touch: kivy.input.MotionEvent):
+    def on_touch_down(self, touch: MotionEvent):
         if self.collide_point(*touch.pos):
             App.get_running_app().stop()
             return True
@@ -70,7 +97,7 @@ class TitleBar(BoxLayout):
         self.actionsCtx = TitleBar.contexts[context]()
         self.add_widget(self.actionsCtx)
 
-    def on_touch_down(self, touch: kivy.input.MotionEvent):
+    def on_touch_down(self, touch: MotionEvent):
         if super().on_touch_down(touch) or not self.collide_point(*touch.pos):
             return True
 
@@ -85,7 +112,7 @@ class TitleBar(BoxLayout):
     def on_move(self, **direction):
         Logger.debug("TitleBar : Move -> x:{x} ; x:{y}".format(**direction))
 
-    def on_touch_move(self, touch: kivy.input.MotionEvent):
+    def on_touch_move(self, touch: MotionEvent):
         if touch.grab_current is not self:
             return super().on_touch_move(touch)
 
@@ -99,7 +126,7 @@ class TitleBar(BoxLayout):
 
         return True
 
-    def on_touch_up(self, touch: kivy.input.MotionEvent):
+    def on_touch_up(self, touch: MotionEvent):
         if touch.grab_current is not self:
             return super().on_touch_move(touch)
 
@@ -130,11 +157,15 @@ class Main(BoxLayout):
     def on_start(self):
         self.home()
 
-    def home(self) -> None:
+    def home(self, _: EventDispatcher = None, reason: IGError = None) -> None:
+        if reason is not None:
+            Logger.error("Main : {} - {}".format(reason.short, reason.long))
+
+        home = Home()
         if self.content is not None:
             self.remove_widget(self.content)
 
-        self.content = Home()
+        self.content = home
         self.content.bind(on_login=self.login)
 
         self.add_widget(self.content)
@@ -144,7 +175,7 @@ class Main(BoxLayout):
         self.connection = None
 
     def registrationError(self, _: EventDispatcher) -> None:
-        Logger.error("Main : Inscription échouée")
+        Logger.error("Main : Registration failed")
 
     def login(self, _: EventDispatcher, host: "tuple[str, int]", player: "tuple[int, str]") -> None:
         server = endpoints.TCP4ClientEndpoint(reactor, *host)
@@ -165,13 +196,20 @@ class Main(BoxLayout):
         Logger.debug("Main : Game !")
 
         game = Game(self.connection, members)
+        game.bind(on_close=self.home)
+        self.connection = None
+
         self.remove_widget(self.content)
         self.content = game
         self.add_widget(self.content)
 
+        self.titleBar.switch("lobby")
+
 
 class ClientApp(App):
     "Application du client."
+
+    titleBar = ObjectProperty()
 
     def build(self):
         Window.bind(on_cursor_leave=self.readjustUp, on_cursor_enter=self.stopReadjustment)
@@ -186,10 +224,11 @@ class ClientApp(App):
         super().on_start()
         self.root.dispatch("on_start")
 
-        self.root.titleBar.bind(on_move=self.move)
+        self.titleBar = self.root.titleBar
+        self.titleBar.bind(on_move=self.move)
 
     def readjustUp(self, _):
-        if self.root.titleBar.moving:
+        if self.titleBar.moving:
             Logger.debug("ClientApp : Lost window, readjusting...")
 
             self.readjusting = True
