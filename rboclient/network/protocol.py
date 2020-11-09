@@ -54,6 +54,9 @@ class RboConnection(protocol.Protocol):
     def send(self, data: bytes) -> None:
         self.transport.write(data)
 
+    def shutdown(self) -> None:
+        self.transport.loseConnection()
+
 
 def listLeaves(tree: handling.HandlerNode) -> list:
     "Liste les feuilles d'un arbre de HanlderNodes."
@@ -143,3 +146,4 @@ class RboConnectionInterface(protocol.Factory, EventDispatcher):
 
     def disconnect(self) -> None:
         self.connection.send(b"\x01")
+        self.connection.shutdown()

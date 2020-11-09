@@ -21,7 +21,7 @@ class Step(EventDispatcher):
         self.dispatch("on_stop", error=error)
 
     def on_stop(self, error: Failure):
-        Logger.debug("Game : Stop requested : " + str(error))
+        Logger.debug("Game : Stop requested : " + error.getErrorMessage())
 
 
 class Lobby(Step, FloatLayout):
@@ -39,7 +39,6 @@ class Lobby(Step, FloatLayout):
 
     def disconnect(self, _: EventDispatcher):
         self.rboCI.disconnect()
-        self.stop()
 
 
 class Game(FloatLayout):
@@ -63,7 +62,7 @@ class Game(FloatLayout):
         self.dispatch("on_close", error=error)
 
     def on_close(self, error: Failure):
-        Logger.info("Game : Closed : " + str(error))
+        Logger.info("Game : Closed : " + error.getErrorMessage())
 
     def switch(self, step: Step):
         self.remove_widget(self.step)

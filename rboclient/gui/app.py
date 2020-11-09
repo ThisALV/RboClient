@@ -21,6 +21,7 @@ from kivy.uix.label import Label
 from kivy.properties import ObjectProperty, StringProperty, BooleanProperty
 
 from twisted.internet import protocol, endpoints, reactor
+from twisted.internet.error import ConnectionDone
 from twisted.python.failure import Failure
 
 kivy.require("2.0.0")
@@ -177,8 +178,10 @@ class Main(BoxLayout):
         self.home()
 
     def home(self, _: EventDispatcher = None, error: Failure = None) -> None:
-        if error is not None:
-            Logger.error("Main : " + error.getErrorMessage())
+        if error is None or type(error.value) == ConnectionDone:
+            Logger.info("Main : Back to Home.")
+        else:
+            Logger.error("Main : Back to Home : " + error.getErrorMessage())
 
         self.titleBar.switch("home")
 
