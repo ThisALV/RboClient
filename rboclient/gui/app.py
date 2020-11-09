@@ -1,6 +1,6 @@
 import rboclient
 from rboclient.gui.home import Home
-from rboclient.gui.game import Game, IGError
+from rboclient.gui.game import Game
 from rboclient.network.protocol import RboConnectionInterface as RboCI
 from rboclient.network.protocol import Mode
 from rboclient.network import handlerstree
@@ -176,9 +176,11 @@ class Main(BoxLayout):
     def on_start(self):
         self.home()
 
-    def home(self, _: EventDispatcher = None, reason: IGError = None) -> None:
-        if reason is not None:
-            Logger.error("Main : {} - {}".format(reason.short, reason.long))
+    def home(self, _: EventDispatcher = None, error: Failure = None) -> None:
+        if error is not None:
+            Logger.error("Main : " + error.getErrorMessage())
+
+        self.titleBar.switch("home")
 
         home = Home()
         if self.content is not None:

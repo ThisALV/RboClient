@@ -10,6 +10,7 @@ kivy.support.install_twisted_reactor()
 
 import twisted  # noqa E402
 from twisted.internet import protocol  # noqa E402
+from twisted.python.failure import Failure  # noqa E402
 
 
 class Mode(Enum):
@@ -39,7 +40,7 @@ class RboConnection(protocol.Protocol):
 
         self.transport.write(self.interface.id.to_bytes(1, "big") + self.interface.name.encode())
 
-    def connectionLost(self, reason: twisted.python.failure.Failure):
+    def connectionLost(self, reason: Failure):
         Logger.debug("Connection : Disconnecting : " + reason.getErrorMessage())
 
         self.mode = Mode.DISCONNECTED

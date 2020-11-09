@@ -6,11 +6,7 @@ from kivy.event import EventDispatcher
 from kivy.uix.floatlayout import FloatLayout
 from kivy.properties import StringProperty
 
-
-class IGError:
-    def __init__(self, short: str, long: str):
-        self.short = short
-        self.long = long
+from twisted.python.failure import Failure
 
 
 class Step(EventDispatcher):
@@ -18,11 +14,14 @@ class Step(EventDispatcher):
         self.register_event_type("on_stop")
         super().__init__(**kwargs)
 
-    def stop(self, error: IGError = None):
+    def link(self, rboCI: RboCI) -> None:
+        rboCI.bind(on_disconnected=self.stop)
+
+    def stop(self, _: EventDispatcher = None, error: Failure = None):
         self.dispatch("on_stop", error=error)
 
-    def on_stop(self):
-        Logger.debug("Stop requested.")
+    def on_stop(self, error: Failure):
+        Logger.debug("Game : Stop requested : " + str(error))
 
 
 class Lobby(Step, FloatLayout):
@@ -31,13 +30,14 @@ class Lobby(Step, FloatLayout):
     def __init__(self, rboCI: RboCI, **kwargs):
         super().__init__(**kwargs)
         self.rboCI = rboCI
+        self.link(rboCI)
 
-        App.get_running_app().titleBar.bind(on_disconnect=self.disconnect)
+        App.get_running_app().titleBar.actionsCtx.bind(on_disconnect=self.disconnect, on_ready=self.ready)
 
-    def ready(self):
+    def ready(self, _: EventDispatcher):
         self.rboCI.ready()
 
-    def disconnect(self):
+    def disconnect(self, _: EventDispatcher):
         self.rboCI.disconnect()
         self.stop()
 
@@ -55,13 +55,15 @@ class Game(FloatLayout):
         self.membersStr = str(members)
 
         self.rboCI = rboCI
-        self.step = Lobby(self.rboCI)
 
-    def close(self, error: IGError):
+        self.step = Lobby(self.rboCI)
+        self.step.bind(on_stop=self.close)
+
+    def close(self, _: EventDispatcher, error: Failure):
         self.dispatch("on_close", error=error)
 
-    def on_close(self):
-        Logger.info("Game : Closed.")
+    def on_close(self, error: Failure):
+        Logger.info("Game : Closed : " + str(error))
 
     def switch(self, step: Step):
         self.remove_widget(self.step)
