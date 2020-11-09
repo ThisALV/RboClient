@@ -99,7 +99,8 @@ def members(data: Data) -> dict:
 
     args = {"members": {}}
     for i in range(count):
-        args["members"][data.take()] = (data.takeString(), data.takeBool())
+        id = data.take()
+        args["members"][id] = (data.takeString(), data.takeBool())
 
     return args
 
