@@ -224,13 +224,9 @@ class Main(BoxLayout):
         self.connection = RboCI(*player, Main.handlers)
 
         connecting = server.connect(self.connection)
-        connecting.addErrback(self.ioError)
-        connecting.addCallback(self.registering)
+        connecting.addCallbacks(self.registering, self.ioError)
 
     def registering(self, _: rboclient.network.protocol.RboConnection) -> None:
-        if self.connection is None:
-            return  # Dans ce cas, il y a eu une erreur déjà signalée, connection est inutilisable et donc prêt à être supprimé
-
         self.connection.bind(on_registered=self.game,
                              on_invalid_request=self.registrationError,
                              on_unavailable_id=self.registrationError,
