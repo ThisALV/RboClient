@@ -1,4 +1,5 @@
 from rboclient.network.protocol import RboConnectionInterface as RboCI
+from rboclient.network.protocol import Mode
 
 from kivy.app import App
 from kivy.logger import Logger
@@ -33,6 +34,8 @@ class Lobby(Step, FloatLayout):
         self.link(rboCI)
 
         App.get_running_app().titleBar.actionsCtx.bind(on_disconnect=self.disconnect, on_ready=self.ready)
+
+        self.rboCI.switchMode(Mode.LOBBY)
 
     def ready(self, _: EventDispatcher):
         self.rboCI.ready()
