@@ -75,13 +75,18 @@ def listLeaves(tree: handling.HandlerNode) -> list:
 class Event(object):
     "Évènement à déclencher, avec ses paramètres."
 
-    def __init__(self, name, **args):
-        self.name = name
+    def __init__(self, tag: str, **args):
+        self.name = tag
         self.args = args
 
 
 def ignore(_: handling.Data) -> dict:
     return {}
+
+
+class IllegalArgName(ValueError):
+    def __init__(self, args: dict):
+        super().__init__("An argument has inappropriate name \"tag\" : " + str(args))
 
 
 class HandlerLeaf(object):
@@ -92,7 +97,11 @@ class HandlerLeaf(object):
         self.handler = handler
 
     def __call__(self, data: handling.Data, tags: list) -> Event:
-        return Event("_".join(tags + [self.name]), **self.handler(data))
+        args = self.handler(data)
+        if "tag" in args:
+            raise IllegalArgName(args)
+
+        return Event("_".join(tags + [self.name]), **args)
 
 
 class DefaultHandler:
