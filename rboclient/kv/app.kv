@@ -5,6 +5,25 @@
 #:set tbarColor 0, 0, 0
 #:set quitBtnSide tbarHeight - 5
 
+#:set errorColor [1, .2, .2, 1]
+
+<ErrorMessage>:
+    anchor_x: "center"
+    anchor_y: "center"
+    Label:
+        size_hint: (.8, .8)
+        color: errorColor
+        text_size: (self.width, None)
+        size: self.texture_size
+        halign: "center"
+        text: self.parent.text
+
+<ErrorPopup>:
+    size_hint: (.4, .4)
+    auto_dismiss: False
+    title_color: errorColor
+    separator_color: errorColor
+
 <RboBtn@Button>:
     background_color: [1, .6, 0, 1]
     font_name: "DejaVuSans"

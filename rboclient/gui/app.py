@@ -18,6 +18,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
+from kivy.uix.popup import Popup
 from kivy.properties import ObjectProperty, StringProperty, BooleanProperty
 
 from twisted.internet import protocol, endpoints, reactor
@@ -27,6 +28,19 @@ from twisted.python.failure import Failure
 kivy.require("2.0.0")
 
 Window.size = (900, 650)
+
+
+class ErrorMessage(AnchorLayout):
+    text = StringProperty()
+
+
+class ErrorPopup(Popup):
+    def __init__(self, title: str, msg: str):
+        super().__init__(title=title, content=ErrorMessage(text=msg))
+
+    def on_touch_down(self, _):
+        self.dismiss()
+        return True
 
 
 class HomeCtxActions(AnchorLayout):
@@ -182,6 +196,7 @@ class Main(BoxLayout):
             Logger.info("Main : Back to Home.")
         else:
             Logger.error("Main : Back to Home : " + error.getErrorMessage())
+            ErrorPopup(type(error.value).__name__, error.getErrorMessage()).open()
 
         self.titleBar.switch("home")
 
@@ -195,11 +210,14 @@ class Main(BoxLayout):
         self.add_widget(self.content)
 
     def ioError(self, reason: Failure) -> None:
-        Logger.error("Main : {}".format(reason.getErrorMessage()))
+        Logger.error("Main : " + reason.getErrorMessage())
+        ErrorPopup(type(reason.value).__name__, reason.getErrorMessage()).open()
+
         self.connection = None
 
     def registrationError(self, _: EventDispatcher) -> None:
         Logger.error("Main : Registration failed")
+        ErrorPopup("Inscription échouée", "L'inscription à la session a échoué.").open()
 
     def login(self, _: EventDispatcher, host: "tuple[str, int]", player: "tuple[int, str]") -> None:
         server = endpoints.TCP4ClientEndpoint(reactor, *host)
@@ -210,6 +228,9 @@ class Main(BoxLayout):
         connecting.addCallback(self.registering)
 
     def registering(self, _: rboclient.network.protocol.RboConnection) -> None:
+        if self.connection is None:
+            return  # Dans ce cas, il y a eu une erreur déjà signalée, connection est inutilisable et donc prêt à être supprimé
+
         self.connection.bind(on_registered=self.game,
                              on_invalid_request=self.registrationError,
                              on_unavailable_id=self.registrationError,
