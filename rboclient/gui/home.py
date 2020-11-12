@@ -9,7 +9,7 @@ from kivy.event import EventDispatcher
 from math import inf
 
 
-class HomeInput(TextInput):
+class LoginInput(TextInput):
     defaultBackground = [.05, .05, .05, 1]
 
     defaultForeground = [1, 1, 1, 1]
@@ -22,9 +22,9 @@ class HomeInput(TextInput):
     disabledBackground = [.1, .1, .1, 1]
 
     def __init__(self, **kwargs):
-        super().__init__(background_color=HomeInput.defaultBackground,
-                         foreground_color=HomeInput.defaultForeground,
-                         hint_text_color=HomeInput.defaultHint,
+        super().__init__(background_color=LoginInput.defaultBackground,
+                         foreground_color=LoginInput.defaultForeground,
+                         hint_text_color=LoginInput.defaultHint,
                          **kwargs)
 
     def valid(self) -> bool:
@@ -35,14 +35,14 @@ class HomeInput(TextInput):
 
     def on_is_focusable(self, _: EventDispatcher, focusable: bool):
         if focusable:
-            self.foreground_color = HomeInput.defaultForeground
-            self.background_color = HomeInput.defaultBackground
+            self.foreground_color = LoginInput.defaultForeground
+            self.background_color = LoginInput.defaultBackground
         else:
-            self.foreground_color = HomeInput.disabledForeground
-            self.background_color = HomeInput.disabledBackground
+            self.foreground_color = LoginInput.disabledForeground
+            self.background_color = LoginInput.disabledBackground
 
 
-class HomeInputRow(BoxLayout):
+class LoginInputRow(BoxLayout):
     def __init__(self, **kwargs):
         self.register_event_type("on_validate")
         super().__init__(**kwargs)
@@ -51,11 +51,11 @@ class HomeInputRow(BoxLayout):
         target = self.ids[id]
 
         def disable(_: EventDispatcher, __: str):
-            target.foreground_color = HomeInput.defaultForeground
-            target.hint_text_color = HomeInput.defaultHint
+            target.foreground_color = LoginInput.defaultForeground
+            target.hint_text_color = LoginInput.defaultHint
 
-        target.foreground_color = HomeInput.invalidForeground
-        target.hint_text_color = HomeInput.invalidHint
+        target.foreground_color = LoginInput.invalidForeground
+        target.hint_text_color = LoginInput.invalidHint
 
         target.bind(text=disable)
 
@@ -90,12 +90,12 @@ class HomeOption(BoxLayout):
             target.is_focusable = True
 
 
-class HostInput(HomeInputRow):
+class HostInput(LoginInputRow):
     address = StringProperty()
     port = StringProperty()
 
 
-class PlayerInput(HomeInputRow):
+class PlayerInput(LoginInputRow):
     playerID = StringProperty()
     name = StringProperty()
 
@@ -104,7 +104,7 @@ class LocalhostOption(BoxLayout):
     pass
 
 
-class NumericHomeInput(HomeInput):
+class NumericLoginInput(LoginInput):
     digits = NumericProperty()
     max = NumericProperty(+inf)
 

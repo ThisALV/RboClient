@@ -10,7 +10,7 @@
         size: tbarButtonSize
         text: "\u2699"
 
-<HomeInputRow>:
+<LoginInputRow>:
     orientation: "horizontal"
     size_hint: (1, None)
     height: 40
@@ -18,7 +18,7 @@
 <HostInput>:
     address: address.text
     port: port.text
-    HomeInput:
+    LoginInput:
         id: address
         hint_text: "Adresse"
     Label:
@@ -29,7 +29,7 @@
         font_size: 30
         valign: "center"
         color: [.7, .7, .7, 1]
-    NumericHomeInput:
+    NumericLoginInput:
         id: port
         hint_text: "Port"
         digits: 5
@@ -59,17 +59,17 @@
     playerID: playerID.text
     name: name.text
     spacing: 10
-    NumericHomeInput:
+    NumericLoginInput:
         id: playerID
         size_hint: (.25, 1)
         hint_text: "ID"
         digits: 3
         max: 255
-    HomeInput:
+    LoginInput:
         id: name
         hint_text: "Nom du joueur"
 
-<HomeInput>:
+<LoginInput>:
     multiline: False
     font_size: self.height - 15
     write_tab: False
