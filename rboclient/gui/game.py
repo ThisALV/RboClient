@@ -25,23 +25,8 @@ class Step(EventDispatcher):
         Logger.debug("Game : Stop requested : " + error.getErrorMessage())
 
 
-class Lobby(Step, FloatLayout):
-    "Écran du lobby d'une session."
-
-    def __init__(self, rboCI: RboCI, **kwargs):
-        super().__init__(**kwargs)
-        self.rboCI = rboCI
-        self.link(rboCI)
-
-        App.get_running_app().titleBar.actionsCtx.bind(on_disconnect=self.disconnect, on_ready=self.ready)
-
-        self.rboCI.switchMode(Mode.LOBBY)
-
-    def ready(self, _: EventDispatcher):
-        self.rboCI.ready()
-
-    def disconnect(self, _: EventDispatcher):
-        self.rboCI.disconnect()
+# Pour car Lobby doit pouvoir hériter de Step
+from rboclient.gui.lobby import Lobby  # noqa E402
 
 
 class Game(FloatLayout):
