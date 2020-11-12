@@ -20,3 +20,45 @@
     LobbyCtxAction:
         id: ready
         text: "Prêt"
+
+<LogMessage>:
+    markup: True
+    valign: "center"
+    halign: "left"
+    size_hint: (1, None)
+    text_size: (self.width, None)
+    size: self.texture_size
+    canvas.before:
+        Color:
+            rgb: self.background
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<Logs>:
+    do_scroll_x: False
+    effect_cls: "ScrollEffect"
+    StackLayout:
+        id: logs
+        size_hint: (1, None)
+        height: max(self.parent.height, self.minimum_height)
+        canvas.before:
+            Color:
+                rgb: .3, .3, .3
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+<Lobby>:
+    orentation: "horizontal"
+    logs: logs
+    Logs:
+        id: logs
+        size_hint: (1, None)
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgb: .05, .05, .05
+            Rectangle:
+                pos: self.pos
+                size: self.size

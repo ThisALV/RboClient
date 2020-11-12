@@ -42,9 +42,8 @@ class Game(FloatLayout):
         self.membersStr = str(members)
 
         self.rboCI = rboCI
-
-        self.step = Lobby(self.rboCI)
-        self.step.bind(on_stop=self.close)
+        self.step = None
+        self.switch(Lobby(self.rboCI))
 
     def close(self, _: EventDispatcher, error: Failure):
         self.dispatch("on_close", error=error)
@@ -53,7 +52,9 @@ class Game(FloatLayout):
         Logger.info("Game : Closed : " + error.getErrorMessage())
 
     def switch(self, step: Step):
-        self.remove_widget(self.step)
+        if self.step is not None:
+            self.remove_widget(self.step)
+
         self.step = step
         self.add_widget(self.step)
 
