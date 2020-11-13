@@ -32,14 +32,11 @@ from rboclient.gui.lobby import Lobby  # noqa E402
 class Game(FloatLayout):
     "Conteneur de l'écran de la partie."
 
-    membersStr = StringProperty()
-
     def __init__(self, rboCI: RboCI, members: "dict[int, tuple[str, bool]]", **kwargs):
         self.register_event_type("on_close")
         super().__init__(**kwargs)
 
         Logger.debug("Game : Creating game with " + str(members))
-        self.membersStr = str(members)
 
         self.rboCI = rboCI
         self.step = None

@@ -18,8 +18,8 @@ class LogMessage(Label):
 
 
 class Logs(ScrollView):
-    backgroundEven = [.3, .3, .3]
-    backgroundOdd = [.6, .6, .6]
+    backgroundEven = [.1, .1, .1]
+    backgroundOdd = [.05, .05, .05]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
