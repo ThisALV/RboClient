@@ -35,26 +35,44 @@
             pos: self.pos
             size: self.size
 
-<Logs>:
+<ScrollableStack>:
     do_scroll_x: False
     effect_cls: "ScrollEffect"
+    content: content
     StackLayout:
-        id: logs
+        id: content
         size_hint: (1, None)
         height: max(self.parent.height, self.minimum_height)
         canvas.before:
             Color:
-                rgb: .1, .1, .1
+                rgb: root.background
             Rectangle:
                 pos: self.pos
                 size: self.size
+
+<Logs>:
+    background: [.1, .1, .1]
+
+<Member>:
+    orientation: "vertical"
+    canvas.before:
+        Color:
+            rgb: 0, 0, 0
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<Members>:
+    background: [.05, .05, .05]
+    padding: 10
+    spacing: 10
 
 <Lobby>:
     orentation: "horizontal"
     logs: logs
     Logs:
         id: logs
-    FloatLayout:
+    Members:
         canvas.before:
             Color:
                 rgb: .05, .05, .05
