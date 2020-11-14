@@ -40,7 +40,7 @@ class Game(FloatLayout):
 
         self.rboCI = rboCI
         self.step = None
-        self.switch(Lobby(self.rboCI))
+        self.switch(Lobby(self.rboCI, members))
 
     def close(self, _: EventDispatcher, error: Failure):
         self.dispatch("on_close", error=error)
