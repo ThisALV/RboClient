@@ -183,13 +183,10 @@ class Main(BoxLayout):
     }
 
     def __init__(self, **kwargs):
-        self.register_event_type("on_start")
         super().__init__(**kwargs)
 
         self.content = None
-
-    def on_start(self):
-        self.home()
+        App.get_running_app().bind(on_start=self.home)
 
     def home(self, _: EventDispatcher = None, error: Failure = None) -> None:
         if error is None or type(error.value) == ConnectionDone:
@@ -263,7 +260,6 @@ class ClientApp(App):
 
     def on_start(self):
         super().on_start()
-        self.root.dispatch("on_start")
 
         self.titleBar = self.root.titleBar
         self.titleBar.bind(on_move=self.move)
