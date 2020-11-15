@@ -9,6 +9,10 @@ from kivy.event import EventDispatcher
 from math import inf
 
 
+class HomeCtxActions(AnchorLayout):
+    button = ObjectProperty()
+
+
 class LoginInput(TextInput):
     defaultBackground = [.05, .05, .05, 1]
 

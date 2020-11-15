@@ -1,6 +1,7 @@
 import rboclient
-from rboclient.gui.home import Home
+from rboclient.gui.home import Home, HomeCtxActions
 from rboclient.gui.game import Game
+from rboclient.gui.lobby import LobbyCtxActions
 from rboclient.network.protocol import RboConnectionInterface as RboCI
 from rboclient.network.protocol import Mode
 from rboclient.network import handlerstree
@@ -41,59 +42,6 @@ class ErrorPopup(Popup):
     def on_touch_down(self, _):
         self.dismiss()
         return True
-
-
-class HomeCtxActions(AnchorLayout):
-    button = ObjectProperty()
-
-
-class LobbyCtxAction(AnchorLayout):
-    button = ObjectProperty()
-    text = StringProperty()
-
-
-class LobbyCtxActions(BoxLayout):
-    actions = ["disconnect", "ready"]
-
-    def __init__(self, **kwargs):
-        for event in LobbyCtxActions.actions:
-            self.register_event_type("on_" + event)
-
-        super().__init__(**kwargs)
-
-        self.grabbing = None
-
-    def on_touch_down(self, touch: MotionEvent):
-        for action in LobbyCtxActions.actions:
-            button = self.ids[action].button
-
-            if button.collide_point(*touch.pos):
-                button.state = "down"
-                touch.grab(self)
-                self.grabbing = button
-
-                self.dispatch("on_" + action)
-
-                return True
-
-        return super().on_touch_down(touch)
-
-    def on_touch_up(self, touch: MotionEvent):
-        if touch.grab_current is self:
-            self.grabbing.state = "normal"
-            self.grabbing = None
-
-            touch.ungrab(self)
-
-            return True
-
-        return super().on_touch_up(touch)
-
-    def on_ready(self):
-        Logger.debug("TitleBar : Ready requested.")
-
-    def on_disconnect(self):
-        Logger.debug("TitleBar : Logout requested.")
 
 
 class QuitButton(Label):
