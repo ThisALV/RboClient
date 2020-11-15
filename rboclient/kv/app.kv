@@ -2,7 +2,7 @@
 
 #:set tbarButtonSize (40, 25) 
 #:set tbarHeight 35
-#:set tbarColor 0, 0, 0
+#:set tbarColor [0, 0, 0]
 #:set quitBtnSide tbarHeight - 5
 
 #:set errorColor [1, .2, .2, 1]
@@ -19,7 +19,8 @@
         text: self.parent.text
 
 <ErrorPopup>:
-    size_hint: (.4, .4)
+    size_hint: (None, None)
+    size: (400, 300)
     auto_dismiss: False
     title_color: errorColor
     separator_color: errorColor
