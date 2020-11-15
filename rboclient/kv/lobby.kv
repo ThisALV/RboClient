@@ -23,7 +23,6 @@
 
 <LogMessage>:
     markup: True
-    valign: "center"
     halign: "left"
     size_hint: (1, None)
     text_size: (self.width, None)
@@ -67,8 +66,12 @@
         text: "[{}] {}".format(root.id, root.name)
         valign: "center"
         size_hint: (1, 1)
-        text_size: (None, self.height)
         font_size: 20
+    Label:
+        text: root.status[root.ready][0]
+        color: root.status[root.ready][1]
+        size_hint: (1, 1)
+        font_size: 15
 
 <Members>:
     background: [.05, .05, .05]

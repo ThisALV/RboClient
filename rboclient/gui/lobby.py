@@ -55,6 +55,11 @@ class Member(BoxLayout):
     master = BooleanProperty(False)
     ready = BooleanProperty(False)
 
+    status = {
+        False: ("En attente", [1, 0, 0]),
+        True: ("Prêt", [0, 1, 0])
+    }
+
     def __init__(self, id: int, name: str, **kwargs):
         super().__init__(id=id, name=name, **kwargs)
 
