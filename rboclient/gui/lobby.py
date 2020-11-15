@@ -85,8 +85,8 @@ class Members(ScrollableStack):
         Clock.schedule_once(self.initContent)
 
     def initContent(self, _: int):
-        self.content.padding = 20
-        self.content.spacing = 20
+        self.content.padding = 5
+        self.content.spacing = 5
 
     def refreshMaster(self) -> None:
         master = +inf
