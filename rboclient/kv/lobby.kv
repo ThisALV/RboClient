@@ -62,11 +62,33 @@
         Rectangle:
             pos: self.pos
             size: self.size
-    Label:
-        text: "[{}] {}".format(root.id, root.name)
-        valign: "center"
-        size_hint: (1, 1)
-        font_size: 20
+    FloatLayout:
+        AnchorLayout:
+            anchor_x: "left"
+            size_hint: (1, 1)
+            pos_hint: {"x": 0, "y": 0}
+            Label:
+                text: str(root.id)
+                valign: "center"
+                color: [.05, .05, .05]
+                bold: True
+                size_hint: (None, None)
+                size: (20, 20)
+                canvas.before:
+                    Color:
+                        rgb: [1, 1, 0] if root.master else [1, 1, 1]
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+        AnchorLayout:
+            anchor_x: "center"
+            size_hint: (1, 1)
+            pos_hint: {"x": 0, "y": 0}
+            Label:
+                text: root.name
+                valign: "center"
+                height: 25
+                font_size: 20
     Label:
         text: root.status[root.ready][0]
         color: root.status[root.ready][1]
