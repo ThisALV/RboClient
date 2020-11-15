@@ -54,14 +54,15 @@ class Member(BoxLayout):
     name = StringProperty()
     master = BooleanProperty(False)
     ready = BooleanProperty(False)
+    me = BooleanProperty(False)
 
     status = {
         False: ("En attente", [1, 0, 0]),
         True: ("Prêt", [0, 1, 0])
     }
 
-    def __init__(self, id: int, name: str, **kwargs):
-        super().__init__(id=id, name=name, **kwargs)
+    def __init__(self, id: int, name: str, me: bool, **kwargs):
+        super().__init__(id=id, name=name, me=me, **kwargs)
 
     def on_ready(self, _: EventDispatcher, ready: bool):
         pass
@@ -99,11 +100,11 @@ class Members(ScrollableStack):
         self.master = master
         self.members[self.master].master = True
 
-    def registered(self, id: int, name: str) -> None:
+    def registered(self, id: int, name: str, me: bool = False) -> None:
         if id in self.members.keys():
             raise ValueError("Multiple members with same ID")
 
-        self.members[id] = Member(id, name)
+        self.members[id] = Member(id, name, me)
         self.content.add_widget(self.members[id])
         self.refreshMaster()
 
@@ -130,7 +131,7 @@ class Lobby(Step, BoxLayout):
         self.rboCI = rboCI
         self.link(rboCI)
 
-        self.members.registered(self.rboCI.id, self.rboCI.name)
+        self.members.registered(self.rboCI.id, self.rboCI.name, me=True)
 
         for (id, member) in members.items():
             self.members.registered(id, member[0])
