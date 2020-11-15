@@ -93,7 +93,7 @@ class Members(ScrollableStack):
             if id < master:
                 master = id
 
-        if self.master != +inf:
+        if self.master in self.members:
             self.members[self.master].master = False
 
         self.master = master
