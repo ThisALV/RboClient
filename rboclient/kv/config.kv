@@ -1,0 +1,64 @@
+#:kivy 2.0.0
+
+#:set configTitle [1, 1, 1, 1]
+
+<Tab>:
+    anchor_x: "center"
+    anchor_y: "center"
+    size_hint: (1, None)
+    height: 80
+    canvas.before:
+        Color:
+            rgb: [.1, .1, .1]
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    Label:
+        font_size: 20
+        text: root.title
+
+<Tabs>:
+
+<Pannel>:
+
+
+<Content>:
+    orientation: "vertical"
+    AnchorLayout:
+        anchor_x: "center"
+        anchor_y: "center"
+        Pannel:
+            size_hint: (.8, .8)
+            canvas.before:
+                Color:
+                    rgb: homeColor
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            Tabs:
+                size_hint: (.4, 1)
+            FloatLayout:
+    BoxLayout:
+        orientation: "horizontal"
+        size_hint: (1, .05)
+        AnchorLayout:
+            anchor_x: "left"
+            anchor_y: "center"
+            RboBtn:
+                text: "Annuler"
+                size_hint: (.5, 1)
+        AnchorLayout:
+            anchor_x: "right"
+            anchor_y: "center"
+            RboBtn:
+                text: "OK"
+                size_hint: (.5, 1)
+
+<ConfigPopup>:
+    size_hint: (None, None)
+    size: (500, 600)
+    title: "Préférences"
+    title_size: 40
+    title_color: configTitle
+    separator_height: 3
+    separator_color: configTitle

@@ -76,7 +76,7 @@ class ScrollableStack(ScrollView):
 
 
 class LogMessage(Label):
-    "Message dans l'historique"
+    "Message dans l'historique."
 
     background = ListProperty([0, 0, 0])
 
@@ -85,7 +85,7 @@ class LogMessage(Label):
 
 
 class Logs(ScrollableStack):
-    "Historique des actions ayant eu lieu dans le Lobby"
+    "Historique des actions ayant eu lieu dans le Lobby."
 
     backgroundEven = [.1, .1, .1]
     backgroundOdd = [.05, .05, .05]
@@ -100,7 +100,7 @@ class Logs(ScrollableStack):
 
 
 class Member(BoxLayout):
-    "Identifiant, pseudo et status du membre"
+    "Identifiant, pseudo et status du membre."
 
     id = NumericProperty()
     name = StringProperty()
@@ -124,7 +124,7 @@ class Member(BoxLayout):
 
 
 class Members(ScrollableStack):
-    "Liste des membres (Member) et de leur status"
+    "Liste des membres (Member) et de leur status."
 
     master = NumericProperty()
 

@@ -201,7 +201,7 @@ class ClientApp(App):
         Window.bind(on_cursor_leave=self.readjustUp, on_cursor_enter=self.stopReadjustment)
         self.readjusting = False
 
-        for kv in ["home", "lobby"]:
+        for kv in ["home", "lobby", "config"]:
             Builder.load_file(kv + ".kv")
 
         return Builder.load_file("app.kv")
