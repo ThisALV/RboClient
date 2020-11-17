@@ -93,7 +93,7 @@ class Main(BoxLayout):
         super().__init__(**kwargs)
 
         self.content = None
-        App.get_running_app().bind(on_start=self.home)
+        Clock.schedule_once(self.home)
 
     def on_touch_down(self, touch: MotionEvent):
         if super().on_touch_down(touch):
