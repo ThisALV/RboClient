@@ -65,10 +65,8 @@ class TitleBar(BoxLayout):
     title = StringProperty("Rbo - Connexion")
 
     def __init__(self, **kwargs):
-        self.register_event_type("on_move")
         super().__init__(**kwargs)
 
-        self.moving = False
         self.actionsCtx = None
         self.switch("home")
 
@@ -79,8 +77,26 @@ class TitleBar(BoxLayout):
         self.actionsCtx = TitleBar.contexts[context]()
         self.add_widget(self.actionsCtx, 2)
 
+
+class Main(BoxLayout):
+    "Conteneur principal de l'application."
+
+    titleBar = ObjectProperty()
+    handlers = {
+        Mode.REGISTERING: handlerstree.registering,
+        Mode.LOBBY: handlerstree.lobby,
+        Mode.SESSION: handlerstree.session
+    }
+
+    def __init__(self, **kwargs):
+        self.register_event_type("on_move")
+        super().__init__(**kwargs)
+
+        self.content = None
+        App.get_running_app().bind(on_start=self.home)
+
     def on_touch_down(self, touch: MotionEvent):
-        if super().on_touch_down(touch) or not self.collide_point(*touch.pos):
+        if super().on_touch_down(touch):
             return True
 
         touch.grab(self)
@@ -92,13 +108,11 @@ class TitleBar(BoxLayout):
         return True
 
     def on_move(self, **direction):
-        Logger.debug("TitleBar : Move -> x:{x} ; x:{y}".format(**direction))
+        pass
 
     def on_touch_move(self, touch: MotionEvent):
         if touch.grab_current is not self:
             return super().on_touch_move(touch)
-
-        Logger.debug("TitleBar : Move = X:{} ; Y:{}".format(*touch.pos))
 
         for i in range(2):
             self.lastDiff[i] = touch.pos[i] - (self.initPos[i] - self.lastDiff[i])
@@ -118,23 +132,6 @@ class TitleBar(BoxLayout):
 
         touch.ungrab(self)
         return True
-
-
-class Main(BoxLayout):
-    "Conteneur principal de l'application."
-
-    titleBar = ObjectProperty()
-    handlers = {
-        Mode.REGISTERING: handlerstree.registering,
-        Mode.LOBBY: handlerstree.lobby,
-        Mode.SESSION: handlerstree.session
-    }
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        self.content = None
-        App.get_running_app().bind(on_start=self.home)
 
     def home(self, _: EventDispatcher = None, error: Failure = None) -> None:
         if error is None or type(error.value) == ConnectionDone:
@@ -192,13 +189,17 @@ class Main(BoxLayout):
         self.add_widget(self.content)
 
 
+def moveWindow(_, **direction):
+    Window.left += direction["x"]
+    Window.top -= direction["y"]
+
+
 class ClientApp(App):
     "Application du client."
 
     titleBar = ObjectProperty()
 
     def build(self):
-        Window.bind(on_cursor_leave=self.readjustUp, on_cursor_enter=self.stopReadjustment)
         self.readjusting = False
 
         for kv in ["home", "lobby", "config"]:
@@ -210,29 +211,4 @@ class ClientApp(App):
         super().on_start()
 
         self.titleBar = self.root.titleBar
-        self.titleBar.bind(on_move=self.move)
-
-    def readjustUp(self, _):
-        if self.titleBar.moving:
-            Logger.debug("ClientApp : Lost window, readjusting...")
-
-            self.readjusting = True
-            Clock.schedule_once(self.readjustment, .01)
-
-    def readjustment(self, *_):
-        Window.top -= 30
-
-        if self.readjusting:
-            Clock.schedule_once(self.readjustment, .01)
-        else:
-            Logger.debug("ClientApp : Readjusted.")
-
-    def stopReadjustment(self, _):
-        self.readjusting = False
-
-    def move(self, _, **direction):
-        if direction["y"] > 5:
-            direction["y"] *= 2
-
-        Window.left += direction["x"]
-        Window.top -= direction["y"]
+        self.root.bind(on_move=moveWindow)
