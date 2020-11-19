@@ -118,7 +118,7 @@ class Main(BoxLayout):
             self.lastDiff[i] = touch.pos[i] - (self.initPos[i] - self.lastDiff[i])
 
         self.initPos = touch.pos
-        self.dispatch("on_move", x=self.lastDiff[0], y=self.lastDiff[1])
+        moveWindow(*self.lastDiff)
 
         return True
 
@@ -189,9 +189,9 @@ class Main(BoxLayout):
         self.add_widget(self.content)
 
 
-def moveWindow(_, **direction):
-    Window.left += direction["x"]
-    Window.top -= direction["y"]
+def moveWindow(x, y):
+    Window.left += x
+    Window.top -= y
 
 
 class ClientApp(App):
@@ -200,8 +200,6 @@ class ClientApp(App):
     titleBar = ObjectProperty()
 
     def build(self):
-        self.readjusting = False
-
         for kv in ["home", "lobby", "config"]:
             Builder.load_file(kv + ".kv")
 
@@ -211,4 +209,3 @@ class ClientApp(App):
         super().on_start()
 
         self.titleBar = self.root.titleBar
-        self.root.bind(on_move=moveWindow)
