@@ -1,7 +1,5 @@
 #:kivy 2.0.0
 
-#:set homeColor [.05, .05, .05]
-
 <HomeCtxActions>:
     anchor_x: "left"
     button: button
@@ -100,7 +98,7 @@
     playerInput: form.player
     canvas.before:
         Color:
-            rgb: homeColor
+            rgb: middle
         Rectangle:
             pos: self.pos
             size: self.size
@@ -115,7 +113,7 @@
         player: player
         canvas.before:
             Color:
-                rgb: tbarColor
+                rgb: dark
             RoundedRectangle:
                 pos: self.pos
                 size: self.size

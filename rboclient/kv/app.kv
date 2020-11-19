@@ -2,8 +2,11 @@
 
 #:set tbarButtonSize (40, 25) 
 #:set tbarHeight 35
-#:set tbarColor [0, 0, 0]
 #:set quitBtnSide tbarHeight - 5
+
+#:set dark [0, 0, 0]
+#:set middle [.05, .05, .05]
+#:set bright [.1, .1, .1]
 
 #:set errorColor [1, .2, .2, 1]
 
@@ -40,7 +43,7 @@
     orientation: "horizontal"
     canvas.before:
         Color:
-            rgb: tbarColor
+            rgb: dark
         Rectangle:
             pos: self.pos
             size: self.size

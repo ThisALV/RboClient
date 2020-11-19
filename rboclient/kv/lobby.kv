@@ -58,7 +58,7 @@
     height: 50
     canvas.before:
         Color:
-            rgb: 0, 0, 0
+            rgb: dark
         Rectangle:
             pos: self.pos
             size: self.size
@@ -70,13 +70,13 @@
             Label:
                 text: str(root.id)
                 valign: "center"
-                color: [.05, .05, .05]
+                color: middle
                 bold: True
                 size_hint: (None, None)
                 size: (20, 20)
                 canvas.before:
                     Color:
-                        rgb: [1, 1, 0] if root.master else [1, 1, 1]
+                        rgb: [1, 1, 0 if root.master else 1]
                     Rectangle:
                         pos: self.pos
                         size: self.size
@@ -97,7 +97,7 @@
         font_size: 15
 
 <Members>:
-    background: [.05, .05, .05]
+    background: middle
 
 <Lobby>:
     orentation: "horizontal"
@@ -109,7 +109,7 @@
         size_hint: (0.05, 1)
         canvas.before:
             Color:
-                rgb: [.05, .05, .05]
+                rgb: middle
             Rectangle:
                 pos: self.pos
                 size: self.size
