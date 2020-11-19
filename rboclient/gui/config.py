@@ -1,7 +1,7 @@
 from kivy.logger import Logger
 from kivy.event import EventDispatcher
 from kivy.input.motionevent import MotionEvent
-from kivy.properties import StringProperty, ReferenceListProperty
+from kivy.properties import StringProperty, ObjectProperty
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.stacklayout import StackLayout
@@ -52,17 +52,15 @@ class Tab(AnchorLayout):
 
 
 class Tabs(StackLayout):
-    sections = ReferenceListProperty()
-
-    def __init__(self, sections: "list[Section]", **kwargs):
+    def __init__(self, **kwargs):
         self.register_event_type("on_enable")
-        super().__init__(sections=sections, **kwargs)
+        super().__init__(**kwargs)
 
-        for section in self.sections:
-            tab = Tab(section.name, section.title)
+    def registerSection(self, section: Section) -> None:
+        tab = Tab(section.name, section.title)
 
-            tab.bind(on_selected=self.enable)
-            self.add_widget(tab)
+        tab.bind(on_selected=self.enable)
+        self.add_widget(tab)
 
     def enable(self, _: EventDispatcher, name: str):
         self.dispatch("on_enabled", name)
@@ -72,13 +70,28 @@ class Tabs(StackLayout):
 
 
 class Pannel(BoxLayout):
-    pass
+    tabs = ObjectProperty()
+    input = ObjectProperty()
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.sections = {}
+
+    def retrieveConfig(self) -> "dict[str, dict[str, str]]":
+        config = {}
+
+        for (name, section) in self.sections.items():
+            config[name] = section.retrieveConfig()
+
+        return config
 
 
 class Content(BoxLayout):
-    pass
+    def __init__(self, sections: "list[Section]", **kwargs):
+        super().__init__(**kwargs)
+        self.sections = sections
 
 
 class ConfigPopup(Popup):
-    def __init__(self, **kwargs):
-        super().__init__(content=Content(), **kwargs)
+    def __init__(self, sections: "list[Section]", **kwargs):
+        super().__init__(content=Content(sections), **kwargs)

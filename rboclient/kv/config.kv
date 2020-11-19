@@ -20,7 +20,19 @@
 <Tabs>:
 
 <Pannel>:
-
+    tabs: tabs
+    input: input
+    canvas.before:
+        Color:
+            rgb: homeColor
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    Tabs:
+        id: tabs
+        size_hint: (.4, 1)
+    FloatLayout:
+        id: input
 
 <Content>:
     orientation: "vertical"
@@ -29,15 +41,6 @@
         anchor_y: "center"
         Pannel:
             size_hint: (.8, .8)
-            canvas.before:
-                Color:
-                    rgb: homeColor
-                Rectangle:
-                    pos: self.pos
-                    size: self.size
-            Tabs:
-                size_hint: (.4, 1)
-            FloatLayout:
     BoxLayout:
         orientation: "horizontal"
         size_hint: (1, .05)

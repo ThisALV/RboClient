@@ -1,3 +1,4 @@
+from rboclient.gui import config
 from rboclient.gui.config import ConfigPopup
 
 from kivy.uix.anchorlayout import AnchorLayout
@@ -13,8 +14,13 @@ from kivy.clock import Clock
 from math import inf
 
 
+cfgSections = [
+    config.Section("fields", "Champs", AnchorLayout(), {})
+]
+
+
 def showConfig(_: EventDispatcher):
-    ConfigPopup().open()
+    ConfigPopup(cfgSections).open()
 
 
 class HomeCtxActions(AnchorLayout):
