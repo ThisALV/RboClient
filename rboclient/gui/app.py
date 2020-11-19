@@ -62,7 +62,7 @@ class TitleBar(BoxLayout):
         "session": FloatLayout
     }
 
-    title = StringProperty("Rbo - Connexion")
+    title = StringProperty()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -141,6 +141,7 @@ class Main(BoxLayout):
             ErrorPopup(type(error.value).__name__, error.getErrorMessage()).open()
 
         self.titleBar.switch("home")
+        self.titleBar.title = "Rbo - Connexion"
 
         home = Home()
         if self.content is not None:
@@ -176,9 +177,8 @@ class Main(BoxLayout):
                              on_unavailable_session=self.registrationError)
 
     def game(self, _: EventDispatcher, members: "dict[int, tuple[str, bool]]") -> None:
-        Logger.debug("Main : Game !")
-
         self.titleBar.switch("lobby")
+        self.titleBar.title = "Rbo - Lobby"
 
         game = Game(self.connection, members)
         game.bind(on_close=self.home)
