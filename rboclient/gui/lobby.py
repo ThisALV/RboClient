@@ -5,70 +5,17 @@ from rboclient.gui.game import Step
 from kivy.app import App
 from kivy.logger import Logger
 from kivy.event import EventDispatcher
-from kivy.input.motionevent import MotionEvent
 from kivy.clock import Clock
-from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.stacklayout import StackLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.label import Label
-from kivy.properties import ListProperty, ObjectProperty, NumericProperty, StringProperty, BooleanProperty
+from kivy.properties import ColorProperty, ObjectProperty, NumericProperty, StringProperty, BooleanProperty
 
 from math import inf
 
 
-class LobbyCtxAction(AnchorLayout):
-    button = ObjectProperty()
-    text = StringProperty()
-
-
-class LobbyCtxActions(BoxLayout):
-    actions = ["disconnect", "ready"]
-
-    def __init__(self, **kwargs):
-        for event in LobbyCtxActions.actions:
-            self.register_event_type("on_" + event)
-
-        super().__init__(**kwargs)
-
-        self.grabbing = None
-
-    def on_touch_down(self, touch: MotionEvent):
-        for action in LobbyCtxActions.actions:
-            button = self.ids[action].button
-
-            if button.collide_point(*touch.pos):
-                button.state = "down"
-                touch.grab(self)
-                self.grabbing = button
-
-                self.dispatch("on_" + action)
-
-                return True
-
-        return super().on_touch_down(touch)
-
-    def on_touch_up(self, touch: MotionEvent):
-        if touch.grab_current is self:
-            self.grabbing.state = "normal"
-            self.grabbing = None
-
-            touch.ungrab(self)
-
-            return True
-
-        return super().on_touch_up(touch)
-
-    def on_ready(self):
-        Logger.debug("TitleBar : Ready requested.")
-
-    def on_disconnect(self):
-        Logger.debug("TitleBar : Logout requested.")
-
-
 class ScrollableStack(ScrollView):
-    background = ListProperty([0, 0, 0])
+    background = ColorProperty([0, 0, 0])
     content = ObjectProperty()
 
     def __init__(self, bg: "list[int]" = background.defaultvalue, **kwargs):
@@ -78,7 +25,7 @@ class ScrollableStack(ScrollView):
 class LogMessage(Label):
     "Message dans l'historique."
 
-    background = ListProperty([0, 0, 0])
+    background = ColorProperty([0, 0, 0])
 
     def __init__(self, msg: str, bg: "list[int]", **kwargs):
         super().__init__(text=msg, background=bg, **kwargs)
@@ -177,6 +124,8 @@ class Lobby(Step, BoxLayout):
 
     logs = ObjectProperty()
     members = ObjectProperty()
+    readyBtn = ObjectProperty()
+    disconnectBtn = ObjectProperty()
 
     def __init__(self, rboCI: RboCI, members: "dict[int, tuple[str, bool]]", **kwargs):
         super().__init__(**kwargs)
@@ -195,7 +144,8 @@ class Lobby(Step, BoxLayout):
                         on_member_disconnected=self.memberUnregistered,
                         on_member_crashed=self.memberUnregistered)
 
-        App.get_running_app().titleBar.actionsCtx.bind(on_disconnect=self.disconnect, on_ready=self.ready)
+        self.readyBtn.bind(on_release=self.ready)
+        self.disconnectBtn.bind(on_release=self.disconnect)
 
         self.rboCI.switchMode(Mode.LOBBY)
 

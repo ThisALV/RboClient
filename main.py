@@ -3,14 +3,7 @@ from kivy.config import Config
 from os import path
 import platform
 
-Config.set("graphics", "borderless", 1)
-Config.set("kivy", "exit_on_escape", 0)
-
-if platform.system() != "Windows":
-    Config.set("graphics", "position", "custom") # Option mal prise en main par Windows
-
-Config.set("graphics", "top", 1250)
-Config.set("graphics", "left", 600)
+Config.set("kivy", "exit_on_escape", False)
 Config.set("kivy", "log_level", "debug")
 
 cfgFile = "config.ini"

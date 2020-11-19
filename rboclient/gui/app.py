@@ -1,34 +1,28 @@
 import rboclient
-from rboclient.gui.home import Home, HomeCtxActions
+from rboclient.gui.home import Home
 from rboclient.gui.game import Game
-from rboclient.gui.lobby import LobbyCtxActions
 from rboclient.network.protocol import RboConnectionInterface as RboCI
 from rboclient.network.protocol import Mode
 from rboclient.network import handlerstree
 
 import kivy
-import kivy.input
 from kivy.app import App
-from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.event import EventDispatcher
-from kivy.input.motionevent import MotionEvent
 from kivy.logger import Logger
 from kivy.lang.builder import Builder
-from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.label import Label
 from kivy.uix.popup import Popup
-from kivy.properties import ObjectProperty, StringProperty, BooleanProperty
+from kivy.properties import StringProperty
 
 from twisted.internet import protocol, endpoints, reactor
 from twisted.internet.error import ConnectionDone
 from twisted.python.failure import Failure
 
-kivy.require("2.0.0")
+from functools import partial
 
-Window.size = (900, 650)
+kivy.require("2.0.0")
 
 
 class ErrorMessage(AnchorLayout):
@@ -36,52 +30,19 @@ class ErrorMessage(AnchorLayout):
 
 
 class ErrorPopup(Popup):
+    "Popup permettant de signaler une erreur n'étant pas critique."
+
     def __init__(self, title: str, msg: str):
         super().__init__(title=title, content=ErrorMessage(text=msg))
 
-    def on_touch_down(self, _):
+    def on_touch_down(self, _: EventDispatcher):
         self.dismiss()
         return True
 
 
-class QuitButton(Label):
-    def on_touch_down(self, touch: MotionEvent):
-        if self.collide_point(*touch.pos):
-            App.get_running_app().stop()
-            return True
-
-        return super().on_touch_down(touch)
-
-
-class TitleBar(BoxLayout):
-    "Barre de titre sur-mesure."
-
-    contexts = {
-        "home": HomeCtxActions,
-        "lobby": LobbyCtxActions,
-        "session": FloatLayout
-    }
-
-    title = StringProperty("Rbo - Connexion")
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        self.actionsCtx = None
-        self.switch("home")
-
-    def switch(self, context: str) -> None:
-        if self.actionsCtx is not None:
-            self.remove_widget(self.actionsCtx)
-
-        self.actionsCtx = TitleBar.contexts[context]()
-        self.add_widget(self.actionsCtx, 2)
-
-
-class Main(BoxLayout):
+class Main(FloatLayout):
     "Conteneur principal de l'application."
 
-    titleBar = ObjectProperty()
     handlers = {
         Mode.REGISTERING: handlerstree.registering,
         Mode.LOBBY: handlerstree.lobby,
@@ -89,49 +50,10 @@ class Main(BoxLayout):
     }
 
     def __init__(self, **kwargs):
-        self.register_event_type("on_move")
         super().__init__(**kwargs)
 
         self.content = None
         Clock.schedule_once(self.home)
-
-    def on_touch_down(self, touch: MotionEvent):
-        if super().on_touch_down(touch):
-            return True
-
-        touch.grab(self)
-
-        self.moving = True
-        self.initPos = touch.pos
-        self.lastDiff = [0] * 2
-
-        return True
-
-    def on_move(self, **direction):
-        pass
-
-    def on_touch_move(self, touch: MotionEvent):
-        if touch.grab_current is not self:
-            return super().on_touch_move(touch)
-
-        for i in range(2):
-            self.lastDiff[i] = touch.pos[i] - (self.initPos[i] - self.lastDiff[i])
-
-        self.initPos = touch.pos
-        self.dispatch("on_move", x=self.lastDiff[0], y=self.lastDiff[1])
-
-        return True
-
-    def on_touch_up(self, touch: MotionEvent):
-        if touch.grab_current is not self:
-            return super().on_touch_move(touch)
-
-        self.moving = False
-        self.initPos = None
-        self.lastDiff = None
-
-        touch.ungrab(self)
-        return True
 
     def home(self, _: EventDispatcher = None, error: Failure = None) -> None:
         if error is None or type(error.value) == ConnectionDone:
@@ -139,8 +61,6 @@ class Main(BoxLayout):
         else:
             Logger.error("Main : Back to Home : " + error.getErrorMessage())
             ErrorPopup(type(error.value).__name__, error.getErrorMessage()).open()
-
-        self.titleBar.switch("home")
 
         home = Home()
         if self.content is not None:
@@ -178,8 +98,6 @@ class Main(BoxLayout):
     def game(self, _: EventDispatcher, members: "dict[int, tuple[str, bool]]") -> None:
         Logger.debug("Main : Game !")
 
-        self.titleBar.switch("lobby")
-
         game = Game(self.connection, members)
         game.bind(on_close=self.home)
         self.connection = None
@@ -189,26 +107,11 @@ class Main(BoxLayout):
         self.add_widget(self.content)
 
 
-def moveWindow(_, **direction):
-    Window.left += direction["x"]
-    Window.top -= direction["y"]
-
-
 class ClientApp(App):
     "Application du client."
 
-    titleBar = ObjectProperty()
-
     def build(self):
-        self.readjusting = False
-
         for kv in ["home", "lobby", "config"]:
             Builder.load_file(kv + ".kv")
 
         return Builder.load_file("app.kv")
-
-    def on_start(self):
-        super().on_start()
-
-        self.titleBar = self.root.titleBar
-        self.root.bind(on_move=moveWindow)

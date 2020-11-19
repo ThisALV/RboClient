@@ -3,7 +3,7 @@ from rboclient.network import handling
 
 import kivy
 import kivy.support
-from kivy.logger import Logger, LOG_LEVELS
+from kivy.logger import Logger
 from kivy.event import EventDispatcher
 
 kivy.support.install_twisted_reactor()

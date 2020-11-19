@@ -5,7 +5,6 @@ from kivy.app import App
 from kivy.logger import Logger
 from kivy.event import EventDispatcher
 from kivy.uix.floatlayout import FloatLayout
-from kivy.properties import StringProperty
 
 from twisted.python.failure import Failure
 

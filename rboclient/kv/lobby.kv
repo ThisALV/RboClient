@@ -1,26 +1,5 @@
 #:kivy 2.0.0
 
-<LobbyCtxAction>:
-    anchor_x: "center"
-    anchor_y: "center"
-    size_hint: (None, 1)
-    width: 100
-    button: button
-    RboBtn:
-        id: button
-        size_hint: (None, None)
-        size: (80, tbarHeight - 10)
-        text: root.text
-
-<LobbyCtxActions>:
-    orientation: "horizontal"
-    LobbyCtxAction:
-        id: disconnect
-        text: "\u21d0"
-    LobbyCtxAction:
-        id: ready
-        text: "Prêt"
-
 <LogMessage>:
     markup: True
     halign: "left"
@@ -101,9 +80,62 @@
 
 <Lobby>:
     orentation: "horizontal"
-    logs: logs
-    members: members
-    Logs:
-        id: logs
-    Members:
-        id: members
+    requests: requests
+    players: players
+    footer: requests.footer
+    header: players.header
+    logs: requests.logs
+    readyBtn: footer.ready
+    disconnectBtn: header.disconnect
+    members: players.members
+    BoxLayout:
+        id: requests
+        orientation: "vertical"
+        logs: logs
+        footer: footer
+        Logs:
+            id: logs
+        AnchorLayout:
+            id: footer
+            anchor_x: "center"
+            anchor_y: "center"
+            size_hint: (1, None)
+            height: 80
+            ready: ready
+            canvas.before:
+                Color:
+                    rgb: [.025, .025, .025]
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            RboBtn:
+                id: ready
+                size_hint: (None, None)
+                size: (150, 40)
+                text: "Prêt ?"
+    BoxLayout:
+        id: players
+        header: header
+        members: members
+        orientation: "vertical"
+        AnchorLayout:
+            id: header
+            anchor_x: "left"
+            anchor_y: "center"
+            size_hint: (1, None)
+            height: 40
+            padding: (20, 0)
+            disconnect: disconnect
+            canvas.before:
+                Color:
+                    rgb: [.025, .025, .025]
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            RboBtn:
+                id: disconnect
+                size_hint: (None, None)
+                size: (50, self.parent.height / 2)
+                text: "\u21d0"
+        Members:
+            id: members

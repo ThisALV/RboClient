@@ -54,15 +54,15 @@ class Tab(AnchorLayout):
 class Tabs(StackLayout):
     sections = ReferenceListProperty()
 
-    def __init__(self, sections: "list[Section]", **kwargs):
+    def __init__(self, **kwargs):
         self.register_event_type("on_enable")
-        super().__init__(sections=sections, **kwargs)
+        super().__init__(**kwargs)
 
-        for section in self.sections:
-            tab = Tab(section.name, section.title)
+    def registerSection(self, section: Section) -> None:
+        tab = Tab(section.name, section.title)
 
-            tab.bind(on_selected=self.enable)
-            self.add_widget(tab)
+        tab.bind(on_selected=self.enable)
+        self.add_widget(tab)
 
     def enable(self, _: EventDispatcher, name: str):
         self.dispatch("on_enabled", name)

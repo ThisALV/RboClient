@@ -1,16 +1,8 @@
 #:kivy 2.0.0
 
-#:set homeColor [.05, .05, .05]
+#:import showConfig rboclient.gui.home.showConfig
 
-<HomeCtxActions>:
-    anchor_x: "left"
-    button: button
-    padding: [2, 0]
-    RboBtn:
-        id: button
-        size_hint: (None, None)
-        size: tbarButtonSize
-        text: "\u2699"
+#:set homeColor [.05, .05, .05]
 
 <LoginInputRow>:
     orientation: "horizontal"
@@ -93,53 +85,63 @@
                 radius: [4,]
 
 <Home>:
-    anchor_x: "center"
-    anchor_y: "center"
-    form: form
+    form: center.form
     hostInput: form.host
     playerInput: form.player
-    canvas.before:
-        Color:
-            rgb: homeColor
-        Rectangle:
-            pos: self.pos
-            size: self.size
-    BoxLayout:
-        id: form
-        orientation: "vertical"
-        size_hint: (None, None)
-        size: (375, 420)
-        padding: (30, 40)
-        spacing: 10
-        host: host
-        player: player
+    AnchorLayout:
+        id: center
+        anchor_x: "center"
+        anchor_y: "center"
+        form: form
         canvas.before:
             Color:
-                rgb: tbarColor
-            RoundedRectangle:
+                rgb: homeColor
+            Rectangle:
                 pos: self.pos
                 size: self.size
-        HostInput:
-            id: host
-        HomeOption:
-            id: option
-            label: "Hôte local ?"
-            input: root.hostInput
-            field: "address"
-            fill: "localhost"
-        Separator:
-        PlayerInput:
-            id: player
-        HomeOption:
-            id: master
-            label: "Maître de la room ?"
-            input: root.playerInput
-            field: "playerID"
-            fill: "0"
-        Separator:
-        RboBtn:
-            size_hint: (1, None)
-            height: 50
-            text: "Connexion"
-            font_size: 25
-            on_release: root.login()
+        BoxLayout:
+            id: form
+            orientation: "vertical"
+            size_hint: (None, None)
+            size: (375, 420)
+            padding: (30, 40)
+            spacing: 10
+            host: host
+            player: player
+            canvas.before:
+                Color:
+                    rgb: [0, 0, 0]
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+            HostInput:
+                id: host
+            HomeOption:
+                id: option
+                label: "Hôte local ?"
+                input: root.hostInput
+                field: "address"
+                fill: "localhost"
+            Separator:
+            PlayerInput:
+                id: player
+            HomeOption:
+                id: master
+                label: "Maître de la room ?"
+                input: root.playerInput
+                field: "playerID"
+                fill: "0"
+            Separator:
+            RboBtn:
+                size_hint: (1, None)
+                height: 50
+                text: "Connexion"
+                font_size: 25
+                on_release: root.login()
+    RboBtn:
+        id: button
+        size_hint: (None, None)
+        size: (50, 30)
+        pos: (20, root.height - 20 - self.height)
+        text: "\u2699"
+        on_release: showConfig()

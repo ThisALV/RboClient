@@ -1,31 +1,18 @@
 from rboclient.gui.config import ConfigPopup
 
-from kivy.uix.anchorlayout import AnchorLayout
+from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.popup import Popup
-from kivy.properties import NumericProperty, StringProperty, BooleanProperty, ObjectProperty
+from kivy.properties import NumericProperty, StringProperty, ObjectProperty, BooleanProperty
 from kivy.event import EventDispatcher
 from kivy.logger import Logger
-from kivy.event import EventDispatcher
-from kivy.clock import Clock
 
 from math import inf
 
 
-def showConfig(_: EventDispatcher):
+def showConfig():
     ConfigPopup().open()
-
-
-class HomeCtxActions(AnchorLayout):
-    button = ObjectProperty()
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        Clock.schedule_once(self.initBtn)
-
-    def initBtn(self, _: int):
-        self.button.bind(on_press=showConfig)
 
 
 class LoginInput(TextInput):
@@ -141,7 +128,7 @@ class NumericLoginInput(LoginInput):
         return super().insert_text(substr, from_undo)
 
 
-class Home(AnchorLayout):
+class Home(FloatLayout):
     "Conteneur de la page d'accueil."
 
     hostInput = ObjectProperty()

@@ -1,10 +1,5 @@
 #:kivy 2.0.0
 
-#:set tbarButtonSize (40, 25) 
-#:set tbarHeight 35
-#:set tbarColor [0, 0, 0]
-#:set quitBtnSide tbarHeight - 5
-
 #:set errorColor [1, .2, .2, 1]
 
 <ErrorMessage>:
@@ -30,41 +25,8 @@
     font_name: "DejaVuSans"
     font_size: 20
 
-<QuitButton>:
-    font_name: "DejaVuSans"
-    font_size: 25
-    color: [.7, 0, 0, 1]
-    text: "\u00d7"
-
-<TitleBar>:
-    orientation: "horizontal"
-    canvas.before:
-        Color:
-            rgb: tbarColor
-        Rectangle:
-            pos: self.pos
-            size: self.size
-    AnchorLayout:
-        anchor_x: "center"
-        Label:
-            text: root.title
-            color: [1, 1, 1]
-            bold: True
-            font_size: 15
-    AnchorLayout:
-        anchor_x: "right"
-        padding: [(tbarHeight - quitBtnSide) / 2, 0]
-        QuitButton:
-            size_hint: (None, None)
-            size: (quitBtnSide, quitBtnSide)
-
 <Main>:
-    titleBar: titleBar
     orientation: "vertical"
-    TitleBar:
-        id: titleBar
-        size_hint: (1, None)
-        height: tbarHeight
 
 Main:
 
