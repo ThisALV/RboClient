@@ -105,5 +105,13 @@
     members: members
     Logs:
         id: logs
+    FloatLayout:
+        size_hint: (0.05, 1)
+        canvas.before:
+            Color:
+                rgb: [.05, .05, .05]
+            Rectangle:
+                pos: self.pos
+                size: self.size
     Members:
         id: members
