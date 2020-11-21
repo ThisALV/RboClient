@@ -9,7 +9,7 @@
     height: 80
     canvas.before:
         Color:
-            rgb: bright
+            rgb: middle if self.isSelected else bright
         Rectangle:
             pos: self.pos
             size: self.size
@@ -17,30 +17,33 @@
         font_size: 20
         text: root.title
 
-<Tabs>:
-
 <Pannel>:
     tabs: tabs
     input: input
-    canvas.before:
-        Color:
-            rgb: middle
-        Rectangle:
-            pos: self.pos
-            size: self.size
     Tabs:
         id: tabs
         size_hint: (.4, 1)
     FloatLayout:
         id: input
+        canvas.before:
+            Color:
+                rgb: middle
+            Rectangle:
+                pos: self.pos
+                size: self.size
 
 <Content>:
     orientation: "vertical"
+    main: center
+    pannel: center.pannel
     AnchorLayout:
+        id: center
         anchor_x: "center"
         anchor_y: "center"
+        pannel: pannel
         Pannel:
-            size_hint: (.8, .8)
+            id: pannel
+            size_hint: (.9, .9)
     BoxLayout:
         orientation: "horizontal"
         size_hint: (1, .05)
@@ -65,3 +68,14 @@
     title_color: configTitle
     separator_height: 3
     separator_color: configTitle
+    background_normal: ""
+    background: ""
+    background_color: bright
+
+<RessourcesCfg>:
+    pos_hint: {"x": 0, "y": 0}
+    anchor_x: "center"
+    anchor_y: "center"
+    Label:
+        italic: True
+        text: "À venir..."

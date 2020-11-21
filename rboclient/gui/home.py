@@ -13,14 +13,15 @@ from kivy.clock import Clock
 
 from math import inf
 
-
 cfgSections = [
-    config.Section("fields", "Champs", AnchorLayout(), {})
+    ("fields", "Champs", AnchorLayout, {}),
+    ("ressources", "Ressources", config.RessourcesCfg, {})
 ]
 
 
 def showConfig(_: EventDispatcher):
-    ConfigPopup(cfgSections).open()
+    sections = [config.Section(name, title, input(), inputs) for (name, title, input, inputs) in cfgSections]
+    ConfigPopup(sections).open()
 
 
 class HomeCtxActions(AnchorLayout):
