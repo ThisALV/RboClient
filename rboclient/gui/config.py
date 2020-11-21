@@ -12,10 +12,10 @@ from kivy.uix.widget import Widget
 
 def retrieveText(node: Widget, path: "list[str]") -> str:
     if len(path) == 0:
-        next = path[0]
-        return retrieveText(node.ids[next], path[1:])
+        return node
 
-    return node.text
+    next = path[0]
+    return retrieveText(getattr(node, next), path[1:])
 
 
 class Section:
@@ -96,9 +96,6 @@ class Pannel(BoxLayout):
         self.sections = {}
         Clock.schedule_once(self.listenTabs)
 
-    def clear(self) -> None:
-        self.input.remove_widget(self.current)
-
     def listenTabs(self, _: int):
         self.tabs.bind(on_enable=self.enable)
 
@@ -129,20 +126,35 @@ class Pannel(BoxLayout):
 
 class Content(BoxLayout):
     pannel = ObjectProperty()
+    save = ObjectProperty()
+    cancel = ObjectProperty()
 
     def __init__(self, sections: "list[Section]", **kwargs):
+        self.register_event_type("on_close")
         super().__init__(**kwargs)
+
         self.pannel.initSections(sections)
+        self.cancel.bind(on_press=lambda _: self.dispatch("on_close"))
+        self.save.bind(on_press=self.saveCfg)
+
+    def saveCfg(self, _: EventDispatcher):
+        cfg = ""
+
+        for (name, section) in self.pannel.retrieveConfig().items():
+            cfg += "[{}]\n".format(name)
+
+            for option in section.items():
+                cfg += "{}={}\n".format(*option)
+
+            cfg += "\n"
+
+        Logger.debug("Config : Configuration saved : " + cfg)
+
+    def on_close(self):
+        pass
 
 
 class ConfigPopup(Popup):
     def __init__(self, sections: "list[Section]", **kwargs):
         super().__init__(content=Content(sections), **kwargs)
-
-    def on_dismiss(self):
-        super().on_dismiss()
-        self.content.pannel.clear()
-
-
-class RessourcesCfg(AnchorLayout):
-    pass
+        self.content.bind(on_close=lambda _: self.dismiss())

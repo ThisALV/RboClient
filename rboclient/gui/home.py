@@ -13,9 +13,25 @@ from kivy.clock import Clock
 
 from math import inf
 
+
+class RessourcesCfg(AnchorLayout):
+    pass
+
+
+class FieldsCfg(BoxLayout):
+    pass
+
+
+cfgFieldsPaths = {
+    "address": ["hostInput", "address"],
+    "port": ["hostInput", "port"],
+    "playerID": ["playerInput", "playerID"],
+    "name": ["playerInput", "name"]
+}
+
 cfgSections = [
-    ("fields", "Champs", AnchorLayout, {}),
-    ("ressources", "Ressources", config.RessourcesCfg, {})
+    ("fields", "Champs", FieldsCfg, cfgFieldsPaths),
+    ("ressources", "Ressources", RessourcesCfg, {})
 ]
 
 
@@ -124,10 +140,6 @@ class HostInput(LoginInputRow):
 class PlayerInput(LoginInputRow):
     playerID = StringProperty()
     name = StringProperty()
-
-
-class LocalhostOption(BoxLayout):
-    pass
 
 
 class NumericLoginInput(LoginInput):

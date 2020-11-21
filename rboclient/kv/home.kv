@@ -90,12 +90,21 @@
                 size: self.size
                 radius: [4,]
 
+<LocalhostOption@HomeOption>:
+    label: "Hôte local ?"
+    field: "address"
+    fill: "localhost"
+
+<MasterOption@HomeOption>:
+    label: "Maître de la room ?"
+    field: "playerID"
+    fill: "0"
+
 <Home>:
     anchor_x: "center"
     anchor_y: "center"
-    form: form
-    hostInput: form.host
-    playerInput: form.player
+    hostInput: host
+    playerInput: player
     canvas.before:
         Color:
             rgb: middle
@@ -103,14 +112,11 @@
             pos: self.pos
             size: self.size
     BoxLayout:
-        id: form
         orientation: "vertical"
         size_hint: (None, None)
         size: (375, 420)
         padding: (30, 40)
         spacing: 10
-        host: host
-        player: player
         canvas.before:
             Color:
                 rgb: dark
@@ -119,21 +125,13 @@
                 size: self.size
         HostInput:
             id: host
-        HomeOption:
-            id: option
-            label: "Hôte local ?"
+        LocalhostOption:
             input: root.hostInput
-            field: "address"
-            fill: "localhost"
         Separator:
         PlayerInput:
             id: player
-        HomeOption:
-            id: master
-            label: "Maître de la room ?"
+        MasterOption:
             input: root.playerInput
-            field: "playerID"
-            fill: "0"
         Separator:
         RboBtn:
             size_hint: (1, None)
@@ -141,3 +139,40 @@
             text: "Connexion"
             font_size: 25
             on_release: root.login()
+
+<RessourcesCfg>:
+    pos_hint: {"x": 0, "y": 0}
+    anchor_x: "center"
+    anchor_y: "center"
+    Label:
+        italic: True
+        text: "À venir..."
+
+<FieldsCfgZone@BoxLayout>:
+    orientation: "vertical"
+    size_hint: (1, None)
+    spacing: 10
+
+<FieldsCfg>:
+    pos_hint: {"x": 0, "y": 0}
+    orientation: "vertical"
+    padding: (15, 40)
+    spacing: 30
+    hostInput: hostInput
+    playerInput: playerInput
+    AnchorLayout:
+        anchor_x: "center"
+        anchor_y: "center"
+        FieldsCfgZone:
+            HostInput:
+                id: hostInput
+            LocalhostOption:
+                input: root.hostInput
+    AnchorLayout:
+        anchor_x: "center"
+        anchor_y: "center"
+        FieldsCfgZone:
+            PlayerInput:
+                id: playerInput
+            MasterOption:
+                input: root.playerInput
