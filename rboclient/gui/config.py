@@ -1,6 +1,8 @@
+from kivy.app import App
 from kivy.logger import Logger
 from kivy.event import EventDispatcher
 from kivy.clock import Clock
+from kivy.config import Config
 from kivy.input.motionevent import MotionEvent
 from kivy.properties import StringProperty, ObjectProperty, BooleanProperty
 from kivy.uix.anchorlayout import AnchorLayout
@@ -124,6 +126,11 @@ class Pannel(BoxLayout):
         return config
 
 
+class SaveCfgError(RuntimeError):
+    def __init__(self, msg: str):
+        super().__init__(msg)
+
+
 class Content(BoxLayout):
     pannel = ObjectProperty()
     save = ObjectProperty()
@@ -138,17 +145,16 @@ class Content(BoxLayout):
         self.save.bind(on_press=self.saveCfg)
 
     def saveCfg(self, _: EventDispatcher):
-        cfg = ""
+        config = App.get_running_app().rbocfg
 
         for (name, section) in self.pannel.retrieveConfig().items():
-            cfg += "[{}]\n".format(name)
+            for (option, value) in section.items():
+                config.set(name, option, value)
 
-            for option in section.items():
-                cfg += "{}={}\n".format(*option)
+        self.dispatch("on_close")
 
-            cfg += "\n"
-
-        Logger.debug("Config : Configuration saved : " + cfg)
+        if not config.write():
+            raise SaveCfgError("Configuration not saved.")
 
     def on_close(self):
         pass

@@ -11,6 +11,7 @@ import kivy.input
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.clock import Clock
+from kivy.config import ConfigParser
 from kivy.event import EventDispatcher
 from kivy.input.motionevent import MotionEvent
 from kivy.logger import Logger
@@ -198,6 +199,10 @@ class ClientApp(App):
     "Application du client."
 
     titleBar = ObjectProperty()
+
+    def __init__(self, cfg: ConfigParser, **kwargs):
+        super().__init__(**kwargs)
+        self.rbocfg = cfg
 
     def build(self):
         for kv in ["home", "lobby", "config"]:

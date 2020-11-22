@@ -5,11 +5,13 @@ from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.popup import Popup
-from kivy.properties import NumericProperty, StringProperty, BooleanProperty, ObjectProperty
+from kivy.properties import NumericProperty, StringProperty, BooleanProperty, ObjectProperty, DictProperty
 from kivy.event import EventDispatcher
 from kivy.logger import Logger
 from kivy.event import EventDispatcher
 from kivy.clock import Clock
+from kivy.config import ConfigParser
+from kivy.app import App
 
 from math import inf
 
@@ -19,7 +21,15 @@ class RessourcesCfg(AnchorLayout):
 
 
 class FieldsCfg(BoxLayout):
-    pass
+    hostInput = ObjectProperty()
+    playerInput = ObjectProperty()
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        config = App.get_running_app().rbocfg
+        self.hostInput.fill(config)
+        self.playerInput.fill(config)
 
 
 cfgFieldsPaths = {
@@ -101,6 +111,11 @@ class LoginInputRow(BoxLayout):
 
         target.bind(text=disable)
 
+    def fill(self, filled: ConfigParser) -> None:
+        for (id, value) in filled["fields"].items():
+            if id in self.ids:
+                self.ids[id].text = value
+
     def check(self, id: str) -> bool:
         valid = self.ids[id].valid()
         if not valid:
@@ -147,7 +162,10 @@ class NumericLoginInput(LoginInput):
     max = NumericProperty(+inf)
 
     def valid(self) -> bool:
-        return super().valid() and int(self.text) <= self.max
+        try:
+            return super().valid() and int(self.text) <= self.max
+        except ValueError:
+            return False
 
     def insert_text(self, substr: str, from_undo: bool = False):
         if len(self.text) + len(substr) > self.digits:
@@ -170,13 +188,17 @@ class Home(AnchorLayout):
         self.register_event_type("on_login")
         super().__init__(**kwargs)
 
+        config = App.get_running_app().rbocfg
+        self.hostInput.fill(config)
+        self.playerInput.fill(config)
+
         for inputRow in [self.hostInput, self.playerInput]:
             inputRow.bind(on_validate=self.login)
 
     def login(self, _: EventDispatcher = None):
         valid = True
 
-        for (row, inputs) in [(self.hostInput, ["address", "port"]), (self.playerInput, ["playerID", "name"])]:
+        for (row, inputs) in [(self.hostInput, ["address", "port"]), (self.playerInput, ["playerid", "name"])]:
             for field in inputs:
                 valid = row.check(field) and valid
 

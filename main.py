@@ -1,4 +1,4 @@
-from kivy.config import Config
+from kivy.config import Config, ConfigParser
 
 from os import path
 
@@ -10,24 +10,30 @@ Config.set("kivy", "log_level", "debug")
 cfgFile = "config.ini"
 
 defaultCfg = """
-[Host]
+[fields]
 address=
 port=
-
-[Player]
-id=
+playerID=
 name=
+
+[ressources]
+
 """
 
 if not path.isfile(cfgFile):
     with open(cfgFile, mode="w") as config:
         config.write(defaultCfg)
 
-Config.read(cfgFile)
+rboCfg = ConfigParser(name="rboclient")
+
+for section in ["fields", "ressources"]:
+    rboCfg.add_section(section)
+
+rboCfg.read(cfgFile)
 
 import kivy.resources  # noqa E402
 from rboclient.gui.app import ClientApp  # noqa E402
 
 kivy.resources.resource_add_path("rboclient/kv")
 
-ClientApp().run()
+ClientApp(rboCfg).run()
