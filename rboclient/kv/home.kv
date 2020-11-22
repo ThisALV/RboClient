@@ -97,7 +97,7 @@
 
 <MasterOption@HomeOption>:
     label: "Maître de la room ?"
-    field: "playerID"
+    field: "playerid"
     fill: "0"
 
 <Home>:
@@ -160,6 +160,8 @@
     spacing: 30
     hostInput: hostInput
     playerInput: playerInput
+    localhost: localhost
+    master: master
     AnchorLayout:
         anchor_x: "center"
         anchor_y: "center"
@@ -167,6 +169,7 @@
             HostInput:
                 id: hostInput
             LocalhostOption:
+                id: localhost
                 input: root.hostInput
     AnchorLayout:
         anchor_x: "center"
@@ -175,4 +178,5 @@
             PlayerInput:
                 id: playerInput
             MasterOption:
+                id: master
                 input: root.playerInput
