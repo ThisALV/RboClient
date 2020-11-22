@@ -37,6 +37,8 @@ class ErrorMessage(AnchorLayout):
 
 
 class ErrorPopup(Popup):
+    "Popup d'affichant une erreur dans le thème de l'application avec un message d'erreur."
+
     def __init__(self, title: str, msg: str):
         super().__init__(title=title, content=ErrorMessage(text=msg))
 
@@ -46,6 +48,8 @@ class ErrorPopup(Popup):
 
 
 class QuitButton(Label):
+    "Label cliquable substituant le bouton Quitter par défaut."
+
     def on_touch_down(self, touch: MotionEvent):
         if self.collide_point(*touch.pos):
             App.get_running_app().stop()
@@ -55,7 +59,7 @@ class QuitButton(Label):
 
 
 class TitleBar(BoxLayout):
-    "Barre de titre sur-mesure."
+    "Barre de titre sur-mesure adaptant ses actions contextuels au contexte (accueil, lobby ou session)."
 
     contexts = {
         "home": HomeCtxActions,
@@ -80,7 +84,11 @@ class TitleBar(BoxLayout):
 
 
 class Main(BoxLayout):
-    "Conteneur principal de l'application."
+    """Conteneur principal (racine) de l'application.
+
+    Possède une TitleBar personnalisé et un contenu.\n
+    Les deux s'adaptent au contexte et changent pour proposer différentes actions.
+    """
 
     titleBar = ObjectProperty()
     handlers = {

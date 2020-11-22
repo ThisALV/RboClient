@@ -21,6 +21,14 @@ def retrieveText(node: Widget, path: "list[str]") -> str:
 
 
 class Section:
+    """Section de configuration.
+
+    Chaque section est identifiée par un nom, et possède pour l'affichage un titre.\n
+    Une propriété input correspond au widget qui est le panneau de configuration des options de cette section.\n
+    La valeur de chaque option au moment de l'enregistrement est déterminé par un "chemin de propriétés" (inputs).
+    Ex : ["foo", "bar"] -> la propriété bar de la propriété foo de self.input.
+    """
+
     def __init__(self, name: str, title: str, input: Widget, inputs: "dict[str, list[str]]"):
         self.name = name
         self.title = title
@@ -36,6 +44,8 @@ class Section:
 
 
 class Tab(AnchorLayout):
+    "Onglet contenant le titre de la section. Il signale qu'il a été sélectionné avec son identifiant lorsqu'il est cliqué."
+
     title = StringProperty()
     name = StringProperty()
 
@@ -60,6 +70,8 @@ class Tab(AnchorLayout):
 
 
 class Tabs(StackLayout):
+    "Ensemble des onglets de chaque section de configuration, retransmet le signal des onglets sélectionnés."
+
     def __init__(self, **kwargs):
         self.register_event_type("on_enable")
         super().__init__(**kwargs)
@@ -89,6 +101,13 @@ class Tabs(StackLayout):
 
 
 class Pannel(BoxLayout):
+    """Panneau de configuration principal de la popup de config.
+
+    Ce panneau écoute les sélections d'onglets en vu de changement le panneau de configuration de la section actuelle.\n
+    Il reçoit la liste des sections seulement près l'initialisation dans le but de pouvoir est appelé dans un fichier .kv directement.\n
+    Il appelle également chaque onglet à lui retourner les options de sa section de configuration, afin de rendre la configuration générale.
+    """
+
     tabs = ObjectProperty()
     input = ObjectProperty()
 
@@ -127,11 +146,21 @@ class Pannel(BoxLayout):
 
 
 class SaveCfgError(RuntimeError):
+    "Détermine une erreur quelconque lors de la sauvegarde de la configuration."
+
     def __init__(self, msg: str):
         super().__init__(msg)
 
 
 class Content(BoxLayout):
+    """Conteneur principal (racine) de la popup de configuration.
+
+    Contient le panneau de configuration principal (avec les onglets des sections).\n
+    Possède aussi deux boutons pour annuler tout changement ou au contraire les sauvegarder directement depuis le ConfigParser de ClientApp,
+    qui est réservé aux propriétés de RboClient (rbocfg).\n
+    Les deux boutons signalent une fermeture de la popup.
+    """
+
     pannel = ObjectProperty()
     save = ObjectProperty()
     cancel = ObjectProperty()
@@ -161,6 +190,8 @@ class Content(BoxLayout):
 
 
 class ConfigPopup(Popup):
+    "Popup affichant le panneau de configuration et les boutons d'actions, elle réagit à ceux-ci pour se fermer."
+
     def __init__(self, sections: "list[Section]", **kwargs):
         super().__init__(content=Content(sections), **kwargs)
         self.content.bind(on_close=lambda _: self.dismiss())

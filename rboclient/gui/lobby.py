@@ -24,6 +24,8 @@ class LobbyCtxAction(AnchorLayout):
 
 
 class LobbyCtxActions(BoxLayout):
+    "Actions contextuelles disponibles dans le lobby, à savoir se signaler (non) prêt et se déconnecter pour revenir à l'accueil."
+
     actions = ["disconnect", "ready"]
 
     def __init__(self, **kwargs):
@@ -68,6 +70,8 @@ class LobbyCtxActions(BoxLayout):
 
 
 class ScrollableStack(ScrollView):
+    "Classe mère pour créer un StackLayout (pile d'éléments) qui soit scrollable verticalement."
+
     background = ListProperty([0, 0, 0])
     content = ObjectProperty()
 
@@ -85,7 +89,7 @@ class LogMessage(Label):
 
 
 class Logs(ScrollableStack):
-    "Historique des actions ayant eu lieu dans le Lobby."
+    "Historique scrollable des actions ayant eu lieu dans le Lobby."
 
     backgroundEven = [.1, .1, .1]
     backgroundOdd = [.05, .05, .05]
@@ -100,7 +104,7 @@ class Logs(ScrollableStack):
 
 
 class Member(BoxLayout):
-    "Identifiant, pseudo et status du membre."
+    "Affiche un membre et les informations associées avec."
 
     id = NumericProperty()
     name = StringProperty()
@@ -124,7 +128,11 @@ class Member(BoxLayout):
 
 
 class Members(ScrollableStack):
-    "Liste des membres (Member) et de leur status."
+    """Liste des membres.
+
+    Cette liste scrollable fait l'inventaire de tous les membres présents.\n
+    Elle affiche également leur statut : identifiant, pseudo et ce qu'ils sont en train de faire.
+    """
 
     master = NumericProperty()
 
@@ -173,7 +181,10 @@ class Members(ScrollableStack):
 
 
 class Lobby(Step, BoxLayout):
-    "Écran du lobby d'une session."
+    """Lobby d'une partie.
+
+    Gère tous les évènements d'un lobby (liste de membres, lancement de session, logs...).
+    """
 
     logs = ObjectProperty()
     members = ObjectProperty()

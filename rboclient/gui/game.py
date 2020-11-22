@@ -11,6 +11,11 @@ from twisted.python.failure import Failure
 
 
 class Step(EventDispatcher):
+    """Étape d'une partie (lobby ou session).
+
+    Émet un event on_stop pour signaler un retour à l'accueil, notamment lorsque le protocol de connexion émet on_disconnect.
+    """
+
     def __init__(self, **kwargs):
         self.register_event_type("on_stop")
         super().__init__(**kwargs)
@@ -30,7 +35,11 @@ from rboclient.gui.lobby import Lobby  # noqa E402
 
 
 class Game(FloatLayout):
-    "Conteneur de l'écran de la partie."
+    """Partie (session et lobby) de Rbo.
+
+    Ce widget contient une étape (Step) qui peut changer de la phase lobby à la phase session.\n
+    Il émet on_close avec une possible erreur à la fermeture d'une connexion, propre ou non.
+    """
 
     def __init__(self, rboCI: RboCI, members: "dict[int, tuple[str, bool]]", **kwargs):
         self.register_event_type("on_close")

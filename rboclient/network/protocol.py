@@ -24,7 +24,12 @@ class Mode(Enum):
 
 
 class RboConnection(protocol.Protocol):
-    "Connexion à un Lobby ou à une Session et protocole de communication pour Rbo."
+    """Connexion à une partie.
+
+    Cette connexion encapsule un protocole utilisant un arbre pour déterminer quel évènement l'interface doit émettre à chaque trame Rbo reçue.\n
+    L'arbre utilisé dépend du mode (phase de la partie).\n
+    Il est également possible d'envoyer des trames d'octets.
+    """
 
     def __init__(self, interface: "RboConnectionInterface"):
         super().__init__()
@@ -113,7 +118,12 @@ class DefaultHandler:
 
 
 class RboConnectionInterface(protocol.Factory, EventDispatcher):
-    "Interface permettant d'interagir avec l'activité réseau et d'utiliser la connexion établie."
+    """Interface du protocole Rbo.
+
+    Elle se charge d'émettre les évènements déterminés par celui-ci, en plus de créer le protocole.\n
+    Le mode du protocole (phase de la partie) peut-être modifié depuis cette interface.\n
+    Elle permet aussi d'effectuer des envois de données sur la connexion.
+    """
 
     def __init__(self, id: int, name: str, handlers: "dict[Mode, handling.HandlerNode]"):
         for tree in handlers.values():

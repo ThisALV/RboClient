@@ -65,7 +65,11 @@ def decompose(packet: bytes) -> list:
 
 
 class Data(object):
-    "Encapsule un buffer contenant les données d'un paquet, pouvant être prélevées une par une."
+    """Encapsule un buffer de données.
+
+    Les données peuvent être relevées octet par octet, ou par chaîne de caractères ou encore par entiers de différentes tailles d'octets.\n
+    Les données doivent respecter le protocole Rbo.
+    """
 
     def __init__(self, buffer: bytes):
         self.buffer = buffer

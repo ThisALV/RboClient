@@ -21,6 +21,8 @@ class RessourcesCfg(AnchorLayout):
 
 
 class FieldsCfg(BoxLayout):
+    "Panneau de configuration pour renseigner les valeurs par défauts des zones de saisie de la page d'accueil."
+
     hostInput = ObjectProperty()
     playerInput = ObjectProperty()
     localhostOption = ObjectProperty()
@@ -59,6 +61,8 @@ def showConfig(_: EventDispatcher):
 
 
 class HomeCtxActions(AnchorLayout):
+    "Actions contextuelles disponibles sur l'écran d'accueil, à savoir uniquement l'accès aux Préférences."
+
     button = ObjectProperty()
 
     def __init__(self, **kwargs):
@@ -70,6 +74,8 @@ class HomeCtxActions(AnchorLayout):
 
 
 class LoginInput(TextInput):
+    "Zone de saisie dans un formulaire, conforme au thème de l'appliction."
+
     defaultBackground = [.05, .05, .05, 1]
 
     defaultForeground = [1, 1, 1, 1]
@@ -103,6 +109,8 @@ class LoginInput(TextInput):
 
 
 class LoginInputRow(BoxLayout):
+    "Ligne de formulaire à hauteur fixe pouvant accueillir plusieurs zones de saisie."
+
     def __init__(self, **kwargs):
         self.register_event_type("on_validate")
         super().__init__(**kwargs)
@@ -136,6 +144,8 @@ class LoginInputRow(BoxLayout):
 
 
 class HomeOption(BoxLayout):
+    "Case à cocher accompagner d'un label et liée avec une zone de saisie qu'elle (dés)active pour un insérer un texte prédéfini."
+
     label = StringProperty()
     input = ObjectProperty()
     field = StringProperty()
@@ -160,16 +170,22 @@ class HomeOption(BoxLayout):
 
 
 class HostInput(LoginInputRow):
+    "Une ligne pour saisir un hôte cible sous la forme address:port avec deux zones de saisie."
+
     address = StringProperty()
     port = StringProperty()
 
 
 class PlayerInput(LoginInputRow):
+    "Une ligne avec deux zones de saisie : une pour l'ID du joueur et l'autre pour son nom."
+
     playerID = StringProperty()
     name = StringProperty()
 
 
 class NumericLoginInput(LoginInput):
+    "N'autorise que l'entrée de chiffres, est invalide s'il contient autre chose."
+
     digits = NumericProperty()
     max = NumericProperty(+inf)
 
@@ -195,7 +211,7 @@ def toBool(str: str) -> bool:
 
 
 class Home(AnchorLayout):
-    "Conteneur de la page d'accueil."
+    "Écran d'accueil proposant un formulaire de connexion afin de rejoindre un lobby."
 
     hostInput = ObjectProperty()
     playerInput = ObjectProperty()
