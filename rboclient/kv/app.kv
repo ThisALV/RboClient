@@ -2,7 +2,7 @@
 
 #:set tbarButtonSize (40, 25) 
 #:set tbarHeight 35
-#:set quitBtnSide tbarHeight - 5
+#:set winBtnSide tbarHeight - 5
 
 #:set dark [0, 0, 0]
 #:set middle [.05, .05, .05]
@@ -33,11 +33,15 @@
     font_name: "DejaVuSans"
     font_size: 20
 
-<QuitButton>:
+<WindowButton>:
+    size_hint: (None, None)
+    size: (winBtnSide, winBtnSide)
     font_name: "DejaVuSans"
-    font_size: 25
-    color: [.7, 0, 0, 1]
-    text: "\u00d7"
+    font_size: 20
+
+<SizeButton>:
+    text: "\u21f2" if self.maximized else "\u25a1"
+    on_press: self.maximized = not self.maximized
 
 <TitleBar>:
     orientation: "horizontal"
@@ -56,10 +60,20 @@
             font_size: 15
     AnchorLayout:
         anchor_x: "right"
-        padding: [(tbarHeight - quitBtnSide) / 2, 0]
-        QuitButton:
+        anchor_y: "center"
+        BoxLayout:
+            orientation: "horizontal"
             size_hint: (None, None)
-            size: (quitBtnSide, quitBtnSide)
+            size: (self.minimum_width, self.minimum_height)
+            WindowButton:
+                text: "\u005f"
+                on_press: app.root_window.minimize()
+            SizeButton:
+            WindowButton:
+                color: [.7, 0, 0, 1]
+                text: "\u00d7"
+                font_size: 25
+                on_press: app.stop()
 
 <Main>:
     titleBar: titleBar

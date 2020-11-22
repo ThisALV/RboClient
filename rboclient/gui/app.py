@@ -47,15 +47,34 @@ class ErrorPopup(Popup):
         return True
 
 
-class QuitButton(Label):
-    "Label cliquable substituant le bouton Quitter par défaut."
+class WindowButton(Label):
+    "Classe mère pour la création d'un bouton dans la barre de titre, c'est un label simulant le fonctionnement d'un bouton en émettant on_press."
+
+    def __init__(self, **kwargs):
+        self.register_event_type("on_press")
+        super().__init__(**kwargs)
 
     def on_touch_down(self, touch: MotionEvent):
-        if self.collide_point(*touch.pos):
-            App.get_running_app().stop()
-            return True
+        if not self.collide_point(*touch.pos):
+            return super().on_touch_down(touch)
 
-        return super().on_touch_down(touch)
+        self.dispatch("on_press")
+        return True
+
+    def on_press(self):
+        pass
+
+
+class SizeButton(WindowButton):
+    "Bouton de la barre de titre agrandissant ou restaurant la fenêtre. Le texte contenu change en conséquence."
+
+    maximized = BooleanProperty(False)
+
+    def on_maximized(self, _: EventDispatcher, maximized: bool):
+        if maximized:
+            Window.maximize()
+        else:
+            Window.restore()
 
 
 class TitleBar(BoxLayout):
