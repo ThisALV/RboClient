@@ -41,6 +41,7 @@
     size_hint: (1, None)
     height: 30
     padding_y: 20
+    checkbox: checkbox
     enabled: checkbox.active
     CheckBox:
         id: checkbox
@@ -105,6 +106,8 @@
     anchor_y: "center"
     hostInput: host
     playerInput: player
+    localhostOption: localhost
+    masterOption: master
     canvas.before:
         Color:
             rgb: middle
@@ -126,11 +129,13 @@
         HostInput:
             id: host
         LocalhostOption:
+            id: localhost
             input: root.hostInput
         Separator:
         PlayerInput:
             id: player
         MasterOption:
+            id: master
             input: root.playerInput
         Separator:
         RboBtn:
@@ -160,8 +165,8 @@
     spacing: 30
     hostInput: hostInput
     playerInput: playerInput
-    localhost: localhost
-    master: master
+    localhostOption: localhost
+    masterOption: master
     AnchorLayout:
         anchor_x: "center"
         anchor_y: "center"

@@ -23,6 +23,8 @@ class RessourcesCfg(AnchorLayout):
 class FieldsCfg(BoxLayout):
     hostInput = ObjectProperty()
     playerInput = ObjectProperty()
+    localhostOption = ObjectProperty()
+    masterOption = ObjectProperty()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -31,12 +33,18 @@ class FieldsCfg(BoxLayout):
         self.hostInput.fill(config)
         self.playerInput.fill(config)
 
+        for (checkbox, option) in [(self.localhostOption, "localhost"), (self.masterOption, "master")]:
+            if toBool(config.get("fields", option)):
+                checkbox.toggle()
+
 
 cfgFieldsPaths = {
     "address": ["hostInput", "address"],
     "port": ["hostInput", "port"],
+    "localhost": ["localhostOption", "enabled"],
     "playerID": ["playerInput", "playerID"],
-    "name": ["playerInput", "name"]
+    "name": ["playerInput", "name"],
+    "master": ["masterOption", "enabled"]
 }
 
 cfgSections = [
@@ -133,6 +141,7 @@ class HomeOption(BoxLayout):
     field = StringProperty()
     fill = StringProperty()
 
+    ckeckbox = ObjectProperty()
     enabled = BooleanProperty(False)
 
     def on_enabled(self, _: EventDispatcher, enabled: bool):
@@ -145,6 +154,9 @@ class HomeOption(BoxLayout):
         else:
             target.text = self.previousText
             target.is_focusable = True
+
+    def toggle(self) -> None:
+        self.checkbox.active = True
 
 
 class HostInput(LoginInputRow):
@@ -178,11 +190,17 @@ class NumericLoginInput(LoginInput):
         return super().insert_text(substr, from_undo)
 
 
+def toBool(str: str) -> bool:
+    return str == "True" or str == "1"
+
+
 class Home(AnchorLayout):
     "Conteneur de la page d'accueil."
 
     hostInput = ObjectProperty()
     playerInput = ObjectProperty()
+    localhostOption = ObjectProperty()
+    masterOption = ObjectProperty()
 
     def __init__(self, **kwargs):
         self.register_event_type("on_login")
@@ -191,6 +209,10 @@ class Home(AnchorLayout):
         config = App.get_running_app().rbocfg
         self.hostInput.fill(config)
         self.playerInput.fill(config)
+
+        for (checkbox, option) in [(self.localhostOption, "localhost"), (self.masterOption, "master")]:
+            if toBool(config.get("fields", option)):
+                checkbox.toggle()
 
         for inputRow in [self.hostInput, self.playerInput]:
             inputRow.bind(on_validate=self.login)
