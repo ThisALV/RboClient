@@ -16,7 +16,9 @@ port=
 playerID=
 name=
 
-[ressources]
+[graphics]
+width=900
+height=650
 
 """
 
@@ -26,7 +28,7 @@ if not path.isfile(cfgFile):
 
 rboCfg = ConfigParser(name="rboclient")
 
-for section in ["fields", "ressources"]:
+for section in ["fields", "graphics"]:
     rboCfg.add_section(section)
 
 rboCfg.read(cfgFile)

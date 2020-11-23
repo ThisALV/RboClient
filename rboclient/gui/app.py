@@ -29,8 +29,6 @@ from twisted.python.failure import Failure
 
 kivy.require("2.0.0")
 
-Window.size = (900, 650)
-
 
 class ErrorMessage(AnchorLayout):
     text = StringProperty()
@@ -243,6 +241,12 @@ class ClientApp(App):
     def __init__(self, cfg: ConfigParser, **kwargs):
         super().__init__(**kwargs)
         self.rbocfg = cfg
+
+        try:
+            Window.size = tuple([int(self.rbocfg.get("graphics", option)) for option in ["width", "height"]])
+        except ValueError:
+            Window.size = (900, 650)
+            Logger.warn("ClientApp : Invalid window size values, default size applied.")
 
     def build(self):
         for kv in ["home", "lobby", "config"]:

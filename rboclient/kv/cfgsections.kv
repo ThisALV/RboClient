@@ -1,0 +1,69 @@
+#:kivy 2.0.0
+
+<FieldsCfgZone@BoxLayout>:
+    orientation: "vertical"
+    size_hint: (1, None)
+    spacing: 10
+
+<FieldsCfg>:
+    pos_hint: {"x": 0, "y": 0}
+    orientation: "vertical"
+    padding: (15, 40)
+    spacing: 30
+    hostInput: hostInput
+    playerInput: playerInput
+    localhostOption: localhost
+    masterOption: master
+    AnchorLayout:
+        anchor_x: "center"
+        anchor_y: "center"
+        FieldsCfgZone:
+            HostInput:
+                id: hostInput
+            LocalhostOption:
+                id: localhost
+                input: root.hostInput
+    AnchorLayout:
+        anchor_x: "center"
+        anchor_y: "center"
+        FieldsCfgZone:
+            PlayerInput:
+                id: playerInput
+            MasterOption:
+                id: master
+                input: root.playerInput
+
+<ResolutionInput@NumericHomeInput>:
+    size_hint: (None, 1)
+    width: 100
+    digits: 4
+
+<GraphicsCfg>:
+    pos_hint: {"x": 0, "y": 0}
+    orientation: "vertical"
+    padding: (30, 40)
+    windowWidth: windowWidth
+    windowHeight: windowHeight
+    BoxLayout:
+        orientation: "vertical"
+        size_hint: (1, .25)
+        spacing: 10
+        Label:
+            text: "Résolution fenêtre :"
+            font_size: 25
+            size_hint: (None, None)
+            size: self.texture_size
+        HomeInputRow:
+            spacing: 15
+            ResolutionInput:
+                id: windowWidth
+                hint_text: "Largeur"
+            Label:
+                text: "/"
+                size_hint: (None, 1)
+                width: self.texture_size[0]
+                font_size: 20
+            ResolutionInput:
+                id: windowHeight
+                hint_text: "Hauteur"
+

@@ -16,8 +16,18 @@ from kivy.app import App
 from math import inf
 
 
-class RessourcesCfg(AnchorLayout):
-    pass
+class GraphicsCfg(BoxLayout):
+    "Panneau de configuration pour renseigner des paramètres graphiques comme la résolution de la fenêtre."
+
+    windowWidth = ObjectProperty()
+    windowHeight = ObjectProperty()
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        config = App.get_running_app().rbocfg
+        self.windowWidth.text = config.get("graphics", "width")
+        self.windowHeight.text = config.get("graphics", "height")
 
 
 class FieldsCfg(BoxLayout):
@@ -49,9 +59,14 @@ cfgFieldsPaths = {
     "master": ["masterOption", "enabled"]
 }
 
+cfgGraphicsPaths = {
+    "width": ["windowWidth", "text"],
+    "height": ["windowHeight", "text"]
+}
+
 cfgSections = [
     ("fields", "Champs", FieldsCfg, cfgFieldsPaths),
-    ("ressources", "Ressources", RessourcesCfg, {})
+    ("graphics", "Graphismes", GraphicsCfg, cfgGraphicsPaths)
 ]
 
 
@@ -73,8 +88,8 @@ class HomeCtxActions(AnchorLayout):
         self.button.bind(on_press=showConfig)
 
 
-class LoginInput(TextInput):
-    "Zone de saisie dans un formulaire, conforme au thème de l'appliction."
+class HomeInput(TextInput):
+    "Zone de saisie dans un formulaire de connexion ou de configuration, conforme au thème de l'appliction."
 
     defaultBackground = [.05, .05, .05, 1]
 
@@ -88,9 +103,9 @@ class LoginInput(TextInput):
     disabledBackground = [.1, .1, .1, 1]
 
     def __init__(self, **kwargs):
-        super().__init__(background_color=LoginInput.defaultBackground,
-                         foreground_color=LoginInput.defaultForeground,
-                         hint_text_color=LoginInput.defaultHint,
+        super().__init__(background_color=HomeInput.defaultBackground,
+                         foreground_color=HomeInput.defaultForeground,
+                         hint_text_color=HomeInput.defaultHint,
                          **kwargs)
 
     def valid(self) -> bool:
@@ -101,14 +116,14 @@ class LoginInput(TextInput):
 
     def on_is_focusable(self, _: EventDispatcher, focusable: bool):
         if focusable:
-            self.foreground_color = LoginInput.defaultForeground
-            self.background_color = LoginInput.defaultBackground
+            self.foreground_color = HomeInput.defaultForeground
+            self.background_color = HomeInput.defaultBackground
         else:
-            self.foreground_color = LoginInput.disabledForeground
-            self.background_color = LoginInput.disabledBackground
+            self.foreground_color = HomeInput.disabledForeground
+            self.background_color = HomeInput.disabledBackground
 
 
-class LoginInputRow(BoxLayout):
+class HomeInputRow(BoxLayout):
     "Ligne de formulaire à hauteur fixe pouvant accueillir plusieurs zones de saisie."
 
     def __init__(self, **kwargs):
@@ -119,11 +134,11 @@ class LoginInputRow(BoxLayout):
         target = self.ids[id]
 
         def disable(_: EventDispatcher, __: str):
-            target.foreground_color = LoginInput.defaultForeground
-            target.hint_text_color = LoginInput.defaultHint
+            target.foreground_color = HomeInput.defaultForeground
+            target.hint_text_color = HomeInput.defaultHint
 
-        target.foreground_color = LoginInput.invalidForeground
-        target.hint_text_color = LoginInput.invalidHint
+        target.foreground_color = HomeInput.invalidForeground
+        target.hint_text_color = HomeInput.invalidHint
 
         target.bind(text=disable)
 
@@ -169,21 +184,21 @@ class HomeOption(BoxLayout):
         self.checkbox.active = True
 
 
-class HostInput(LoginInputRow):
+class HostInput(HomeInputRow):
     "Une ligne pour saisir un hôte cible sous la forme address:port avec deux zones de saisie."
 
     address = StringProperty()
     port = StringProperty()
 
 
-class PlayerInput(LoginInputRow):
+class PlayerInput(HomeInputRow):
     "Une ligne avec deux zones de saisie : une pour l'ID du joueur et l'autre pour son nom."
 
     playerID = StringProperty()
     name = StringProperty()
 
 
-class NumericLoginInput(LoginInput):
+class NumericHomeInput(HomeInput):
     "N'autorise que l'entrée de chiffres, est invalide s'il contient autre chose."
 
     digits = NumericProperty()
