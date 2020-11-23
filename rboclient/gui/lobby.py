@@ -1,21 +1,18 @@
-from rboclient.network.protocol import RboConnectionInterface as RboCI
-from rboclient.network.protocol import Mode
-from rboclient.gui.game import Step
+from math import inf
 
 from kivy.app import App
-from kivy.logger import Logger
+from kivy.clock import Clock
 from kivy.event import EventDispatcher
 from kivy.input.motionevent import MotionEvent
-from kivy.clock import Clock
+from kivy.logger import Logger
+from kivy.properties import BooleanProperty, ListProperty, NumericProperty, ObjectProperty, StringProperty
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.stacklayout import StackLayout
-from kivy.uix.scrollview import ScrollView
 from kivy.uix.label import Label
-from kivy.properties import ListProperty, ObjectProperty, NumericProperty, StringProperty, BooleanProperty
-
-from math import inf
+from rboclient.gui.game import Step
+from rboclient.gui.widgets import ScrollableStack
+from rboclient.network.protocol import Mode
+from rboclient.network.protocol import RboConnectionInterface as RboCI
 
 
 class LobbyCtxAction(AnchorLayout):
@@ -67,16 +64,6 @@ class LobbyCtxActions(BoxLayout):
 
     def on_disconnect(self):
         Logger.debug("TitleBar : Logout requested.")
-
-
-class ScrollableStack(ScrollView):
-    "Classe mère pour créer un StackLayout (pile d'éléments) qui soit scrollable verticalement."
-
-    background = ListProperty([0, 0, 0])
-    content = ObjectProperty()
-
-    def __init__(self, bg: "list[int]" = background.defaultvalue, **kwargs):
-        super().__init__(background=bg, **kwargs)
 
 
 class LogMessage(Label):

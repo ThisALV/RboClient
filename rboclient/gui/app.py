@@ -1,30 +1,28 @@
-import rboclient
-from rboclient.gui.home import Home, HomeCtxActions
-from rboclient.gui.game import Game
-from rboclient.gui.lobby import LobbyCtxActions
-from rboclient.network.protocol import RboConnectionInterface as RboCI
-from rboclient.network.protocol import Mode
-from rboclient.network import handlerstree
-from rboclient.misc import toBool
-
 import kivy
 import kivy.input
+import rboclient
 from kivy.app import App
-from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.config import ConfigParser
+from kivy.core.window import Window
 from kivy.event import EventDispatcher
 from kivy.input.motionevent import MotionEvent
-from kivy.logger import Logger
 from kivy.lang.builder import Builder
-from kivy.uix.boxlayout import BoxLayout
+from kivy.logger import Logger
+from kivy.properties import BooleanProperty, ObjectProperty, StringProperty
 from kivy.uix.anchorlayout import AnchorLayout
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
-from kivy.properties import ObjectProperty, StringProperty, BooleanProperty
-
-from twisted.internet import protocol, endpoints, reactor
+from rboclient.gui.game import Game
+from rboclient.gui.home import Home, HomeCtxActions
+from rboclient.gui.lobby import LobbyCtxActions
+from rboclient.misc import toBool
+from rboclient.network import handlerstree
+from rboclient.network.protocol import Mode
+from rboclient.network.protocol import RboConnectionInterface as RboCI
+from twisted.internet import endpoints, reactor
 from twisted.internet.error import ConnectionDone
 from twisted.python.failure import Failure
 
@@ -262,7 +260,7 @@ class ClientApp(App):
         Logger.debug("ClientApp : Maximized at app initialization.")
 
     def build(self):
-        for kv in ["home", "lobby", "config"]:
+        for kv in ["home", "lobby", "config", "widgets"]:
             Builder.load_file(kv + ".kv")
 
         return Builder.load_file("app.kv")

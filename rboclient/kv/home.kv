@@ -1,7 +1,5 @@
 #:kivy 2.0.0
 
-#:include cfgsections.kv
-
 <HomeCtxActions>:
     anchor_x: "left"
     button: button
@@ -11,97 +9,6 @@
         size_hint: (None, None)
         size: tbarButtonSize
         text: "\u2699"
-
-<HomeInputRow>:
-    orientation: "horizontal"
-    size_hint: (1, None)
-    height: 40
-
-<HostInput>:
-    address: address.text
-    port: port.text
-    HomeInput:
-        id: address
-        hint_text: "Adresse"
-    Label:
-        text: ":"
-        size_hint: (None, 1)
-        width: 10
-        padding_y: 15
-        font_size: 30
-        valign: "center"
-        color: [.7, .7, .7, 1]
-    NumericHomeInput:
-        id: port
-        hint_text: "Port"
-        digits: 5
-        max: 65535
-        size_hint: (.4, 1)
-
-<HomeOption>:
-    orientation: "horizontal"
-    size_hint: (1, None)
-    height: 30
-    padding_y: 20
-    checkbox: checkbox
-    enabled: checkbox.active
-    CheckBox:
-        id: checkbox
-        size_hint: (.1, 1)
-        color: [1, .5, 0, 1]
-    Label:
-        text: root.label
-        color: [.8, .8, .8, 1]
-        haligh: "left"
-        valign: "center"
-        font_size: 20
-        text_size: (self.width, self.height)
-        size: self.texture_size
-
-<PlayerInput>:
-    playerID: playerid.text
-    name: name.text
-    spacing: 10
-    NumericHomeInput:
-        id: playerid
-        size_hint: (.25, 1)
-        hint_text: "ID"
-        digits: 3
-        max: 255
-    HomeInput:
-        id: name
-        hint_text: "Nom du joueur"
-
-<HomeInput>:
-    multiline: False
-    font_size: self.height - 15
-    write_tab: False
-
-<Separator@AnchorLayout>:
-    anchor_x: "center"
-    anchor_y: "center"
-    size_hint: (1, None)
-    height: 30
-    FloatLayout:
-        size_hint: (1, None)
-        height: 4
-        canvas.before:
-            Color:
-                rgb: .8, .8, .8, 1
-            RoundedRectangle:
-                pos: self.pos
-                size: self.size
-                radius: [4,]
-
-<LocalhostOption@HomeFillOption>:
-    label: "Hôte local ?"
-    field: "address"
-    fill: "localhost"
-
-<MasterOption@HomeFillOption>:
-    label: "Maître de la room ?"
-    field: "playerid"
-    fill: "0"
 
 <Home>:
     anchor_x: "center"

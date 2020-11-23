@@ -1,8 +1,8 @@
-from rboclient.network.protocol import HandlerLeaf
-from rboclient.network.handling import HandlerNode, Data
-
-from enum import Enum, IntEnum, auto
 import json
+from enum import Enum, IntEnum, auto
+
+from rboclient.network.handling import Data, HandlerNode
+from rboclient.network.protocol import HandlerLeaf
 
 
 class YesNoQuestion(IntEnum):

@@ -1,12 +1,7 @@
-from rboclient.network.protocol import RboConnectionInterface as RboCI
-from rboclient.network.protocol import Mode
-
-from kivy.app import App
-from kivy.logger import Logger
 from kivy.event import EventDispatcher
+from kivy.logger import Logger
 from kivy.uix.floatlayout import FloatLayout
-from kivy.properties import StringProperty
-
+from rboclient.network.protocol import RboConnectionInterface as RboCI
 from twisted.python.failure import Failure
 
 

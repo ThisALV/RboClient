@@ -1,15 +1,16 @@
 from kivy.app import App
-from kivy.logger import Logger
-from kivy.event import EventDispatcher
 from kivy.clock import Clock
-from kivy.config import Config
+from kivy.event import EventDispatcher
 from kivy.input.motionevent import MotionEvent
-from kivy.properties import StringProperty, ObjectProperty, BooleanProperty
+from kivy.logger import Logger
+from kivy.properties import BooleanProperty, ObjectProperty, StringProperty
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.stacklayout import StackLayout
 from kivy.uix.popup import Popup
+from kivy.uix.stacklayout import StackLayout
 from kivy.uix.widget import Widget
+from rboclient.gui.widgets import *
+from rboclient.misc import toBool
 
 
 def retrieveText(node: Widget, path: "list[str]") -> str:
@@ -195,3 +196,42 @@ class ConfigPopup(Popup):
     def __init__(self, sections: "list[Section]", **kwargs):
         super().__init__(content=Content(sections), **kwargs)
         self.content.bind(on_close=lambda _: self.dismiss())
+
+
+class GraphicsCfg(BoxLayout):
+    "Panneau de configuration pour renseigner des paramètres graphiques comme la résolution de la fenêtre."
+
+    windowWidth = ObjectProperty()
+    windowHeight = ObjectProperty()
+    maximizedOption = ObjectProperty()
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        config = App.get_running_app().rbocfg
+
+        self.windowWidth.text = config.get("graphics", "width")
+        self.windowHeight.text = config.get("graphics", "height")
+
+        if toBool(config.get("graphics", "maximized")):
+            self.maximizedOption.toggle()
+
+
+class FieldsCfg(BoxLayout):
+    "Panneau de configuration pour renseigner les valeurs par défauts des zones de saisie de la page d'accueil."
+
+    hostInput = ObjectProperty()
+    playerInput = ObjectProperty()
+    localhostOption = ObjectProperty()
+    masterOption = ObjectProperty()
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        config = App.get_running_app().rbocfg
+        self.hostInput.fill(config)
+        self.playerInput.fill(config)
+
+        for (checkbox, option) in [(self.localhostOption, "localhost"), (self.masterOption, "master")]:
+            if toBool(config.get("fields", option)):
+                checkbox.toggle()

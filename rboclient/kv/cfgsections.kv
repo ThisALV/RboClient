@@ -33,7 +33,7 @@
                 id: master
                 input: root.playerInput
 
-<ResolutionInput@NumericHomeInput>:
+<ResolutionInput@NumericRboInput>:
     size_hint: (None, 1)
     width: 100
     digits: 4
@@ -54,7 +54,7 @@
             font_size: 25
             size_hint: (None, None)
             size: self.texture_size
-        HomeInputRow:
+        RboInputRow:
             spacing: 15
             ResolutionInput:
                 id: windowWidth
@@ -70,7 +70,7 @@
     AnchorLayout:
         anchor_x: "center"
         anchor_y: "top"
-        HomeOption:
+        RboOption:
             id: maximized
             label: "Maximisée par défaut ?"
 

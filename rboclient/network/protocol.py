@@ -1,10 +1,10 @@
 from enum import Enum, auto
-from rboclient.network import handling
 
 import kivy
 import kivy.support
-from kivy.logger import Logger, LOG_LEVELS
 from kivy.event import EventDispatcher
+from kivy.logger import Logger
+from rboclient.network import handling
 
 kivy.support.install_twisted_reactor()
 
