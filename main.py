@@ -8,6 +8,7 @@ Config.set("kivy", "exit_on_escape", 0)
 Config.set("kivy", "log_level", "debug")
 
 cfgFile = "config.ini"
+defaultWindowSize = (900, 650)
 
 defaultCfg = """
 [fields]
@@ -17,10 +18,10 @@ playerID=
 name=
 
 [graphics]
-width=900
-height=650
+width={}
+height={}
 
-"""
+""".format(*defaultWindowSize)
 
 if not path.isfile(cfgFile):
     with open(cfgFile, mode="w") as config:
@@ -38,4 +39,4 @@ from rboclient.gui.app import ClientApp  # noqa E402
 
 kivy.resources.resource_add_path("rboclient/kv")
 
-ClientApp(rboCfg).run()
+ClientApp(rboCfg, defaultWindowSize).run()

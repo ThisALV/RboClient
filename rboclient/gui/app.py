@@ -238,14 +238,14 @@ class ClientApp(App):
 
     titleBar = ObjectProperty()
 
-    def __init__(self, cfg: ConfigParser, **kwargs):
+    def __init__(self, cfg: ConfigParser, defaultSize: "tuple[int, int]", **kwargs):
         super().__init__(**kwargs)
         self.rbocfg = cfg
 
         try:
             Window.size = tuple([int(self.rbocfg.get("graphics", option)) for option in ["width", "height"]])
         except ValueError:
-            Window.size = (900, 650)
+            Window.size = defaultSize
             Logger.warn("ClientApp : Invalid window size values, default size applied.")
 
     def build(self):
