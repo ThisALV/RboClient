@@ -1,5 +1,6 @@
 from rboclient.gui import config
 from rboclient.gui.config import ConfigPopup
+from rboclient.misc import toBool
 
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
@@ -21,13 +22,18 @@ class GraphicsCfg(BoxLayout):
 
     windowWidth = ObjectProperty()
     windowHeight = ObjectProperty()
+    maximizedOption = ObjectProperty()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
         config = App.get_running_app().rbocfg
+
         self.windowWidth.text = config.get("graphics", "width")
         self.windowHeight.text = config.get("graphics", "height")
+
+        if toBool(config.get("graphics", "maximized")):
+            self.maximizedOption.toggle()
 
 
 class FieldsCfg(BoxLayout):
@@ -61,7 +67,8 @@ cfgFieldsPaths = {
 
 cfgGraphicsPaths = {
     "width": ["windowWidth", "text"],
-    "height": ["windowHeight", "text"]
+    "height": ["windowHeight", "text"],
+    "maximized": ["maximizedOption", "enabled"]
 }
 
 cfgSections = [
@@ -159,9 +166,17 @@ class HomeInputRow(BoxLayout):
 
 
 class HomeOption(BoxLayout):
-    "Case à cocher accompagner d'un label et liée avec une zone de saisie qu'elle (dés)active pour un insérer un texte prédéfini."
+    "Case à cocher accompagnée d'un label."
 
     label = StringProperty()
+
+    def toggle(self) -> None:
+        self.checkbox.active = True
+
+
+class HomeFillOption(HomeOption):
+    "Case à cocher accompagnée d'un label et liée avec une zone de saisie qu'elle (dés)active pour un insérer un texte prédéfini."
+
     input = ObjectProperty()
     field = StringProperty()
     fill = StringProperty()
@@ -179,9 +194,6 @@ class HomeOption(BoxLayout):
         else:
             target.text = self.previousText
             target.is_focusable = True
-
-    def toggle(self) -> None:
-        self.checkbox.active = True
 
 
 class HostInput(HomeInputRow):
@@ -219,10 +231,6 @@ class NumericHomeInput(HomeInput):
                 return
 
         return super().insert_text(substr, from_undo)
-
-
-def toBool(str: str) -> bool:
-    return str == "True" or str == "1"
 
 
 class Home(AnchorLayout):

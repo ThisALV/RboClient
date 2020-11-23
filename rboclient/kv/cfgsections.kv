@@ -42,11 +42,12 @@
     pos_hint: {"x": 0, "y": 0}
     orientation: "vertical"
     padding: (30, 40)
+    spacing: 20
     windowWidth: windowWidth
     windowHeight: windowHeight
+    maximizedOption: maximized
     BoxLayout:
         orientation: "vertical"
-        size_hint: (1, .25)
         spacing: 10
         Label:
             text: "Résolution fenêtre :"
@@ -66,4 +67,10 @@
             ResolutionInput:
                 id: windowHeight
                 hint_text: "Hauteur"
+    AnchorLayout:
+        anchor_x: "center"
+        anchor_y: "top"
+        HomeOption:
+            id: maximized
+            label: "Maximisée par défaut ?"
 

@@ -20,6 +20,7 @@ name=
 [graphics]
 width={}
 height={}
+maximized=
 
 """.format(*defaultWindowSize)
 

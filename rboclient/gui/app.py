@@ -5,6 +5,7 @@ from rboclient.gui.lobby import LobbyCtxActions
 from rboclient.network.protocol import RboConnectionInterface as RboCI
 from rboclient.network.protocol import Mode
 from rboclient.network import handlerstree
+from rboclient.misc import toBool
 
 import kivy
 import kivy.input
@@ -80,6 +81,7 @@ class SizeButton(WindowButton):
                 self.btn.maximized = self.value
 
         Window.bind(on_restore=Setter(self, False), on_maximize=Setter(self, True))
+        App.get_running_app().bind(on_init_maximized=Setter(self, True))
 
     def on_maximized(self, _: EventDispatcher, maximized: bool):
         if maximized:
@@ -239,6 +241,7 @@ class ClientApp(App):
     titleBar = ObjectProperty()
 
     def __init__(self, cfg: ConfigParser, defaultSize: "tuple[int, int]", **kwargs):
+        self.register_event_type("on_init_maximized")
         super().__init__(**kwargs)
         self.rbocfg = cfg
 
@@ -247,6 +250,16 @@ class ClientApp(App):
         except ValueError:
             Window.size = defaultSize
             Logger.warn("ClientApp : Invalid window size values, default size applied.")
+
+        if toBool(self.rbocfg.get("graphics", "maximized")):
+            Clock.schedule_once(self.maximizeInit)
+
+    def maximizeInit(self, _: int):
+        Window.maximize()
+        self.dispatch("on_init_maximized")
+
+    def on_init_maximized(self):
+        Logger.debug("ClientApp : Maximized at app initialization.")
 
     def build(self):
         for kv in ["home", "lobby", "config"]:
