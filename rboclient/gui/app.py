@@ -70,6 +70,19 @@ class SizeButton(WindowButton):
 
     maximized = BooleanProperty(False)
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        class Setter:
+            def __init__(self, btn: SizeButton, value: bool):
+                self.btn = btn
+                self.value = value
+
+            def __call__(self, _: EventDispatcher) -> None:
+                self.btn.maximized = self.value
+
+        Window.bind(on_restore=Setter(self, False), on_maximize=Setter(self, True))
+
     def on_maximized(self, _: EventDispatcher, maximized: bool):
         if maximized:
             Window.maximize()
