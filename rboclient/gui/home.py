@@ -5,12 +5,13 @@ from kivy.logger import Logger
 from kivy.properties import ObjectProperty
 from kivy.uix.anchorlayout import AnchorLayout
 from rboclient.gui import config
-from rboclient.gui.config import ConfigPopup, FieldsCfg, GraphicsCfg
+from rboclient.gui.cfgsections import Fields, Graphics
+from rboclient.gui.config import ConfigPopup
 from rboclient.misc import toBool
 
 cfgSections = [
-    ("fields", "Champs", FieldsCfg),
-    ("graphics", "Graphismes", GraphicsCfg)
+    ("fields", "Champs", Fields),
+    ("graphics", "Graphismes", Graphics)
 ]
 
 

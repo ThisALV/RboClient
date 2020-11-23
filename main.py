@@ -1,6 +1,6 @@
-from kivy.config import Config, ConfigParser
-
 from os import path
+
+from kivy.config import Config, ConfigParser
 
 Config.set("graphics", "borderless", 1)
 Config.set("kivy", "exit_on_escape", 0)
@@ -36,6 +36,7 @@ for section in ["fields", "graphics"]:
 rboCfg.read(cfgFile)
 
 import kivy.resources  # noqa E402
+
 from rboclient.gui.app import ClientApp  # noqa E402
 
 kivy.resources.resource_add_path("rboclient/kv")

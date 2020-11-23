@@ -260,7 +260,7 @@ class ClientApp(App):
         Logger.debug("ClientApp : Maximized at app initialization.")
 
     def build(self):
-        for kv in ["home", "lobby", "config", "widgets"]:
+        for kv in ["home", "lobby", "config", "cfgsections", "widgets"]:
             Builder.load_file(kv + ".kv")
 
         return Builder.load_file("app.kv")

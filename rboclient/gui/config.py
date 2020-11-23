@@ -9,8 +9,6 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
 from kivy.uix.stacklayout import StackLayout
 from kivy.uix.widget import Widget
-from rboclient.gui.widgets import *
-from rboclient.misc import toBool
 
 
 def retrieveText(node: Widget, path: "list[str]") -> str:
@@ -196,57 +194,3 @@ class ConfigPopup(Popup):
     def __init__(self, sections: "list[Section]", **kwargs):
         super().__init__(content=Content(sections), **kwargs)
         self.content.bind(on_close=lambda _: self.dismiss())
-
-
-class FieldsCfg(BoxLayout):
-    "Panneau de configuration pour renseigner les valeurs par défauts des zones de saisie de la page d'accueil."
-
-    paths = {
-        "address": ["hostInput", "address"],
-        "port": ["hostInput", "port"],
-        "localhost": ["localhostOption", "enabled"],
-        "playerID": ["playerInput", "playerID"],
-        "name": ["playerInput", "name"],
-        "master": ["masterOption", "enabled"]
-    }
-
-    hostInput = ObjectProperty()
-    playerInput = ObjectProperty()
-    localhostOption = ObjectProperty()
-    masterOption = ObjectProperty()
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        config = App.get_running_app().rbocfg
-        self.hostInput.fill(config)
-        self.playerInput.fill(config)
-
-        for (checkbox, option) in [(self.localhostOption, "localhost"), (self.masterOption, "master")]:
-            if toBool(config.get("fields", option)):
-                checkbox.toggle()
-
-
-class GraphicsCfg(BoxLayout):
-    "Panneau de configuration pour renseigner des paramètres graphiques comme la résolution de la fenêtre."
-
-    paths = {
-        "width": ["windowWidth", "text"],
-        "height": ["windowHeight", "text"],
-        "maximized": ["maximizedOption", "enabled"]
-    }
-
-    windowWidth = ObjectProperty()
-    windowHeight = ObjectProperty()
-    maximizedOption = ObjectProperty()
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        config = App.get_running_app().rbocfg
-
-        self.windowWidth.text = config.get("graphics", "width")
-        self.windowHeight.text = config.get("graphics", "height")
-
-        if toBool(config.get("graphics", "maximized")):
-            self.maximizedOption.toggle()

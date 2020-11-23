@@ -1,11 +1,11 @@
 #:kivy 2.0.0
 
-<FieldsCfgZone@BoxLayout>:
+<FieldsZone@BoxLayout>:
     orientation: "vertical"
     size_hint: (1, None)
     spacing: 10
 
-<FieldsCfg>:
+<Fields>:
     pos_hint: {"x": 0, "y": 0}
     orientation: "vertical"
     padding: (15, 40)
@@ -17,7 +17,7 @@
     AnchorLayout:
         anchor_x: "center"
         anchor_y: "center"
-        FieldsCfgZone:
+        FieldsZone:
             HostInput:
                 id: hostInput
             LocalhostOption:
@@ -26,7 +26,7 @@
     AnchorLayout:
         anchor_x: "center"
         anchor_y: "center"
-        FieldsCfgZone:
+        FieldsZone:
             PlayerInput:
                 id: playerInput
             MasterOption:
@@ -38,7 +38,7 @@
     width: 100
     digits: 4
 
-<GraphicsCfg>:
+<Graphics>:
     pos_hint: {"x": 0, "y": 0}
     orientation: "vertical"
     padding: (30, 40)
