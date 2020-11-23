@@ -8,30 +8,14 @@ from rboclient.gui import config
 from rboclient.gui.config import ConfigPopup, FieldsCfg, GraphicsCfg
 from rboclient.misc import toBool
 
-
-cfgFieldsPaths = {
-    "address": ["hostInput", "address"],
-    "port": ["hostInput", "port"],
-    "localhost": ["localhostOption", "enabled"],
-    "playerID": ["playerInput", "playerID"],
-    "name": ["playerInput", "name"],
-    "master": ["masterOption", "enabled"]
-}
-
-cfgGraphicsPaths = {
-    "width": ["windowWidth", "text"],
-    "height": ["windowHeight", "text"],
-    "maximized": ["maximizedOption", "enabled"]
-}
-
 cfgSections = [
-    ("fields", "Champs", FieldsCfg, cfgFieldsPaths),
-    ("graphics", "Graphismes", GraphicsCfg, cfgGraphicsPaths)
+    ("fields", "Champs", FieldsCfg),
+    ("graphics", "Graphismes", GraphicsCfg)
 ]
 
 
 def showConfig(_: EventDispatcher):
-    sections = [config.Section(name, title, input(), inputs) for (name, title, input, inputs) in cfgSections]
+    sections = [config.Section(name, title, input(), input.paths) for (name, title, input) in cfgSections]
     ConfigPopup(sections).open()
 
 
