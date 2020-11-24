@@ -166,6 +166,12 @@ class Members(ScrollableStack):
     def toggleReady(self, id: int) -> None:
         self.members[id].ready = not self.members[id].ready
 
+    def name(self, id: int) -> str:
+        return self.members[id].name
+
+    def ready(self, id: int) -> bool:
+        return self.members[id].ready
+
 
 class Lobby(Step, BoxLayout):
     """Lobby d'une partie.
@@ -199,13 +205,18 @@ class Lobby(Step, BoxLayout):
 
     def memberRegistered(self, _: EventDispatcher, **args):
         self.members.registered(**args)
+        self.logs.log("[i]{name} [{id}] vient de rejoindre le lobby.[/i]".format(**args))
 
     def memberUnregistered(self, _: EventDispatcher, **args):
-        self.members.unregistered(**args)
+        args["name"] = self.members.name(**args)
+        self.logs.log("[i]{name} [{id}] vient de quitter le lobby.[/i]".format(**args))
+        self.members.unregistered(args["id"])
 
     def readyMember(self, _: EventDispatcher, **args):
-        self.logs.log("Member [{id}] request : [b]ready[/b].".format(**args))
-        self.members.toggleReady(args["id"])
+        self.members.toggleReady(**args)
+
+        ready = self.members.ready(**args)
+        self.logs.log("{} [{}] {}.".format(self.members.name(**args), args["id"], "est prêt" if ready else "n'est plus prêt"))
 
     def ready(self, _: EventDispatcher):
         self.rboCI.ready()
