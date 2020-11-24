@@ -197,10 +197,6 @@ class Main(BoxLayout):
 
         self.connection = None
 
-    def registrationError(self, _: EventDispatcher) -> None:
-        Logger.error("Main : Registration failed")
-        ErrorPopup("Inscription échouée", "L'inscription à la session a échoué.").open()
-
     def login(self, _: EventDispatcher, host: "tuple[str, int]", player: "tuple[int, str]") -> None:
         server = endpoints.TCP4ClientEndpoint(reactor, *host)
         self.connection = RboCI(*player, Main.handlers)
@@ -209,11 +205,19 @@ class Main(BoxLayout):
         connecting.addCallbacks(self.registering, self.ioError)
 
     def registering(self, _: rboclient.network.protocol.RboConnection) -> None:
+        class RegistrationError:
+            def __init__(self, reason: str):
+                self.reason = reason
+
+            def __call__(self, _: EventDispatcher) -> None:
+                Logger.error("Main : Registration failed")
+                ErrorPopup("Inscription échouée", self.reason).open()
+
         self.connection.bind(on_registered=self.game,
-                             on_invalid_request=self.registrationError,
-                             on_unavailable_id=self.registrationError,
-                             on_unavailable_name=self.registrationError,
-                             on_unavailable_session=self.registrationError)
+                             on_invalid_request=RegistrationError("Requête d'inscription invalide."),
+                             on_unavailable_id=RegistrationError("L'identifiant {} n'est pas disponible.".format(self.connection.id)),
+                             on_unavailable_name=RegistrationError("Le nom \"{}\" n'est pas disponible".format(self.connection.name)),
+                             on_unavailable_session=RegistrationError("La session est déjà en préparation."))
 
     def game(self, _: EventDispatcher, members: "dict[int, tuple[str, bool]]") -> None:
         self.titleBar.switch("lobby")
