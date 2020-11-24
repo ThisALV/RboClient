@@ -29,6 +29,10 @@ from twisted.python.failure import Failure
 kivy.require("2.0.0")
 
 
+def setTitle(title: str) -> None:
+    App.get_running_app().titleBar.title = title
+
+
 class ErrorMessage(AnchorLayout):
     text = StringProperty()
 
@@ -180,7 +184,7 @@ class Main(BoxLayout):
             ErrorPopup(type(error.value).__name__, error.getErrorMessage()).open()
 
         self.titleBar.switch("home")
-        self.titleBar.title = "Rbo - Connexion"
+        setTitle("Rbo - Connexion")
 
         home = Home()
         if self.content is not None:
@@ -221,7 +225,7 @@ class Main(BoxLayout):
 
     def game(self, _: EventDispatcher, members: "dict[int, tuple[str, bool]]") -> None:
         self.titleBar.switch("lobby")
-        self.titleBar.title = "Rbo - Lobby"
+        setTitle("Rbo - Lobby")
 
         game = Game(self.connection, members)
         game.bind(on_close=self.home)

@@ -9,6 +9,7 @@ from kivy.properties import BooleanProperty, ListProperty, NumericProperty, Obje
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
+from rboclient.gui import app
 from rboclient.gui.game import Step
 from rboclient.gui.widgets import ScrollableStack
 from rboclient.network.protocol import Mode
@@ -221,11 +222,11 @@ class Lobby(Step, BoxLayout):
         self.logs.log("{} [{}] {}.".format(self.members.name(**args), args["id"], "est prêt" if ready else "n'est plus prêt"))
 
     def preparingSession(self, _: EventDispatcher, **args):
-        App.get_running_app().titleBar.title = "Rbo - Lobby (Préparation)"
+        app.setTitle("Rbo - Lobby (Préparation)")
         self.logs.log("Préparation de la session dans [b]{delay} ms[/b]...".format(**args))
 
     def cancelPreparing(self, _: EventDispatcher):
-        App.get_running_app().titleBar.title = "Rbo - Lobby"
+        app.setTitle("Rbo - Lobby")
         self.logs.log("Préparation de la session annulée.")
 
     def ready(self, _: EventDispatcher):
