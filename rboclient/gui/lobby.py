@@ -1,3 +1,4 @@
+from enum import Enum, auto
 from math import inf
 
 from kivy.app import App
@@ -19,6 +20,19 @@ from rboclient.network.protocol import RboConnectionInterface as RboCI
 class LobbyCtxAction(AnchorLayout):
     button = ObjectProperty()
     text = StringProperty()
+    enabled = BooleanProperty(True)
+
+    def __init__(self, **kwargs):
+        self.register_event_type("on_release")
+        super().__init__(**kwargs)
+
+        Clock.schedule_once(self.initReleasedHandler)
+
+    def initReleasedHandler(self, _: int):
+        self.button.bind(on_release=lambda _: self.dispatch("on_release"))
+
+    def on_release(self):
+        pass
 
 
 class LobbyCtxActions(BoxLayout):
@@ -26,39 +40,24 @@ class LobbyCtxActions(BoxLayout):
 
     actions = ["disconnect", "ready"]
 
+    open = BooleanProperty(True)
+
     def __init__(self, **kwargs):
-        for event in LobbyCtxActions.actions:
+        for event in LobbyCtxActions.actions:  # Les enregistrements des types d'events doivent se faire avant l'appel au constructeur...
             self.register_event_type("on_" + event)
 
         super().__init__(**kwargs)
 
-        self.grabbing = None
+        class ReleasedHandlerInitializer:
+            def __init__(self, ctxActions: LobbyCtxActions, action: str):
+                self.ctx = ctxActions
+                self.action = action
 
-    def on_touch_down(self, touch: MotionEvent):
-        for action in LobbyCtxActions.actions:
-            button = self.ids[action].button
+            def __call__(self, _: int):
+                self.ctx.ids[self.action].bind(on_release=lambda _: self.ctx.dispatch("on_" + self.action))
 
-            if button.collide_point(*touch.pos):
-                button.state = "down"
-                touch.grab(self)
-                self.grabbing = button
-
-                self.dispatch("on_" + action)
-
-                return True
-
-        return super().on_touch_down(touch)
-
-    def on_touch_up(self, touch: MotionEvent):
-        if touch.grab_current is self:
-            self.grabbing.state = "normal"
-            self.grabbing = None
-
-            touch.ungrab(self)
-
-            return True
-
-        return super().on_touch_up(touch)
+        for action in LobbyCtxActions.actions:  # ...par conséquent, il y a une deuxième boucle après cet appel.
+            Clock.schedule_once(ReleasedHandlerInitializer(self, action))
 
     def on_ready(self):
         Logger.debug("TitleBar : Ready requested.")
@@ -91,28 +90,33 @@ class Logs(ScrollableStack):
         self.count += 1
 
 
+class MemberStatus(Enum):
+    WAITING = auto(),
+    READY = auto(),
+    PARTICIPANT = auto(),
+    CHECKPT = auto(),
+    CHECKING_PARTICIPANTS = auto()
+
+
 class Member(BoxLayout):
     "Affiche un membre et les informations associées avec."
 
     id = NumericProperty()
     name = StringProperty()
     master = BooleanProperty(False)
-    ready = BooleanProperty(False)
+    status = ObjectProperty(MemberStatus.WAITING)
     me = BooleanProperty(False)
 
-    status = {
-        False: ("En attente", [1, 0, 0]),
-        True: ("Prêt", [0, 1, 0])
+    states = {
+        MemberStatus.WAITING: ("En attente", [1, 0, 0]),
+        MemberStatus.READY: ("Prêt", [0, 1, 0]),
+        MemberStatus.PARTICIPANT: ("Participant", [1, .6, 0]),
+        MemberStatus.CHECKPT: ("Choisi le checkpt", [1, 1, 0]),
+        MemberStatus.CHECKING_PARTICIPANTS: ("Vérifie les joueurs", [1, 1, 0])
     }
 
     def __init__(self, id: int, name: str, me: bool, **kwargs):
         super().__init__(id=id, name=name, me=me, **kwargs)
-
-    def on_ready(self, _: EventDispatcher, ready: bool):
-        pass
-
-    def on_master(self, _: EventDispatcher, master: bool):
-        pass
 
 
 class Members(ScrollableStack):
@@ -165,13 +169,24 @@ class Members(ScrollableStack):
         self.refreshMaster()
 
     def toggleReady(self, id: int) -> None:
-        self.members[id].ready = not self.members[id].ready
+        member = self.members[id]
+        member.status = MemberStatus.WAITING if member.status == MemberStatus.READY else MemberStatus.READY
+
+    def askCheckpoint(self) -> None:
+        self.members[self.master].status = MemberStatus.CHECKPT
+
+    def checkingPlayers(self) -> None:
+        self.members[self.master].status = MemberStatus.CHECKING_PARTICIPANTS
+
+    def prepareSession(self) -> None:
+        for member in self.members.values():
+            member.status = MemberStatus.PARTICIPANT
 
     def name(self, id: int) -> str:
         return self.members[id].name
 
     def ready(self, id: int) -> bool:
-        return self.members[id].ready
+        return self.members[id].status == MemberStatus.READY
 
 
 class Lobby(Step, BoxLayout):
@@ -182,6 +197,8 @@ class Lobby(Step, BoxLayout):
 
     logs = ObjectProperty()
     members = ObjectProperty()
+
+    open = BooleanProperty(True)
 
     def __init__(self, rboCI: RboCI, members: "dict[int, tuple[str, bool]]", **kwargs):
         super().__init__(**kwargs)
@@ -200,9 +217,13 @@ class Lobby(Step, BoxLayout):
                         on_member_disconnected=self.memberUnregistered,
                         on_member_crashed=self.memberUnregistered,
                         on_preparing_session=self.preparingSession,
-                        on_cancel_preparing=self.cancelPreparing)
+                        on_cancel_preparing=self.cancelPreparing,
+                        on_prepare_session=self.prepareSession)
 
-        App.get_running_app().titleBar.actionsCtx.bind(on_disconnect=self.disconnect, on_ready=self.ready)
+        actionsCtx = App.get_running_app().titleBar.actionsCtx
+
+        actionsCtx.bind(on_disconnect=self.disconnect, on_ready=self.ready)
+        self.bind(open=actionsCtx.setter("open"))
 
         self.rboCI.switchMode(Mode.LOBBY)
 
@@ -229,8 +250,16 @@ class Lobby(Step, BoxLayout):
         app.setTitle("Rbo - Lobby")
         self.logs.log("Préparation de la session annulée.")
 
+    def prepareSession(self, _: EventDispatcher, id: int):
+        self.open = False
+        self.members.prepareSession()
+        self.logs.log("Préparation de la session, [b]{} [{}] est le membre maître[/b].".format(self.members.name(id), id))
+
     def ready(self, _: EventDispatcher):
         self.rboCI.ready()
 
     def disconnect(self, _: EventDispatcher):
-        self.rboCI.disconnect()
+        if self.open:
+            self.rboCI.disconnect()
+        else:
+            self.rboCI.close()

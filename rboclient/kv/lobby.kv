@@ -11,6 +11,8 @@
         size_hint: (None, None)
         size: (80, tbarHeight - 10)
         text: root.text
+        disabled: not root.enabled
+        background_color: [0, 0, 0, 0] if self.disabled else btnBackground
 
 <LobbyCtxActions>:
     orientation: "horizontal"
@@ -20,6 +22,7 @@
     LobbyCtxAction:
         id: ready
         text: "Prêt"
+        enabled: root.open
 
 <LogMessage>:
     markup: True
@@ -76,8 +79,8 @@
                 height: 25
                 font_size: 20
     Label:
-        text: root.status[root.ready][0]
-        color: root.status[root.ready][1]
+        text: root.states[root.status][0]
+        color: root.states[root.status][1]
         size_hint: (1, 1)
         font_size: 15
 

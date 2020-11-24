@@ -18,8 +18,8 @@ class Step(EventDispatcher):
     def link(self, rboCI: RboCI) -> None:
         rboCI.bind(on_disconnected=self.stop)
 
-    def stop(self, _: EventDispatcher = None, error: Failure = None):
-        self.dispatch("on_stop", error=error)
+    def stop(self, _: EventDispatcher, error: Failure):
+        self.dispatch("on_stop", error=(error))
 
     def on_stop(self, error: Failure):
         Logger.debug("Game : Stop requested : " + error.getErrorMessage())
