@@ -197,7 +197,9 @@ class Lobby(Step, BoxLayout):
         self.rboCI.bind(on_member_registered=self.memberRegistered,
                         on_member_ready=self.readyMember,
                         on_member_disconnected=self.memberUnregistered,
-                        on_member_crashed=self.memberUnregistered)
+                        on_member_crashed=self.memberUnregistered,
+                        on_preparing_session=self.preparingSession,
+                        on_cancel_preparing=self.cancelPreparing)
 
         App.get_running_app().titleBar.actionsCtx.bind(on_disconnect=self.disconnect, on_ready=self.ready)
 
@@ -217,6 +219,14 @@ class Lobby(Step, BoxLayout):
 
         ready = self.members.ready(**args)
         self.logs.log("{} [{}] {}.".format(self.members.name(**args), args["id"], "est prêt" if ready else "n'est plus prêt"))
+
+    def preparingSession(self, _: EventDispatcher, **args):
+        App.get_running_app().titleBar.title = "Rbo - Lobby (Préparation)"
+        self.logs.log("Préparation de la session dans [b]{delay} ms[/b]...".format(**args))
+
+    def cancelPreparing(self, _: EventDispatcher):
+        App.get_running_app().titleBar.title = "Rbo - Lobby"
+        self.logs.log("Préparation de la session annulée.")
 
     def ready(self, _: EventDispatcher):
         self.rboCI.ready()

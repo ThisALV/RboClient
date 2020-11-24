@@ -105,6 +105,10 @@ def members(data: Data) -> dict:
     return args
 
 
+def delay(data: Data) -> dict:
+    return {"delay": data.takeNumeric(8)}
+
+
 registering = HandlerNode({
     0: HandlerLeaf("registered", members),
     1: HandlerLeaf("invalid_request"),
@@ -118,7 +122,8 @@ lobby = HandlerNode({
     1: HandlerLeaf("member_ready", id),
     2: HandlerLeaf("member_disconnected", id),
     3: HandlerLeaf("member_crashed", id),
-    4: HandlerLeaf("preparing_session"),
+    4: HandlerLeaf("preparing_session", delay),
+    12: HandlerLeaf("cancel_preparing"),
     5: HandlerLeaf("prepare_session", id),
     6: HandlerLeaf("asking_checkpoint"),
     7: HandlerLeaf("asking_yes_no", yesNoQuestion),
