@@ -165,4 +165,7 @@ class RboConnectionInterface(protocol.Factory, EventDispatcher):
 
     def disconnect(self) -> None:
         self.connection.send(b"\x01")
+        self.close()
+
+    def close(self) -> None:
         self.connection.shutdown()
