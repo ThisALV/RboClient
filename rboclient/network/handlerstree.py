@@ -125,8 +125,10 @@ lobby = HandlerNode({
     4: HandlerLeaf("preparing_session", delay),
     12: HandlerLeaf("cancel_preparing"),
     5: HandlerLeaf("prepare_session", id),
-    6: HandlerLeaf("asking_checkpoint"),
-    7: HandlerLeaf("asking_yes_no", yesNoQuestion),
+    6: HandlerLeaf("ask_checkpoint"),
+    7: HandlerLeaf("ask_yes_no", yesNoQuestion),
+    13: HandlerLeaf("selecting_checkpoint"),
+    14: HandlerLeaf("checking_players"),
     8: HandlerLeaf("session_prepared"),
     9: HandlerNode({
         0: HandlerLeaf("done"),

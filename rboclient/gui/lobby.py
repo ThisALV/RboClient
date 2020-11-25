@@ -12,7 +12,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from rboclient.gui import app
 from rboclient.gui.game import Step
-from rboclient.gui.widgets import ScrollableStack
+from rboclient.gui.widgets import ScrollableStack, TextInputPopup
 from rboclient.network.protocol import Mode
 from rboclient.network.protocol import RboConnectionInterface as RboCI
 
@@ -111,8 +111,8 @@ class Member(BoxLayout):
         MemberStatus.WAITING: ("En attente", [1, 0, 0]),
         MemberStatus.READY: ("Prêt", [0, 1, 0]),
         MemberStatus.PARTICIPANT: ("Participant", [1, .6, 0]),
-        MemberStatus.CHECKPT: ("Choisi le checkpt", [1, 1, 0]),
-        MemberStatus.CHECKING_PARTICIPANTS: ("Vérifie les joueurs", [1, 1, 0])
+        MemberStatus.CHECKPT: ("Choisit le checkpoint...", [1, 1, 0]),
+        MemberStatus.CHECKING_PARTICIPANTS: ("Vérifie les joueurs...", [1, 1, 0])
     }
 
     def __init__(self, id: int, name: str, me: bool, **kwargs):
@@ -172,7 +172,7 @@ class Members(ScrollableStack):
         member = self.members[id]
         member.status = MemberStatus.WAITING if member.status == MemberStatus.READY else MemberStatus.READY
 
-    def askCheckpoint(self) -> None:
+    def selectingCheckpoint(self) -> None:
         self.members[self.master].status = MemberStatus.CHECKPT
 
     def checkingPlayers(self) -> None:
@@ -212,20 +212,32 @@ class Lobby(Step, BoxLayout):
             if member[1]:
                 self.members.toggleReady()
 
+        self.listenLobby()
+
+        actionsCtx = App.get_running_app().titleBar.actionsCtx
+        actionsCtx.bind(on_disconnect=self.disconnect, on_ready=self.ready)
+        self.bind(open=actionsCtx.setter("open"))
+
+        self.rboCI.switchMode(Mode.LOBBY)
+
+    def listenLobby(self) -> None:
         self.rboCI.bind(on_member_registered=self.memberRegistered,
                         on_member_ready=self.readyMember,
                         on_member_disconnected=self.memberUnregistered,
                         on_member_crashed=self.memberUnregistered,
                         on_preparing_session=self.preparingSession,
                         on_cancel_preparing=self.cancelPreparing,
-                        on_prepare_session=self.prepareSession)
+                        on_prepare_session=self.prepareSession,
+                        on_selecting_checkpoint=lambda _: self.members.selectingCheckpoint(),
+                        on_checking_players=lambda _: self.members.checkingPlayers(),
+                        on_ask_checkpoint=self.askCheckpoint,
+                        on_session_prepared=lambda _: self.rboCI.switchMode(Mode.SESSION))
 
-        actionsCtx = App.get_running_app().titleBar.actionsCtx
+    def askCheckpoint(self, _: EventDispatcher):
+        input = TextInputPopup("Sélection du checkpoint", "Nom (vide si aucun)")
 
-        actionsCtx.bind(on_disconnect=self.disconnect, on_ready=self.ready)
-        self.bind(open=actionsCtx.setter("open"))
-
-        self.rboCI.switchMode(Mode.LOBBY)
+        input.bind(on_validate=lambda _, text_input: self.rboCI.replyCheckpoint(text_input))
+        input.open()
 
     def memberRegistered(self, _: EventDispatcher, **args):
         self.members.registered(**args)
