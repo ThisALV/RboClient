@@ -3,7 +3,9 @@ from math import inf
 from kivy.config import ConfigParser
 from kivy.event import EventDispatcher
 from kivy.properties import BooleanProperty, ColorProperty, NumericProperty, ObjectProperty, StringProperty
+from kivy.logger import Logger
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.popup import Popup
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.textinput import TextInput
 
@@ -154,3 +156,29 @@ class ScrollableStack(ScrollView):
 
     def __init__(self, bg: "list[int]" = background.defaultvalue, **kwargs):
         super().__init__(background=bg, **kwargs)
+
+
+class TextInputContent(BoxLayout):
+    hint = StringProperty()
+
+    def __init__(self, **kwargs):
+        self.register_event_type("on_submit")
+        super().__init__(**kwargs)
+
+    def on_submit(self, value: str):
+        pass
+
+
+class TextInputPopup(Popup):
+    "Cette popup affiche une zone de saisie et propose une méthode show() qui appelle open() et retourne le texte saisi."
+
+    def __init__(self, title: str, description: str, **kwargs):
+        self.register_event_type("on_validate")
+        super().__init__(title=title, **kwargs)
+
+        self.content = TextInputContent(hint=description, **kwargs)
+        self.content.bind(on_submit=lambda _, value: self.dispatch("on_validate", value))
+
+    def on_validate(self, value: str):
+        Logger.debug("TxtInput : Input value \"{}\"".format(value))
+        self.dismiss()

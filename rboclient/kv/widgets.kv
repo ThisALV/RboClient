@@ -1,6 +1,7 @@
 #:kivy 2.0.0
 
 #:set btnBackground [1, .6, 0]
+#:set popupTitle [1, 1, 1]
 
 <RboBtn@Button>:
     background_color: btnBackground
@@ -112,3 +113,32 @@
             Rectangle:
                 pos: self.pos
                 size: self.size
+
+<TextInputContent>:
+    orientation: "vertical"
+    value: input.text
+    padding: 10
+    spacing: 10
+    value: input.text
+    AnchorLayout:
+        anchor_x: "center"
+        anchor_y: "center"
+        RboInput:
+            size_hint: (.7, None)
+            height: 30
+            id: input
+            hint_text: root.hint
+    AnchorLayout:
+        anchor_x: "center"
+        anchor_y: "center"
+        RboBtn:
+            text: "Valider"
+            on_release: root.dispatch("on_submit", root.value)
+
+<TextInputPopup>:
+    size_hint: (None, None)
+    size: (300, 150)
+    auto_dismiss: False
+    title_color: popupTitle
+    separator_height: 2
+    separator_color: popupTitle
