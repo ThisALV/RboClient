@@ -1,5 +1,6 @@
 from math import inf
 
+from kivy.clock import Clock
 from kivy.config import ConfigParser
 from kivy.event import EventDispatcher
 from kivy.properties import BooleanProperty, ColorProperty, NumericProperty, ObjectProperty, StringProperty
@@ -33,9 +34,6 @@ class RboInput(TextInput):
     def valid(self) -> bool:
         return len(self.text) != 0
 
-    def on_text_validate(self):
-        self.parent.dispatch("on_validate")
-
     def on_is_focusable(self, _: EventDispatcher, focusable: bool):
         if focusable:
             self.foreground_color = RboInput.defaultForeground
@@ -46,11 +44,22 @@ class RboInput(TextInput):
 
 
 class RboInputRow(BoxLayout):
-    "Ligne de formulaire à hauteur fixe pouvant accueillir plusieurs zones de saisie."
+    """Ligne de formulaire à hauteur fixe pouvant accueillir plusieurs zones de saisie
+
+    Un appui sur Entrée lors du focus d'un des TextInput renseignés par la classe fille émet l'évènement on_validate.
+    """
+
+    inputs = []
 
     def __init__(self, **kwargs):
         self.register_event_type("on_validate")
         super().__init__(**kwargs)
+
+        Clock.schedule_once(self.initValidateListening)
+
+    def initValidateListening(self, _: int) -> None:
+        for input in type(self).inputs:
+            getattr(self, input).bind(on_text_validate=lambda _: self.dispatch("on_validate"))
 
     def makeInvalid(self, id: str) -> None:
         target = self.ids[id]
@@ -114,12 +123,20 @@ class RboFillOption(RboOption):
 class HostInput(RboInputRow):
     "Une ligne pour saisir un hôte cible sous la forme address:port avec deux zones de saisie."
 
+    addressInput = ObjectProperty()
+    portInput = ObjectProperty()
+    inputs = ["addressInput", "portInput"]
+
     address = StringProperty()
     port = StringProperty()
 
 
 class PlayerInput(RboInputRow):
     "Une ligne avec deux zones de saisie : une pour l'ID du joueur et l'autre pour son nom."
+
+    idInput = ObjectProperty()
+    nameInput = ObjectProperty()
+    inputs = ["idInput", "nameInput"]
 
     playerID = StringProperty()
     name = StringProperty()
