@@ -160,6 +160,12 @@ class RboConnectionInterface(protocol.Factory, EventDispatcher):
     def reply(self, reply: int) -> None:
         self.connection.send(reply.to_bytes(1, "big", signed=False))
 
+    def replyCheckpoint(self, name: str) -> None:
+        self.connection.send(b"\x00" if len(name) == 0 else name.encode())
+
+    def replyYesNo(self, reply: bool) -> None:
+        self.connection.send("\x00" if reply else "\x01")
+
     def ready(self) -> None:
         self.connection.send(b"\x00")
 
