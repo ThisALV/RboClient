@@ -12,7 +12,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from rboclient.gui import app
 from rboclient.gui.game import Step
-from rboclient.gui.widgets import ScrollableStack, TextInputPopup
+from rboclient.gui.widgets import ScrollableStack, TextInputPopup, YesNoPopup
 from rboclient.network.protocol import Mode
 from rboclient.network.protocol import RboConnectionInterface as RboCI
 
@@ -231,12 +231,19 @@ class Lobby(Step, BoxLayout):
                         on_selecting_checkpoint=lambda _: self.members.selectingCheckpoint(),
                         on_checking_players=lambda _: self.members.checkingPlayers(),
                         on_ask_checkpoint=self.askCheckpoint,
+                        on_ask_yes_no=self.askYesNo,
                         on_session_prepared=lambda _: self.rboCI.switchMode(Mode.SESSION))
 
     def askCheckpoint(self, _: EventDispatcher):
         input = TextInputPopup()
 
         input.bind(on_validate=lambda _, text_input: self.rboCI.replyCheckpoint(text_input))
+        input.open()
+
+    def askYesNo(self, _: EventDispatcher, **args):
+        input = YesNoPopup(**args)
+
+        input.bind(on_reply=lambda _, reply: self.rboCI.replyYesNo(reply))
         input.open()
 
     def memberRegistered(self, _: EventDispatcher, **args):
