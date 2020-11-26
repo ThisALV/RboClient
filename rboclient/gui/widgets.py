@@ -3,7 +3,7 @@ from math import inf
 from kivy.clock import Clock
 from kivy.config import ConfigParser
 from kivy.event import EventDispatcher
-from kivy.properties import BooleanProperty, ColorProperty, NumericProperty, ObjectProperty, StringProperty
+from kivy.properties import BooleanProperty, ColorProperty, ListProperty, NumericProperty, ObjectProperty, StringProperty
 from kivy.logger import Logger
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
@@ -49,7 +49,7 @@ class RboInputRow(BoxLayout):
     Un appui sur Entrée lors du focus d'un des TextInput renseignés par la classe fille émet l'évènement on_validate.
     """
 
-    inputs = []
+    inputs = ListProperty([])
 
     def __init__(self, **kwargs):
         self.register_event_type("on_validate")
@@ -58,7 +58,7 @@ class RboInputRow(BoxLayout):
         Clock.schedule_once(self.initValidateListening)
 
     def initValidateListening(self, _: int) -> None:
-        for input in type(self).inputs:
+        for input in self.inputs:
             getattr(self, input).bind(on_text_validate=lambda _: self.dispatch("on_validate"))
 
     def makeInvalid(self, id: str) -> None:
@@ -125,7 +125,7 @@ class HostInput(RboInputRow):
 
     addressInput = ObjectProperty()
     portInput = ObjectProperty()
-    inputs = ["addressInput", "portInput"]
+    inputs = ListProperty(["addressInput", "portInput"])
 
     address = StringProperty()
     port = StringProperty()
@@ -136,7 +136,7 @@ class PlayerInput(RboInputRow):
 
     idInput = ObjectProperty()
     nameInput = ObjectProperty()
-    inputs = ["idInput", "nameInput"]
+    inputs = ListProperty(["idInput", "nameInput"])
 
     playerID = StringProperty()
     name = StringProperty()
@@ -224,4 +224,4 @@ class TextInputPopup(InputPopup):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.value = self.content.input.text
+        self.content.input.bind(text=self.setter("value"))
