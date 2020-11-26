@@ -147,3 +147,39 @@
     height: 30
     id: input
     hint_text: "Nom (vide pour aucun)"
+
+<YesNoBtn>:
+    anchor_x: "center"
+    anchor_y: "center"
+    padding: 10
+    RboBtn:
+        size_hint: (None, None)
+        size: (80, 30)
+        text: "Oui" if root.yes else "Non"
+        on_release: root.dispatch("on_click")
+
+<YesNoContent>:
+    orientation: "vertical"
+    padding: 10
+    spacing: 10
+    yes: yes
+    no: no
+    Label:
+        text: root.question
+    BoxLayout:
+        orientation: "horizontal"
+        YesNoBtn:
+            id: yes
+            yes: True
+        YesNoBtn:
+            id: no
+            yes: False
+            
+
+<YesNoPopup>:
+    size_hint: (None, None)
+    size: (250, 150)
+    auto_dismiss: False
+    title_color: popupTitle
+    separator_height: 2
+    separator_color: popupTitle

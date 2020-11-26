@@ -5,10 +5,12 @@ from kivy.config import ConfigParser
 from kivy.event import EventDispatcher
 from kivy.properties import BooleanProperty, ColorProperty, ListProperty, NumericProperty, ObjectProperty, StringProperty
 from kivy.logger import Logger
+from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.textinput import TextInput
+from rboclient.network.handlerstree import YesNoQuestion
 
 
 class RboInput(TextInput):
@@ -225,3 +227,59 @@ class TextInputPopup(InputPopup):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.content.input.bind(text=self.setter("value"))
+
+
+class YesNoBtn(AnchorLayout):
+    yes = BooleanProperty()
+
+    def __init__(self, **kwargs):
+        self.register_event_type("on_click")
+        super().__init__(**kwargs)
+
+    def on_click(self):
+        pass
+
+
+class YesNoContent(BoxLayout):
+    questions = {
+        YesNoQuestion.MissingParticipants: "Manque-t-il des participants ?",
+        YesNoQuestion.RetryCheckpoint: "Choisir un autre checkpoint ?",
+        YesNoQuestion.KickUnknownPlayers: "Déconnecter les joueurs en trop ?"
+    }
+
+    question = StringProperty()
+    yes = ObjectProperty()
+    no = ObjectProperty()
+
+    def __init__(self, question: YesNoQuestion, **kwargs):
+        self.register_event_type("on_choose")
+        super().__init__(**kwargs)
+
+        self.yes.bind(on_click=lambda _: self.dispatch("on_choose", True))
+        self.no.bind(on_click=lambda _: self.dispatch("on_choose", False))
+
+        self.question = YesNoContent.questions[question]
+
+    def on_choose(self, chosen: bool):
+        pass
+
+
+class YesNoPopup(Popup):
+    "Cette popup permet de répondre Oui ou Non à une question posée."
+
+    questions = {
+        YesNoQuestion.MissingParticipants: "Participants",
+        YesNoQuestion.KickUnknownPlayers: "Participants",
+        YesNoQuestion.RetryCheckpoint: "Checkpoint"
+    }
+
+    def __init__(self, question: YesNoQuestion, **kwargs):
+        self.register_event_type("on_reply")
+        super().__init__(title=YesNoPopup.questions[question], **kwargs)
+
+        self.content = YesNoContent(question)
+        self.content.bind(on_choose=lambda _, chosen: self.dispatch("on_reply", chosen))
+
+    def on_reply(self, reply: bool):
+        Logger.debug("YesNoPopup : Chosen reply {}".format(reply))
+        self.dismiss()
