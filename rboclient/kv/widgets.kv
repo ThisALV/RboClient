@@ -118,31 +118,32 @@
                 pos: self.pos
                 size: self.size
 
-<TextInputContent>:
+<InputContent>:
     orientation: "vertical"
-    value: input.text
     padding: 10
     spacing: 10
-    value: input.text
+    form: form
     AnchorLayout:
+        id: form
         anchor_x: "center"
         anchor_y: "center"
-        RboInput:
-            size_hint: (.7, None)
-            height: 30
-            id: input
-            hint_text: root.hint
     AnchorLayout:
         anchor_x: "center"
         anchor_y: "center"
         RboBtn:
             text: "Valider"
-            on_release: root.dispatch("on_submit", root.value)
+            on_release: root.dispatch("on_submit")
 
-<TextInputPopup>:
+<InputPopup>:
     size_hint: (None, None)
     size: (300, 150)
     auto_dismiss: False
     title_color: popupTitle
     separator_height: 2
     separator_color: popupTitle
+
+<CheckpointInput>:
+    size_hint: (.7, None)
+    height: 30
+    id: input
+    hint_text: "Nom (vide pour aucun)"

@@ -175,27 +175,53 @@ class ScrollableStack(ScrollView):
         super().__init__(background=bg, **kwargs)
 
 
-class TextInputContent(BoxLayout):
-    hint = StringProperty()
+class InputContent(BoxLayout):
+    input = ObjectProperty()
+    form = ObjectProperty()
 
     def __init__(self, **kwargs):
         self.register_event_type("on_submit")
         super().__init__(**kwargs)
 
-    def on_submit(self, value: str):
+        self.form.add_widget(self.input)
+
+    def on_submit(self):
         pass
 
 
-class TextInputPopup(Popup):
-    "Cette popup affiche une zone de saisie et propose une méthode show() qui appelle open() et retourne le texte saisi."
+class InputPopup(Popup):
+    """Classe mère pour les popups voulant afficher un champ de saisie et un bouton valider afin d'émettre on_validate avec la valeur saisie value.
 
-    def __init__(self, title: str, description: str, **kwargs):
+    La propriété inputType désigne le type qui sera utilisé pour construire le widget du champ de saisie.\n
+    La propriété value doit être définie par la classe fille (l'implémentation).
+    """
+
+    title = StringProperty("InputPopup")
+    inputType = ObjectProperty()
+    value = StringProperty()
+
+    def __init__(self, **kwargs):
         self.register_event_type("on_validate")
-        super().__init__(title=title, **kwargs)
+        super().__init__(title=self.title, **kwargs)
 
-        self.content = TextInputContent(hint=description, **kwargs)
-        self.content.bind(on_submit=lambda _, value: self.dispatch("on_validate", value))
+        self.content = InputContent(input=self.inputType(), **kwargs)
+        self.content.bind(on_submit=lambda _: self.dispatch("on_validate", self.value))
 
     def on_validate(self, value: str):
         Logger.debug("TxtInput : Input value \"{}\"".format(value))
         self.dismiss()
+
+
+class CheckpointInput(RboInput):
+    pass
+
+
+class TextInputPopup(InputPopup):
+    "Cette popup affiche une zone de saisie et propose une méthode show() qui appelle open() et retourne le texte saisi."
+
+    title = StringProperty("Choisir un checkpoint")
+    inputType = ObjectProperty(CheckpointInput)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.value = self.content.input.text

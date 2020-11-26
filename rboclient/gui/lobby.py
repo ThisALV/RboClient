@@ -234,7 +234,7 @@ class Lobby(Step, BoxLayout):
                         on_session_prepared=lambda _: self.rboCI.switchMode(Mode.SESSION))
 
     def askCheckpoint(self, _: EventDispatcher):
-        input = TextInputPopup("Sélection du checkpoint", "Nom (vide si aucun)")
+        input = TextInputPopup()
 
         input.bind(on_validate=lambda _, text_input: self.rboCI.replyCheckpoint(text_input))
         input.open()
