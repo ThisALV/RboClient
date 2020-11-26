@@ -164,7 +164,7 @@ class RboConnectionInterface(protocol.Factory, EventDispatcher):
         self.connection.send(b"\x00" if len(name) == 0 else name.encode())
 
     def replyYesNo(self, reply: bool) -> None:
-        self.connection.send("\x00" if reply else "\x01")
+        self.connection.send(b"\x00" if reply else b"\x01")
 
     def ready(self) -> None:
         self.connection.send(b"\x00")
