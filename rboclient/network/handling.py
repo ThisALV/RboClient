@@ -115,7 +115,7 @@ class HandlerNode(object):
         if self.tag != "":
             nextTags += [self.tag]
 
-        try:
-            return self.children[id](data, tags)
-        except KeyError:
+        if id not in self.children:
             raise UnknownBranch(id)
+
+        return self.children[id](data, tags)
