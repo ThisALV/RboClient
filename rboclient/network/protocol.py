@@ -63,16 +63,16 @@ class RboConnection(protocol.Protocol):
         self.transport.loseConnection()
 
 
-def listLeaves(tree: handling.HandlerNode) -> list:
+def leavesFullNames(tree: handling.HandlerNode, tags: "list[str]" = []) -> "list[str]":
     "Liste les feuilles d'un arbre de HanlderNodes."
 
     leaves = []
 
     for branch in tree.children.values():
         if type(branch) == handling.HandlerNode:
-            leaves += listLeaves(branch)
+            leaves += leavesFullNames(branch, tags + [branch.tag])
         else:
-            leaves.append(branch)
+            leaves.append("_".join(tags + [branch.name]))
 
     return leaves
 
@@ -127,8 +127,8 @@ class RboConnectionInterface(protocol.Factory, EventDispatcher):
 
     def __init__(self, id: int, name: str, handlers: "dict[Mode, handling.HandlerNode]"):
         for tree in handlers.values():
-            for event in listLeaves(tree):
-                realName = "on_" + event.name
+            for eventName in leavesFullNames(tree):
+                realName = "on_" + eventName
 
                 setattr(self, realName, DefaultHandler(realName))
                 self.register_event_type(realName)
