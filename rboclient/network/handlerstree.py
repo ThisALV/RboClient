@@ -46,7 +46,10 @@ def possibilities(data: Data) -> dict:
     count = data.take()
 
     for i in range(count):
-        args["count"][data.take()] = data.takeString()
+        id = data.take()
+        args["options"][id] = data.takeString()
+
+    return args
 
 
 def msg(data: Data) -> dict:
