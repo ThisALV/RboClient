@@ -56,10 +56,21 @@ class Game(FloatLayout):
         self.switch(Lobby(self.rboCI, members))
 
     def listenStepSwitch(self) -> None:
+        class PreparationErrorHandler:
+            ctx = self
+
+            def __init__(self, name: str):
+                self.name = name
+
+            def __call__(self, _: EventDispatcher):
+                self.ctx.sessionPreparationError(self.name)
+
         self.rboCI.bind(on_session_prepared=lambda _: self.session(),
                         on_result_done=lambda _: self.lobby(),
                         on_result_crash=self.sessionCrash,
-                        on_result_checkpoint_error=self.sessionPreparationError)
+                        on_result_checkpoint_error=PreparationErrorHandler("Impossible de charge le checkpoint"),
+                        on_result_less_members=PreparationErrorHandler("Des joueurs sont manquants"),
+                        on_result_unknown_players=PreparationErrorHandler("Des joueurs sont en trop"))
 
     def session(self) -> None:
         # step.members est le widget Members possédant le membre dict members
@@ -69,12 +80,12 @@ class Game(FloatLayout):
         self.switch(Lobby(self.rboCI, dict((id, (name, False)) for (id, name) in self.step.members.items()), selfIncluded=True, preparing=preparing))
 
     def sessionCrash(self, _: EventDispatcher):
-        # Logger l'erreur...
         self.lobby()
+        self.step.logs.log("[b]La session a crashé.[/b]")
 
-    def sessionPreparationError(self, _: EventDispatcher):
-        # Logger l'erreur...
+    def sessionPreparationError(self, error: str):
         self.lobby(preparing=True)
+        self.step.logs.log("La préparation de la session a échouée : [b]{}[/b]".format(error))
 
     def close(self, _: EventDispatcher, error: Failure):
         self.dispatch("on_close", error=error)
