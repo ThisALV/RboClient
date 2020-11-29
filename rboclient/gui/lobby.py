@@ -209,7 +209,7 @@ class Lobby(Step, BoxLayout):
             self.members.registered(self.rboCI.id, self.rboCI.name, me=True)
 
         for (id, member) in members.items():
-            self.members.registered(id, member[0])
+            self.members.registered(id, member[0], me=(id == self.rboCI.id))
             if member[1]:
                 self.members.toggleReady()
 
