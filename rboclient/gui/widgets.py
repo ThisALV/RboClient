@@ -219,7 +219,7 @@ class CheckpointInput(RboInput):
 
 
 class TextInputPopup(InputPopup):
-    "Cette popup affiche une zone de saisie et propose une méthode show() qui appelle open() et retourne le texte saisi."
+    "Cette popup affiche une zone de saisie (de texte)."
 
     title = StringProperty("Choisir un checkpoint")
     inputType = ObjectProperty(CheckpointInput)
