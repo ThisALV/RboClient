@@ -89,7 +89,10 @@ class DataTakeString(unittest.TestCase):
         self.assertEqual(handling.Data(b"\x00\x0cHello world!").takeString(), "Hello world!")
 
 
-def makeTreeLevel(depth: int, sequence: list = []) -> handling.HandlerNode:
+def makeTreeLevel(depth: int, sequence: list = None) -> handling.HandlerNode:
+    if sequence is None:
+        sequence = []
+
     children = {}
 
     for id in range(4):
