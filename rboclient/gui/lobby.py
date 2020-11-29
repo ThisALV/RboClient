@@ -11,6 +11,7 @@ from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from rboclient.gui import app
+from rboclient.gui.game import Step
 from rboclient.gui.widgets import ScrollableStack, TextInputPopup, YesNoPopup
 from rboclient.network import protocol
 from rboclient.network.protocol import RboConnectionInterface as RboCI
@@ -188,7 +189,7 @@ class Members(ScrollableStack):
         return self.members[id].status == MemberStatus.READY
 
 
-class Lobby(BoxLayout):
+class Lobby(Step, BoxLayout):
     """Lobby d'une partie.
 
     Gère tous les évènements d'un lobby (liste de membres, lancement de session, logs...).
@@ -201,9 +202,7 @@ class Lobby(BoxLayout):
 
     def __init__(self, rboCI: RboCI, members: "dict[int, tuple[str, bool]]", selfIncluded: bool = False, **kwargs):
         super().__init__(**kwargs)
-        self.rboCI = rboCI
-        # Cette variable n'est pas "static" à la classe afin d'éviter les problèmes dus à l'import de son énumération
-        self.titleBarCtx = app.TitleBarCtx.LOBBY
+        self.init(rboCI, app.TitleBarCtx.LOBBY)
 
         # Si le joueur ne vient pas de s'inscrire, alors il sera déjà parmis les membres du serveur
         if not selfIncluded:
@@ -214,26 +213,24 @@ class Lobby(BoxLayout):
             if member[1]:
                 self.members.toggleReady()
 
-        self.listen()
+        self.listen(on_member_registered=self.memberRegistered,
+                    on_member_ready=self.readyMember,
+                    on_member_disconnected=self.memberUnregistered,
+                    on_member_crashed=self.memberUnregistered,
+                    on_preparing_session=self.preparingSession,
+                    on_cancel_preparing=self.cancelPreparing,
+                    on_prepare_session=self.prepareSession,
+                    on_selecting_checkpoint=lambda _: self.members.selectingCheckpoint(),
+                    on_checking_players=lambda _: self.members.checkingPlayers(),
+                    on_ask_checkpoint=self.askCheckpoint,
+                    on_ask_yes_no=self.askYesNo)
+
         Clock.schedule_once(self.bindTitleBar)
 
     def bindTitleBar(self, _: int):
         actionsCtx = App.get_running_app().titleBar.actionsCtx
         actionsCtx.bind(on_disconnect=self.disconnect, on_ready=self.ready)
         self.bind(open=actionsCtx.setter("open"))
-
-    def listen(self) -> None:
-        self.rboCI.bind(on_member_registered=self.memberRegistered,
-                        on_member_ready=self.readyMember,
-                        on_member_disconnected=self.memberUnregistered,
-                        on_member_crashed=self.memberUnregistered,
-                        on_preparing_session=self.preparingSession,
-                        on_cancel_preparing=self.cancelPreparing,
-                        on_prepare_session=self.prepareSession,
-                        on_selecting_checkpoint=lambda _: self.members.selectingCheckpoint(),
-                        on_checking_players=lambda _: self.members.checkingPlayers(),
-                        on_ask_checkpoint=self.askCheckpoint,
-                        on_ask_yes_no=self.askYesNo)
 
     def askCheckpoint(self, _: EventDispatcher):
         input = TextInputPopup()

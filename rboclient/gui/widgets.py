@@ -210,7 +210,7 @@ class InputPopup(Popup):
         self.content.bind(on_submit=lambda _: self.dispatch("on_validate", self.value))
 
     def on_validate(self, value: str):
-        Logger.debug("TxtInput : Input value \"{}\"".format(value))
+        Logger.debug("InputPopup : Input value \"{}\"".format(value))
         self.dismiss()
 
 

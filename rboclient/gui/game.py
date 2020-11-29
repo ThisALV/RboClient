@@ -3,10 +3,35 @@ from kivy.event import EventDispatcher
 from kivy.logger import Logger
 from kivy.uix.floatlayout import FloatLayout
 from rboclient.gui import app
-from rboclient.gui.lobby import Lobby
-from rboclient.gui.session import Session
 from rboclient.network.protocol import RboConnectionInterface as RboCI
 from twisted.python.failure import Failure
+
+
+class Step:
+    """Classe mère pour les étapes d'une partie (lobby et session)
+
+    La méthode init() permet d'initialiser l'interface RboCI et le contexte TitleBar sans forcer une signature pour l'héritage multiple.\n
+    listen() est appelée par la classe fille pour stocker et binder tous les handlers fournis.\n
+    stopListen() est appelée au niveau de l'interface afin d'unbinder tous les handlers gardés en mémoire avec listen().
+    """
+
+    def init(self, rboCI: RboCI, titleBarCtx: "app.TitleBarCtx") -> None:
+        self.rboCI = rboCI
+        self.titleBarCtx = titleBarCtx
+
+        self.handlers = {}
+
+    def listen(self, **kwargs):
+        self.rboCI.bind(**kwargs)
+        self.handlers = kwargs
+
+    def stopListen(self):
+        self.rboCI.unbind(**self.handlers)
+
+
+# Pour éviter les problèmes de partals imports
+from rboclient.gui.lobby import Lobby  # noqa E402
+from rboclient.gui.session import Session  # noqa E402
 
 
 class Game(FloatLayout):
@@ -33,7 +58,8 @@ class Game(FloatLayout):
     def listenStepSwitch(self) -> None:
         self.rboCI.bind(on_session_prepared=self.session,
                         on_result_done=self.lobby,
-                        on_result_crash=self.sessionCrash)
+                        on_result_crash=self.sessionCrash,
+                        on_result_checkpoint_error=self.sessionCrash)
 
     def session(self, _: EventDispatcher = None) -> None:
         # step.members est le widget Members possédant le membre dict members
@@ -52,12 +78,13 @@ class Game(FloatLayout):
     def on_close(self, error: Failure):
         Logger.info("Game : Closed : " + error.getErrorMessage())
 
-    def switch(self, step):
+    def switch(self, step: Step):
         App.get_running_app().titleBar.switch(step.titleBarCtx)
         app.setTitle("Rbo - " + type(step).__name__)
 
         if self.step is not None:
             self.remove_widget(self.step)
+            self.step.stopListen()
 
         self.step = step
         self.add_widget(self.step)
