@@ -1,3 +1,5 @@
+from enum import Enum, auto
+
 import kivy
 import kivy.input
 import rboclient
@@ -92,13 +94,19 @@ class SizeButton(WindowButton):
             Window.restore()
 
 
+class TitleBarCtx(Enum):
+    HOME = auto(),
+    LOBBY = auto(),
+    SESSION = auto()
+
+
 class TitleBar(BoxLayout):
     "Barre de titre sur-mesure adaptant ses actions contextuels au contexte (accueil, lobby ou session)."
 
     contexts = {
-        "home": HomeCtxActions,
-        "lobby": LobbyCtxActions,
-        "session": FloatLayout
+        TitleBarCtx.HOME: HomeCtxActions,
+        TitleBarCtx.LOBBY: LobbyCtxActions,
+        TitleBarCtx.SESSION: FloatLayout
     }
 
     title = StringProperty()
@@ -107,9 +115,9 @@ class TitleBar(BoxLayout):
         super().__init__(**kwargs)
 
         self.actionsCtx = None
-        self.switch("home")
+        self.switch(TitleBarCtx.HOME)
 
-    def switch(self, context: str) -> None:
+    def switch(self, context: TitleBarCtx) -> None:
         if self.actionsCtx is not None:
             self.remove_widget(self.actionsCtx)
 
@@ -183,7 +191,7 @@ class Main(BoxLayout):
             Logger.error("Main : Back to Home : " + error.getErrorMessage())
             ErrorPopup(type(error.value).__name__, error.getErrorMessage()).open()
 
-        self.titleBar.switch("home")
+        self.titleBar.switch(TitleBarCtx.HOME)
         setTitle("Rbo - Connexion")
 
         home = Home()
@@ -224,9 +232,6 @@ class Main(BoxLayout):
                              on_unavailable_session=RegistrationError("La session est déjà en préparation."))
 
     def game(self, _: EventDispatcher, members: "dict[int, tuple[str, bool]]") -> None:
-        self.titleBar.switch("lobby")
-        setTitle("Rbo - Lobby")
-
         game = Game(self.connection, members)
         game.bind(on_close=self.home)
         self.connection = None

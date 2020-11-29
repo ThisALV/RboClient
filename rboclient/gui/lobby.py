@@ -11,9 +11,8 @@ from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from rboclient.gui import app
-from rboclient.gui.game import Step
 from rboclient.gui.widgets import ScrollableStack, TextInputPopup, YesNoPopup
-from rboclient.network.protocol import Mode
+from rboclient.network import protocol
 from rboclient.network.protocol import RboConnectionInterface as RboCI
 
 
@@ -189,7 +188,7 @@ class Members(ScrollableStack):
         return self.members[id].status == MemberStatus.READY
 
 
-class Lobby(Step, BoxLayout):
+class Lobby(BoxLayout):
     """Lobby d'une partie.
 
     Gère tous les évènements d'un lobby (liste de membres, lancement de session, logs...).
@@ -200,27 +199,30 @@ class Lobby(Step, BoxLayout):
 
     open = BooleanProperty(True)
 
-    def __init__(self, rboCI: RboCI, members: "dict[int, tuple[str, bool]]", **kwargs):
+    def __init__(self, rboCI: RboCI, members: "dict[int, tuple[str, bool]]", selfIncluded: bool = False, **kwargs):
         super().__init__(**kwargs)
         self.rboCI = rboCI
-        self.link(rboCI)
+        # Cette variable n'est pas "static" à la classe afin d'éviter les problèmes dus à l'import de son énumération
+        self.titleBarCtx = app.TitleBarCtx.LOBBY
 
-        self.members.registered(self.rboCI.id, self.rboCI.name, me=True)
+        # Si le joueur ne vient pas de s'inscrire, alors il sera déjà parmis les membres du serveur
+        if not selfIncluded:
+            self.members.registered(self.rboCI.id, self.rboCI.name, me=True)
 
         for (id, member) in members.items():
             self.members.registered(id, member[0])
             if member[1]:
                 self.members.toggleReady()
 
-        self.listenLobby()
+        self.listen()
+        Clock.schedule_once(self.bindTitleBar)
 
+    def bindTitleBar(self, _: int):
         actionsCtx = App.get_running_app().titleBar.actionsCtx
         actionsCtx.bind(on_disconnect=self.disconnect, on_ready=self.ready)
         self.bind(open=actionsCtx.setter("open"))
 
-        self.rboCI.switchMode(Mode.LOBBY)
-
-    def listenLobby(self) -> None:
+    def listen(self) -> None:
         self.rboCI.bind(on_member_registered=self.memberRegistered,
                         on_member_ready=self.readyMember,
                         on_member_disconnected=self.memberUnregistered,
@@ -231,8 +233,7 @@ class Lobby(Step, BoxLayout):
                         on_selecting_checkpoint=lambda _: self.members.selectingCheckpoint(),
                         on_checking_players=lambda _: self.members.checkingPlayers(),
                         on_ask_checkpoint=self.askCheckpoint,
-                        on_ask_yes_no=self.askYesNo,
-                        on_session_prepared=lambda _: self.rboCI.switchMode(Mode.SESSION))
+                        on_ask_yes_no=self.askYesNo)
 
     def askCheckpoint(self, _: EventDispatcher):
         input = TextInputPopup()

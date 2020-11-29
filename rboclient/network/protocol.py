@@ -27,7 +27,8 @@ class RboConnection(protocol.Protocol):
     """Connexion à une partie.
 
     Cette connexion encapsule un protocole utilisant un arbre pour déterminer quel évènement l'interface doit émettre à chaque trame Rbo reçue.\n
-    L'arbre utilisé dépend du mode (phase de la partie).\n
+    L'arbre d'évènements utilisé dépend du mode actuel de la partie (logging, registering, lobby, session...).\n
+    Ce mode est automatiquement géré par le protocole.\n
     Il est également possible d'envoyer des trames d'octets.
     """
 
@@ -54,6 +55,12 @@ class RboConnection(protocol.Protocol):
     def dataReceived(self, data: bytes):
         for frame in handling.decompose(data):
             event = self.interface.handlers[self.mode](frame)
+
+            if event.name == "registered" or event.name == "session_stop":
+                self.mode = Mode.LOBBY
+            elif event.name == "session_prepared":
+                self.mode = Mode.SESSION
+
             self.interface.dispatch("on_" + event.name, **event.args)
 
     def send(self, data: bytes) -> None:
@@ -63,8 +70,11 @@ class RboConnection(protocol.Protocol):
         self.transport.loseConnection()
 
 
-def leavesFullNames(tree: handling.HandlerNode, tags: "list[str]" = []) -> "list[str]":
+def leavesFullNames(tree: handling.HandlerNode, tags: "list[str]" = None) -> "list[str]":
     "Liste les feuilles d'un arbre de HanlderNodes."
+
+    if tags is None:
+        tags = []
 
     leaves = []
 
@@ -101,7 +111,7 @@ class HandlerLeaf(object):
         self.name = name
         self.handler = handler
 
-    def __call__(self, data: handling.Data, tags: list) -> Event:
+    def __call__(self, data: handling.Data, tags: "list[str]") -> Event:
         args = self.handler(data)
         if "tag" in args:
             raise IllegalArgName(args)
@@ -121,7 +131,6 @@ class RboConnectionInterface(protocol.Factory, EventDispatcher):
     """Interface du protocole Rbo.
 
     Elle se charge d'émettre les évènements déterminés par celui-ci, en plus de créer le protocole.\n
-    Le mode du protocole (phase de la partie) peut-être modifié depuis cette interface.\n
     Elle permet aussi d'effectuer des envois de données sur la connexion.
     """
 
@@ -147,9 +156,6 @@ class RboConnectionInterface(protocol.Factory, EventDispatcher):
 
         self.connection = RboConnection(self)
         return self.connection
-
-    def switchMode(self, mode: Mode) -> None:
-        self.connection.mode = mode
 
     def on_connected(self):
         Logger.info("RboCI : Connected")

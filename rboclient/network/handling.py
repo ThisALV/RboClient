@@ -108,7 +108,10 @@ class HandlerNode(object):
         self.children = children
         self.tag = tag
 
-    def __call__(self, data: Data, tags: list = []):
+    def __call__(self, data: Data, tags: "list[str]" = None):
+        if tags is None:
+            tags = []
+
         id = data.take()
 
         nextTags = tags
