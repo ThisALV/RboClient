@@ -200,7 +200,7 @@ class Lobby(Step, BoxLayout):
 
     open = BooleanProperty(True)
 
-    def __init__(self, rboCI: RboCI, members: "dict[int, tuple[str, bool]]", selfIncluded: bool = False, **kwargs):
+    def __init__(self, rboCI: RboCI, members: "dict[int, tuple[str, bool]]", selfIncluded: bool = False, preparing: bool = False, **kwargs):
         super().__init__(**kwargs)
         self.init(rboCI, app.TitleBarCtx.LOBBY)
 
@@ -212,6 +212,9 @@ class Lobby(Step, BoxLayout):
             self.members.registered(id, member[0], me=(id == self.rboCI.id))
             if member[1]:
                 self.members.toggleReady()
+
+        if preparing:
+            self.members.prepareSession()
 
         self.listen(on_member_registered=self.memberRegistered,
                     on_member_ready=self.readyMember,

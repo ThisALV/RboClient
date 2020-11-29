@@ -56,21 +56,25 @@ class Game(FloatLayout):
         self.switch(Lobby(self.rboCI, members))
 
     def listenStepSwitch(self) -> None:
-        self.rboCI.bind(on_session_prepared=self.session,
-                        on_result_done=self.lobby,
+        self.rboCI.bind(on_session_prepared=lambda _: self.session(),
+                        on_result_done=lambda _: self.lobby(),
                         on_result_crash=self.sessionCrash,
-                        on_result_checkpoint_error=self.sessionCrash)
+                        on_result_checkpoint_error=self.sessionPreparationError)
 
-    def session(self, _: EventDispatcher = None) -> None:
+    def session(self) -> None:
         # step.members est le widget Members possédant le membre dict members
         self.switch(Session(self.rboCI, dict((id, member.name) for (id, member) in self.step.members.members.items())))
 
-    def lobby(self, _: EventDispatcher = None) -> None:
-        self.switch(Lobby(self.rboCI, dict((id, (name, False)) for (id, name) in self.step.members.items()), selfIncluded=True))
+    def lobby(self, preparing: bool = False) -> None:
+        self.switch(Lobby(self.rboCI, dict((id, (name, False)) for (id, name) in self.step.members.items()), selfIncluded=True, preparing=preparing))
 
     def sessionCrash(self, _: EventDispatcher):
         # Logger l'erreur...
         self.lobby()
+
+    def sessionPreparationError(self, _: EventDispatcher):
+        # Logger l'erreur...
+        self.lobby(preparing=True)
 
     def close(self, _: EventDispatcher, error: Failure):
         self.dispatch("on_close", error=error)
