@@ -182,6 +182,10 @@ class Members(ScrollableStack):
         for member in self.members.values():
             member.status = MemberStatus.PARTICIPANT
 
+    def lobbyOpened(self) -> None:
+        for member in self.members.values():
+            member.status = MemberStatus.WAITING
+
     def name(self, id: int) -> str:
         return self.members[id].name
 
@@ -226,7 +230,8 @@ class Lobby(Step, BoxLayout):
                     on_selecting_checkpoint=lambda _: self.members.selectingCheckpoint(),
                     on_checking_players=lambda _: self.members.checkingPlayers(),
                     on_ask_checkpoint=self.askCheckpoint,
-                    on_ask_yes_no=self.askYesNo)
+                    on_ask_yes_no=self.askYesNo,
+                    on_master_disconnected=self.masterDisconnected)
 
         Clock.schedule_once(self.bindTitleBar)
 
@@ -265,6 +270,12 @@ class Lobby(Step, BoxLayout):
     def preparingSession(self, _: EventDispatcher, **args):
         app.setTitle("Rbo - Lobby (Préparation)")
         self.logs.log("Préparation de la session dans [b]{delay} ms[/b]...".format(**args))
+
+    def masterDisconnected(self, _: EventDispatcher):
+        app.setTitle("Rbo - Lobby")
+        self.open = True
+        self.members.lobbyOpened()
+        self.logs.log("Membre maître déconnecté, préparation de la session annulée.")
 
     def cancelPreparing(self, _: EventDispatcher):
         app.setTitle("Rbo - Lobby")
