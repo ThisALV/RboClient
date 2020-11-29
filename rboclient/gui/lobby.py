@@ -6,7 +6,7 @@ from kivy.clock import Clock
 from kivy.event import EventDispatcher
 from kivy.input.motionevent import MotionEvent
 from kivy.logger import Logger
-from kivy.properties import BooleanProperty, ListProperty, NumericProperty, ObjectProperty, StringProperty
+from kivy.properties import BooleanProperty, ColorProperty, ListProperty, NumericProperty, ObjectProperty, StringProperty
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -69,7 +69,7 @@ class LobbyCtxActions(BoxLayout):
 class LogMessage(Label):
     "Message dans l'historique."
 
-    background = ListProperty([0, 0, 0])
+    background = ColorProperty([0, 0, 0])
 
     def __init__(self, msg: str, bg: "list[int]", **kwargs):
         super().__init__(text=msg, background=bg, **kwargs)
@@ -233,12 +233,14 @@ class Lobby(Step, BoxLayout):
                     on_ask_yes_no=self.askYesNo,
                     on_master_disconnected=self.masterDisconnected)
 
-        Clock.schedule_once(self.bindTitleBar)
+        Clock.schedule_once(lambda _: self.bindTitleBar(preparing))
 
-    def bindTitleBar(self, _: int):
+    def bindTitleBar(self, preparing: bool):
         actionsCtx = App.get_running_app().titleBar.actionsCtx
         actionsCtx.bind(on_disconnect=self.disconnect, on_ready=self.ready)
+
         self.bind(open=actionsCtx.setter("open"))
+        self.open = not preparing
 
     def askCheckpoint(self, _: EventDispatcher):
         input = TextInputPopup()
