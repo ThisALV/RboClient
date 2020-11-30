@@ -323,6 +323,8 @@ class GameCtxActions(BoxLayout):
     Chaque nom associe à un bouton d'une GameCtxAction (AnchorLayout) enfant du même nom un event respectif à émettre lorsque celui-ci est cliqué.
     """
 
+    actions = []
+
     def __init__(self, **kwargs):
         for event in self.actions:  # Les enregistrements des types d'events doivent se faire avant l'appel au constructeur...
             fullName = "on_" + event
