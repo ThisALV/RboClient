@@ -335,12 +335,13 @@ class GameCtxActions(BoxLayout):
         super().__init__(**kwargs)
 
         class ReleasedHandlerInitializer:
-            def __init__(self, ctxActions: GameCtxActions, action: str):
-                self.ctx = ctxActions
+            ctx = self
+
+            def __init__(self, action: str):
                 self.action = action
 
             def __call__(self, _: int):
                 self.ctx.ids[self.action].bind(on_release=lambda _: self.ctx.dispatch("on_" + self.action))
 
         for action in self.actions:  # ...par conséquent, il y a une deuxième boucle après cet appel.
-            Clock.schedule_once(ReleasedHandlerInitializer(self, action))
+            Clock.schedule_once(ReleasedHandlerInitializer(action))

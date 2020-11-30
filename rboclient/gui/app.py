@@ -20,6 +20,7 @@ from kivy.uix.popup import Popup
 from rboclient.gui.game import Game
 from rboclient.gui.home import Home, HomeCtxActions
 from rboclient.gui.lobby import LobbyCtxActions
+from rboclient.gui.session import SessionCtxActions
 from rboclient.misc import toBool
 from rboclient.network import handlerstree
 from rboclient.network.protocol import Mode
@@ -106,7 +107,7 @@ class TitleBar(BoxLayout):
     contexts = {
         TitleBarCtx.HOME: HomeCtxActions,
         TitleBarCtx.LOBBY: LobbyCtxActions,
-        TitleBarCtx.SESSION: FloatLayout
+        TitleBarCtx.SESSION: SessionCtxActions
     }
 
     title = StringProperty()
@@ -273,7 +274,7 @@ class ClientApp(App):
         Logger.debug("ClientApp : Maximized at app initialization.")
 
     def build(self):
-        for kv in ["home", "lobby", "config", "cfgsections", "widgets"]:
+        for kv in ["home", "lobby", "session", "config", "cfgsections", "widgets"]:
             Builder.load_file(kv + ".kv")
 
         return Builder.load_file("app.kv")
