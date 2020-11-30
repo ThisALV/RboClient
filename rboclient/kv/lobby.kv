@@ -1,25 +1,10 @@
 #:kivy 2.0.0
 
-<LobbyCtxAction>:
-    anchor_x: "center"
-    anchor_y: "center"
-    size_hint: (None, 1)
-    width: 100
-    button: button
-    RboBtn:
-        id: button
-        size_hint: (None, None)
-        size: (80, tbarHeight - 10)
-        text: root.text
-        disabled: not root.enabled
-        background_color: [0, 0, 0, 0] if self.disabled else btnBackground
-
 <LobbyCtxActions>:
-    orientation: "horizontal"
-    LobbyCtxAction:
+    GameCtxAction:
         id: disconnect
         text: "\u21d0"
-    LobbyCtxAction:
+    GameCtxAction:
         id: ready
         text: "Prêt"
         enabled: root.open

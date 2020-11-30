@@ -283,3 +283,62 @@ class YesNoPopup(Popup):
     def on_reply(self, reply: bool):
         Logger.debug("YesNoPopup : Chosen reply {}".format(reply))
         self.dismiss()
+
+
+class GameCtxAction(AnchorLayout):
+    """Widget composant une GameCtxActions.
+
+    Il centre un RboBtn qu'il peut activé ou désactivé, et il retransmet les cliques sur ce bouton via on_release.
+    """
+
+    button = ObjectProperty()
+    text = StringProperty()
+    enabled = BooleanProperty(True)
+
+    def __init__(self, **kwargs):
+        self.register_event_type("on_release")
+        super().__init__(**kwargs)
+
+        Clock.schedule_once(self.initReleasedHandler)
+
+    def initReleasedHandler(self, _: int):
+        self.button.bind(on_release=lambda _: self.dispatch("on_release"))
+
+    def on_release(self):
+        pass
+
+
+class CtxActionDefaultHandler:
+    def __init__(self, action: str):
+        self.action = action
+
+    def __call__(self):
+        Logger.debug("TitleBar : {} requested".format(self.action))
+
+
+class GameCtxActions(BoxLayout):
+    """Classe mère pour les menus d'actions contextuelles pendant une partie.
+
+    Les implémentations de cette classe doivent définir actions, une liste de noms d'actions contextuelles.\n
+    Chaque nom associe à un bouton d'une GameCtxAction (AnchorLayout) enfant du même nom un event respectif à émettre lorsque celui-ci est cliqué.
+    """
+
+    def __init__(self, **kwargs):
+        for event in self.actions:  # Les enregistrements des types d'events doivent se faire avant l'appel au constructeur...
+            fullName = "on_" + event
+
+            setattr(self, fullName, CtxActionDefaultHandler(event))
+            self.register_event_type(fullName)
+
+        super().__init__(**kwargs)
+
+        class ReleasedHandlerInitializer:
+            def __init__(self, ctxActions: GameCtxActions, action: str):
+                self.ctx = ctxActions
+                self.action = action
+
+            def __call__(self, _: int):
+                self.ctx.ids[self.action].bind(on_release=lambda _: self.ctx.dispatch("on_" + self.action))
+
+        for action in self.actions:  # ...par conséquent, il y a une deuxième boucle après cet appel.
+            Clock.schedule_once(ReleasedHandlerInitializer(self, action))

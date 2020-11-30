@@ -175,7 +175,6 @@
             id: no
             yes: False
             
-
 <YesNoPopup>:
     size_hint: (None, None)
     size: (250, 150)
@@ -183,3 +182,20 @@
     title_color: popupTitle
     separator_height: 2
     separator_color: popupTitle
+
+<GameCtxAction>:
+    anchor_x: "center"
+    anchor_y: "center"
+    size_hint: (None, 1)
+    width: 100
+    button: button
+    RboBtn:
+        id: button
+        size_hint: (None, None)
+        size: (80, tbarHeight - 10)
+        text: root.text
+        disabled: not root.enabled
+        background_color: [0, 0, 0, 0] if self.disabled else btnBackground
+
+<GameCtxActions>:
+    orientation: "horizontal"

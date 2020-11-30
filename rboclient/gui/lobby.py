@@ -12,7 +12,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from rboclient.gui import app
 from rboclient.gui.game import Step
-from rboclient.gui.widgets import ScrollableStack, TextInputPopup, YesNoPopup
+from rboclient.gui.widgets import GameCtxActions, ScrollableStack, TextInputPopup, YesNoPopup
 from rboclient.network import protocol
 from rboclient.network.protocol import RboConnectionInterface as RboCI
 
@@ -35,35 +35,11 @@ class LobbyCtxAction(AnchorLayout):
         pass
 
 
-class LobbyCtxActions(BoxLayout):
+class LobbyCtxActions(GameCtxActions):
     "Actions contextuelles disponibles dans le lobby, à savoir se signaler (non) prêt et se déconnecter pour revenir à l'accueil."
 
     actions = ["disconnect", "ready"]
-
     open = BooleanProperty(True)
-
-    def __init__(self, **kwargs):
-        for event in LobbyCtxActions.actions:  # Les enregistrements des types d'events doivent se faire avant l'appel au constructeur...
-            self.register_event_type("on_" + event)
-
-        super().__init__(**kwargs)
-
-        class ReleasedHandlerInitializer:
-            def __init__(self, ctxActions: LobbyCtxActions, action: str):
-                self.ctx = ctxActions
-                self.action = action
-
-            def __call__(self, _: int):
-                self.ctx.ids[self.action].bind(on_release=lambda _: self.ctx.dispatch("on_" + self.action))
-
-        for action in LobbyCtxActions.actions:  # ...par conséquent, il y a une deuxième boucle après cet appel.
-            Clock.schedule_once(ReleasedHandlerInitializer(self, action))
-
-    def on_ready(self):
-        Logger.debug("TitleBar : Ready requested.")
-
-    def on_disconnect(self):
-        Logger.debug("TitleBar : Logout requested.")
 
 
 class LogMessage(Label):
