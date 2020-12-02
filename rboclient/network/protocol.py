@@ -163,6 +163,9 @@ class RboConnectionInterface(protocol.Factory, EventDispatcher):
     def on_disconnected(self, reason: twisted.python.failure.Failure):
         Logger.info("RboCI : Disconnected : " + reason.getErrorMessage())
 
+    def confirm(self) -> None:
+        self.connection.send(b"\x00")
+
     def reply(self, reply: int) -> None:
         self.connection.send(reply.to_bytes(1, "big", signed=False))
 
