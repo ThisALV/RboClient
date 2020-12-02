@@ -4,16 +4,13 @@ from math import inf
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.event import EventDispatcher
-from kivy.input.motionevent import MotionEvent
-from kivy.logger import Logger
-from kivy.properties import BooleanProperty, ColorProperty, ListProperty, NumericProperty, ObjectProperty, StringProperty
+from kivy.properties import BooleanProperty, ColorProperty, NumericProperty, ObjectProperty, StringProperty
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from rboclient.gui import app
 from rboclient.gui.game import Step
 from rboclient.gui.widgets import GameCtxActions, ScrollableStack, TextInputPopup, YesNoPopup
-from rboclient.network import protocol
 from rboclient.network.protocol import RboConnectionInterface as RboCI
 
 
@@ -182,7 +179,7 @@ class Lobby(Step, BoxLayout):
 
     def __init__(self, rboCI: RboCI, members: "dict[int, tuple[str, bool]]", selfIncluded: bool = False, preparing: bool = False, **kwargs):
         super().__init__(**kwargs)
-        self.init(rboCI, app.TitleBarCtx.LOBBY)
+        self.init("Lobby", rboCI, app.TitleBarCtx.LOBBY)
 
         # Si le joueur ne vient pas de s'inscrire, alors il sera déjà parmis les membres du serveur
         if not selfIncluded:
@@ -246,17 +243,17 @@ class Lobby(Step, BoxLayout):
         self.logs.log("{} [{}] {}.".format(self.members.name(**args), args["id"], "est prêt" if ready else "n'est plus prêt"))
 
     def preparingSession(self, _: EventDispatcher, **args):
-        app.setTitle("Rbo - Lobby (Préparation)")
+        app.setTitle("Lobby (Préparation)")
         self.logs.log("Préparation de la session dans [b]{delay} ms[/b]...".format(**args))
 
     def masterDisconnected(self, _: EventDispatcher):
-        app.setTitle("Rbo - Lobby")
+        app.setTitle("Lobby")
         self.open = True
         self.members.lobbyOpened()
         self.logs.log("Membre maître déconnecté, préparation de la session annulée.")
 
     def cancelPreparing(self, _: EventDispatcher):
-        app.setTitle("Rbo - Lobby")
+        app.setTitle("Lobby")
         self.logs.log("Préparation de la session annulée.")
 
     def prepareSession(self, _: EventDispatcher, id: int):

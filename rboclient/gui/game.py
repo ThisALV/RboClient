@@ -11,13 +11,15 @@ class Step:
     """Classe mère pour les étapes d'une partie (lobby et session)
 
     La méthode init() permet d'initialiser l'interface RboCI et le contexte TitleBar sans forcer une signature pour l'héritage multiple.\n
+    Elle permet également de donner un nouveau titre à l'application.\n
     listen() est appelée par la classe fille pour stocker et binder tous les handlers fournis.\n
     stopListen() est appelée au niveau de l'interface afin d'unbinder tous les handlers gardés en mémoire avec listen().
     """
 
-    def init(self, rboCI: RboCI, titleBarCtx: "app.TitleBarCtx") -> None:
+    def init(self, title: str, rboCI: RboCI, titleBarCtx: "app.TitleBarCtx") -> None:
         self.rboCI = rboCI
         self.titleBarCtx = titleBarCtx
+        app.setTitle(title)
 
         self.handlers = {}
 
@@ -65,16 +67,16 @@ class Game(FloatLayout):
             def __call__(self, _: EventDispatcher):
                 self.ctx.sessionPreparationError(self.name)
 
-        self.rboCI.bind(on_session_prepared=lambda _: self.session(),
+        self.rboCI.bind(on_session_start=lambda _, **args: self.session(**args),
                         on_result_done=lambda _: self.lobby(),
                         on_result_crash=self.sessionCrash,
                         on_result_checkpoint_error=PreparationErrorHandler("Impossible de charge le checkpoint"),
                         on_result_less_members=PreparationErrorHandler("Des joueurs sont manquants"),
                         on_result_unknown_players=PreparationErrorHandler("Des joueurs sont en trop"))
 
-    def session(self) -> None:
+    def session(self, name: str) -> None:
         # step.members est le widget Members possédant le membre dict members
-        self.switch(Session(self.rboCI, dict((id, member.name) for (id, member) in self.step.members.members.items())))
+        self.switch(Session(name, self.rboCI, dict((id, member.name) for (id, member) in self.step.members.members.items())))
 
     def lobby(self, preparing: bool = False) -> None:
         self.switch(Lobby(self.rboCI, dict((id, (name, False)) for (id, name) in self.step.members.items()), selfIncluded=True, preparing=preparing))
@@ -95,7 +97,6 @@ class Game(FloatLayout):
 
     def switch(self, step: Step):
         App.get_running_app().titleBar.switch(step.titleBarCtx)
-        app.setTitle("Rbo - " + type(step).__name__)
 
         if self.step is not None:
             self.remove_widget(self.step)

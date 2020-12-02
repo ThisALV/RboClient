@@ -14,7 +14,6 @@ from kivy.logger import Logger
 from kivy.properties import BooleanProperty, ObjectProperty, StringProperty
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from rboclient.gui.game import Game
@@ -33,7 +32,7 @@ kivy.require("2.0.0")
 
 
 def setTitle(title: str) -> None:
-    App.get_running_app().titleBar.title = title
+    App.get_running_app().titleBar.title = "Rbo - " + title
 
 
 class ErrorMessage(AnchorLayout):
@@ -193,7 +192,7 @@ class Main(BoxLayout):
             ErrorPopup(type(error.value).__name__, error.getErrorMessage()).open()
 
         self.titleBar.switch(TitleBarCtx.HOME)
-        setTitle("Rbo - Connexion")
+        setTitle("Connexion")
 
         home = Home()
         if self.content is not None:

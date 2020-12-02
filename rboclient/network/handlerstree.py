@@ -20,6 +20,10 @@ def nothing() -> dict:
     return {}
 
 
+def name(data: Data) -> dict:
+    return {"name": data.takeString()}
+
+
 def id(data: Data) -> dict:
     return {"id": data.take()}
 
@@ -172,6 +176,6 @@ session = HandlerNode({
     }, "battle"),
     9: HandlerLeaf("player_crash", id),
     10: HandlerLeaf("leader_switch", id),
-    11: HandlerLeaf("session_start"),
+    11: HandlerLeaf("session_start", name),
     12: HandlerLeaf("session_stop")
 })
