@@ -4,22 +4,36 @@
     DisconnectAction:
         id: disconnect
 
+<BookMsg>:
+    size_hint: (1, None)
+    italic: True
+    font_size: 15
+    text_size: (self.width, None)
+    size: self.texture_size
+    halign: "center"
+
+<BookSection>:
+    size_hint: (1, None)
+    height: 50
+    bold: True
+    font_size: 20
+
+<Book>:
+    background: bright
+    spacing: 2
+
 <Players>:
     size_hint: (.7, 1)
 
 <Session>:
     orientation: "horizontal"
+    book: book
     BoxLayout:
         orientation: "vertical"
         size_hint: (1.4, 1)
-        FloatLayout:
+        Book:
+            id: book
             size_hint: (1, 3.5)
-            canvas.before:
-                Color:
-                    rgb: bright
-                Rectangle:
-                    pos: self.pos
-                    size: self.size
         AnchorLayout:
             anchor_x: "center"
             anchor_y: "center"
