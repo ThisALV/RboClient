@@ -45,7 +45,11 @@ class Players(ScrollableStack):
 
 class Session(Step, BoxLayout):
     name = StringProperty()
+
     book = ObjectProperty()
+    confirm = ObjectProperty()
+
+    currentRequest = ObjectProperty()
 
     def __init__(self, gameName: str, rboCI: RboCI, members: "dict[int, str]", **kwargs):
         super().__init__(**kwargs)
@@ -55,9 +59,18 @@ class Session(Step, BoxLayout):
         self.members = members
 
         self.listen(on_text=self.book.print,
-                    on_scene_switch=self.book.sceneSwitch)
+                    on_scene_switch=self.book.sceneSwitch,
+                    on_request_confirm=self.waitConfirm)
 
+        Clock.schedule_once(lambda _: self.confirm.bind(on_release=self.confirmed))
         Clock.schedule_once(self.bindTitleBar)
 
     def bindTitleBar(self, _: int):
         App.get_running_app().titleBar.actionsCtx.bind(on_disconnect=lambda _: self.rboCI.close())
+
+    def waitConfirm(self, _: EventDispatcher):
+        self.confirm.disabled = False
+
+    def confirmed(self, _: EventDispatcher):
+        self.confirm.disabled = True
+        self.rboCI.confirm()

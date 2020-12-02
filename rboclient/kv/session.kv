@@ -28,6 +28,7 @@
 <Session>:
     orientation: "horizontal"
     book: book
+    confirm: confirm
     BoxLayout:
         orientation: "vertical"
         size_hint: (1.4, 1)
@@ -43,6 +44,11 @@
                 Rectangle:
                     pos: self.pos
                     size: self.size
+            RboBtn:
+                id: confirm
+                size_hint: (.6, .4)
+                text: "Confirmer"
+                disabled: True
     BoxLayout:
         orientation: "vertical"
         size_hint: (.9, 1)
