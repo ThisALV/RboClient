@@ -58,10 +58,10 @@ class Tab(AnchorLayout):
         if not super().collide_point(*touch.pos):
             return super().on_touch_down(touch)
 
-        self.dispatch("on_selected", self.name)
+        self.dispatch("on_selected")
         return True
 
-    def on_selected(self, _: str):
+    def on_selected(self):
         self.isSelected = True
 
     def on_isSelected(self, _, selected: bool):
@@ -89,11 +89,11 @@ class Tabs(StackLayout):
         tab.bind(on_selected=self.enable)
         self.add_widget(tab)
 
-    def enable(self, _: EventDispatcher, name: str):
+    def enable(self, tab: Tab):
         self.sections[self.selected].isSelected = False
-        self.selected = name
+        self.selected = tab.name
 
-        self.dispatch("on_enable", name)
+        self.dispatch("on_enable", tab.name)
 
     def on_enable(self, name: str):
         Logger.debug("CfgTabs : Active tab : " + name)
