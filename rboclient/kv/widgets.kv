@@ -105,6 +105,7 @@
 
 <ScrollableStack>:
     do_scroll_x: False
+    do_scroll_y: self.height < content.minimum_height
     effect_cls: "ScrollEffect"
     content: content
     StackLayout:

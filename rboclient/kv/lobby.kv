@@ -77,13 +77,15 @@
     members: members
     Logs:
         id: logs
-    FloatLayout:
-        size_hint: (0.05, 1)
+    AnchorLayout:
+        anchor_x: "center"
+        anchor_y: "center"
         canvas.before:
             Color:
                 rgb: middle
             Rectangle:
                 pos: self.pos
                 size: self.size
-    Members:
-        id: members
+        Members:
+            id: members
+            size_hint: (.95, 1)
