@@ -1,7 +1,7 @@
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.event import EventDispatcher
-from kivy.properties import ObjectProperty, StringProperty
+from kivy.properties import NumericProperty, ObjectProperty, StringProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from rboclient.gui import app
@@ -50,8 +50,37 @@ class Book(ScrollableStack):
         self.content.add_widget(BookSection(text))
 
 
+class StatValue(Label):
+    "Paire clé/valuer d'une statistique d'une entité"
+
+    name = StringProperty()
+    value = NumericProperty()
+
+    def __init__(self, name: str, value: int, **kwargs):
+        super().__init__(name=name, value=value, **kwargs)
+
+
 class StatsView(ScrollableStack):
-    pass
+    """Apperçu des statistiques d'une entité.
+
+    Liste les statistiques d'une entitée sous la forme de labels "nom de stat : valeur" réparties dans deux colonnes.\n
+    Propose un refresh des données avec refresh(stats). Seuls les stats ayant des valeurs dans l'argument stats seront rafraîchies.\n
+    Les stats qui n'étaient pas encore présentes seront rajoutées.\n
+    Il est impossible de "masquer" une stat que l'on a décidé d'afficher au moins une fois."""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.content.orientation = "tb-lr"
+        self.stats = {}
+
+    def refresh(self, stats: "dict[str, StatValue]") -> None:
+        for (stat, value) in stats.items():
+            if stat in self.stats:
+                self.stats[stat].value = value
+            else:
+                self.stats[stat] = StatValue(stat, value)
+                self.add_widget(self.stats[stat])
 
 
 class Players(ScrollableStack):
