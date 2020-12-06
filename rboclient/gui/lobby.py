@@ -169,7 +169,8 @@ class Members(ScrollableStack):
 class Lobby(Step, BoxLayout):
     """Lobby d'une partie.
 
-    Gère tous les évènements d'un lobby (liste de membres, lancement de session, logs...).
+    Gère tous les évènements d'un lobby (liste de membres, lancement de session, logs...).\n
+    Actualise l'affichage et demande la saisie d'une configuration au membre maître si nécessaire.
     """
 
     logs = ObjectProperty()

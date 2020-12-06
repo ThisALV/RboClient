@@ -19,16 +19,27 @@ class SessionCtxActions(GameCtxActions):
 
 
 class BookMsg(Label):
+    "Affiche un message du livre, s'insère dans un Book."
+
     def __init__(self, msg: str, **kwargs):
         super().__init__(text=msg, **kwargs)
 
 
 class BookSection(Label):
+    "Affiche le titre d'une section, s'insère dans un Book."
+
     def __init__(self, msg: str, **kwargs):
         super().__init__(text=msg, **kwargs)
 
 
 class Book(ScrollableStack):
+    """Représente le livre du jeu.
+
+    C'est ici que sont écrits l'histoire, les combats et l'historique de tout ce qu'il se passe durant la partie.\n
+    Peut être divisé en plusieurs sections en ajoutant un titre avec newSection().\n
+    sceneSwitch() appelle newSection() pour le cas d'un changement de scène.
+    """
+
     def print(self, _: EventDispatcher, text: str):
         self.content.add_widget(BookMsg(text))
 
@@ -39,11 +50,20 @@ class Book(ScrollableStack):
         self.content.add_widget(BookSection(text))
 
 
+class StatsView(ScrollableStack):
+    pass
+
+
 class Players(ScrollableStack):
     pass
 
 
 class Session(Step, BoxLayout):
+    """Session d'une partie.
+
+    Gère tous les évènements qui peuvent avoir lieu au cours d'une partie (session).\n
+    Actualise l'affichage en conséquence et propose un bouton "Confirmer" ainsi qu'une popup afin de répondre aux requêtes reçues."""
+
     name = StringProperty()
 
     book = ObjectProperty()
