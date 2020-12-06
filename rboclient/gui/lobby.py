@@ -175,12 +175,16 @@ class Lobby(Step, BoxLayout):
 
     logs = ObjectProperty()
     members = ObjectProperty()
+    master = NumericProperty()
 
     open = BooleanProperty(True)
 
     def __init__(self, rboCI: RboCI, members: "dict[int, tuple[str, bool]]", selfIncluded: bool = False, preparing: bool = False, **kwargs):
         super().__init__(**kwargs)
         self.init("Lobby", rboCI, app.TitleBarCtx.LOBBY)
+
+        # Doit être bind avant d'ajouter les joueurs sinon le nouveau membre master ne sera pas pris en compte
+        self.members.bind(master=self.setter("master"))
 
         # Si le joueur ne vient pas de s'inscrire, alors il sera déjà parmis les membres du serveur
         if not selfIncluded:

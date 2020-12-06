@@ -76,7 +76,8 @@ class Game(FloatLayout):
 
     def session(self, name: str) -> None:
         # step.members est le widget Members possédant le membre dict members
-        self.switch(Session(name, self.rboCI, dict((id, member.name) for (id, member) in self.step.members.members.items())))
+        players = dict((id, member.name) for (id, member) in self.step.members.members.items())
+        self.switch(Session(self.rboCI.id, self.step.master, name, self.rboCI, players))
 
     def lobby(self, preparing: bool = False) -> None:
         self.switch(Lobby(self.rboCI, dict((id, (name, False)) for (id, name) in self.step.members.items()), selfIncluded=True, preparing=preparing))

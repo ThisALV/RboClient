@@ -23,19 +23,64 @@
     spacing: 2
 
 <StatValue>:
-    markdown: True
+    size_hint: (.5, None)
+    height: 15
+    halign: "left"
+    text_size: self.size
+    markup: True
     text: "[b]{} :[/b] {}".format(self.name, self.value)
 
-<StatsView>:
-    background: dark
+<Player>:
+    orientation: "vertical"
+    size_hint: (1, None)
+    height: 150
+    padding: 15
+    stats: stats
+    BoxLayout:
+        orientation: "horizontal"
+        size_hint: (1, None)
+        height: 30
+        AnchorLayout:
+            anchor_x: "left"
+            Label:
+                size_hint: (None, 1)
+                width: self.height
+                color: dark
+                text: str(root.playerID)
+                font_size: 15
+                bold: True
+                canvas.before:
+                    Color:
+                        rgb: [1, 1, 0 if root.isLeader else 1]
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+        Label:
+            bold: root.isSelf
+            text: root.name
+            font_size: 20
+        AnchorLayout:
+            anchor_x: "right"
+            Label:
+                size_hint: (None, 1)
+                width: self.height
+                bold: True
+                font_name: "DejaVuSans"
+                font_size: self.height
+                text: root.requestStatus[root.hasReplied][0]
+                color: root.requestStatus[root.hasReplied][1]
+    StatsView:
+        id: stats
+        background: dark
 
 <Players>:
-    size_hint: (.7, 1)
+    background: dark
 
 <Session>:
     orientation: "horizontal"
     book: book
     confirm: confirm
+    players: players
     BoxLayout:
         orientation: "vertical"
         size_hint: (1.4, 1)
@@ -69,5 +114,5 @@
             text: root.name
             font_size: 20
     Players:
+        id: players
         size_hint: (.7, 1)
-        background: dark
