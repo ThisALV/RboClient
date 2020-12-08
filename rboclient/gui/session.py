@@ -63,13 +63,18 @@ class StatValue(Label):
         super().__init__(name=name, value=value, **kwargs)
 
 
+class UnknownStat(ValueError):
+    def __init__(self, name: str):
+        super().__init__("Unknown stat \"{}\"".format(name))
+
+
 class StatsView(ScrollableStack):
     """Apperçu des statistiques d'une entité.
 
     Liste les statistiques d'une entitée sous la forme de labels "nom de stat : valeur" réparties dans deux colonnes.\n
     Propose un refresh des données avec refresh(stats). Seuls les stats ayant des valeurs dans l'argument stats seront rafraîchies.\n
     Les stats qui n'étaient pas encore présentes seront rajoutées.\n
-    Il est impossible de "masquer" une stat que l'on a décidé d'afficher au moins une fois.
+    Pour masquer une stat, il faut lui affecter la valeur None en argument de refresh(stats).
     """
 
     def __init__(self, **kwargs):
@@ -84,9 +89,18 @@ class StatsView(ScrollableStack):
 
     def refresh(self, stats: "dict[str, int]") -> None:
         for (stat, value) in stats.items():
+            hideStat = value is None
+
             if stat in self.stats:
-                self.stats[stat].value = value
+                if hideStat:
+                    self.content.remove_widget(self.stats[stat])
+                    self.stats.pop(stat)
+                else:
+                    self.stats[stat].value = value
             else:
+                if hideStat:
+                    raise UnknownStat(stat)
+
                 self.stats[stat] = StatValue(stat, value)
                 self.content.add_widget(self.stats[stat])
 
@@ -255,6 +269,7 @@ class Session(Step, BoxLayout):
         self.players.endRequest()
 
     def updatePlayer(self, _: EventDispatcher, **args):
-        (id, changes) = args.values()
+        (id, update) = args.values()
 
-        self.players.refreshMainStats(id, dict([(name, stat["value"]) for (name, stat) in changes["stats"].items() if stat["main"]]))
+        stats = dict([(name, None if stat["hidden"] else stat["value"]) for (name, stat) in update["stats"].items() if stat["main"]])
+        self.players.refreshMainStats(id, stats)

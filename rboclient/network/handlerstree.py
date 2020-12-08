@@ -64,19 +64,18 @@ def text(data: Data) -> dict:
     return {"text": data.takeString()}
 
 
-def playerStateChanges(data: Data) -> dict:
-    return {"id": data.take(), "changes": json.loads(data.takeString())}
+def playerUpdate(data: Data) -> dict:
+    return {"id": data.take(), "update": json.loads(data.takeString())}
 
 
 def globalStat(data: Data) -> dict:
-    return {
-        "name": data.takeString(),
-        "min": data.takeNumeric(4, signed=True),
-        "max": data.takeNumeric(4, signed=True),
-        "value": data.takeNumeric(4, signed=True),
-        "hidden": data.takeBool(),
-        "main": data.takeBool()
-    }
+    args = {"name": data.takeString(), "hidden": data.takeBool(), "main": data.takeBool()}
+
+    if not args["hidden"]:
+        for arg in ["min", "max", "value"]:
+            args[arg] = data.takeNumeric(4, signed=True)
+
+    return args
 
 
 def reply(data: Data) -> dict:
@@ -157,7 +156,7 @@ session = HandlerNode({
         4: HandlerLeaf("end")
     }, "request"),
     1: HandlerLeaf("text", text),
-    2: HandlerLeaf("player_update", playerStateChanges),
+    2: HandlerLeaf("player_update", playerUpdate),
     3: HandlerLeaf("global_stat_update", globalStat),
     4: HandlerLeaf("player_die", id),
     5: HandlerLeaf("scene_switch", scene),
