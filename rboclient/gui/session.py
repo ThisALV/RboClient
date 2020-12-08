@@ -74,7 +74,7 @@ class StatsView(ScrollableStack):
     Liste les statistiques d'une entitée sous la forme de labels "nom de stat : valeur" réparties dans deux colonnes.\n
     Propose un refresh des données avec refresh(stats). Seuls les stats ayant des valeurs dans l'argument stats seront rafraîchies.\n
     Les stats qui n'étaient pas encore présentes seront rajoutées.\n
-    Pour masquer une stat, il faut lui affecter la valeur None en argument de refresh(stats).
+    Pour masquer une stat, il faut lui affecter la valeur None en argument de refresh(stats). Si la stat n'est pas déjà présente, rien ne se passe.
     """
 
     def __init__(self, **kwargs):
@@ -98,11 +98,9 @@ class StatsView(ScrollableStack):
                 else:
                     self.stats[stat].value = value
             else:
-                if hideStat:
-                    raise UnknownStat(stat)
-
-                self.stats[stat] = StatValue(stat, value)
-                self.content.add_widget(self.stats[stat])
+                if not hideStat:
+                    self.stats[stat] = StatValue(stat, value)
+                    self.content.add_widget(self.stats[stat])
 
 
 class RequestReplied(Enum):
@@ -271,5 +269,15 @@ class Session(Step, BoxLayout):
     def updatePlayer(self, _: EventDispatcher, **args):
         (id, update) = args.values()
 
-        stats = dict([(name, None if stat["hidden"] else stat["value"]) for (name, stat) in update["stats"].items() if stat["main"]])
-        self.players.refreshMainStats(id, stats)
+        statsUpdate = update["stats"]
+        showStats = {}
+        for (name, stat) in statsUpdate.items():
+            main = stat["main"]
+            hidden = stat["hidden"]
+
+            if main:
+                showStats[name] = None if hidden else stat["value"]
+            else:
+                showStats[name] = None
+
+        self.players.refreshMainStats(id, showStats)
