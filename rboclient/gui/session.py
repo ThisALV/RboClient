@@ -256,11 +256,11 @@ class Session(Step, BoxLayout):
 
     def waitConfirm(self, _: EventDispatcher):
         self.confirm.disabled = False
+        self.players.beginRequest()
 
     def confirmed(self, _: EventDispatcher):
         self.confirm.disabled = True
         self.rboCI.confirm()
-        self.players.beginRequest()
 
     def stopConfirm(self, _: EventDispatcher):
         self.confirm.disabled = True
