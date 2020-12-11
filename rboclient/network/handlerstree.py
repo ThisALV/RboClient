@@ -41,12 +41,16 @@ def ids(data: Data) -> dict:
     return {"ids": [data.take() for i in range(count)]}
 
 
+def confirmRequest(data: Data) -> dict:
+    return {"target": data.take()}
+
+
 def rangeRequest(data: Data) -> dict:
-    return {"msg": data.takeString(), "min": data.take(), "max": data.take()}
+    return {"target": data.take(), "message": data.takeString(), "min": data.take(), "max": data.take()}
 
 
 def possibilities(data: Data) -> dict:
-    args = {"msg": data.takeString(), "options": {}}
+    args = {"target": data.take(), "message": data.takeString(), "options": {}}
     count = data.take()
 
     for i in range(count):
@@ -56,8 +60,8 @@ def possibilities(data: Data) -> dict:
     return args
 
 
-def msg(data: Data) -> dict:
-    return {"msg": data.takeString()}
+def yesNoRequest(data: Data) -> dict:
+    return {"target": data.take(), "message": data.takeString()}
 
 
 def text(data: Data) -> dict:
@@ -151,10 +155,10 @@ session = HandlerNode({
     0: HandlerNode({
         0: HandlerLeaf("range", rangeRequest),
         1: HandlerLeaf("possibilities", possibilities),
-        2: HandlerLeaf("confirm"),
-        3: HandlerLeaf("yes_no", msg),
-        4: HandlerLeaf("end")
+        2: HandlerLeaf("confirm", confirmRequest),
+        3: HandlerLeaf("yes_no", yesNoRequest)
     }, "request"),
+    13: HandlerLeaf("finish_request"),
     1: HandlerLeaf("text", text),
     2: HandlerLeaf("player_update", playerUpdate),
     3: HandlerLeaf("global_stat_update", globalStat),

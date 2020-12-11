@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from math import nan
 
 from kivy.app import App
 from kivy.clock import Clock
@@ -13,6 +14,7 @@ from rboclient.gui.widgets import GameCtxActions, ScrollableStack
 from rboclient.network.protocol import RboConnectionInterface as RboCI
 
 INTRODUCTION = 0
+ALL_PLAYERS = 255
 
 
 class SessionCtxActions(GameCtxActions):
@@ -196,8 +198,10 @@ class Players(ScrollableStack):
 
         self.players[id].stats.refresh(stats)
 
-    def beginRequest(self) -> None:
-        for player in self.players.values():
+    def beginRequest(self, target: int) -> None:
+        targets = self.players.values() if target == ALL_PLAYERS else [self.players[target]]
+
+        for player in targets:
             player.hasReplied = RequestReplied.NO
 
     def replied(self, id: int) -> None:
@@ -241,30 +245,43 @@ class Session(Step, BoxLayout):
             self.players.addPlayer(id, name, id == selfID)
         self.players.switchLeader(initialLeader)
 
+        class RequestHandler:
+            context = self
+
+            def __init__(self, replyInput):
+                self.replyInput = replyInput
+
+            def __call__(self, _: EventDispatcher, **args):
+                session = self.context
+                session.players.beginRequest(args["target"])
+
+                self.replyInput(**args)
+
         self.listen(on_text=self.book.print,
                     on_scene_switch=self.book.sceneSwitch,
-                    on_request_confirm=self.waitConfirm,
-                    on_request_end=self.stopConfirm,
-                    on_player_reply=lambda _, **args: self.players.replied(args["id"]),
+                    on_request_confirm=RequestHandler(self.askConfirm),
+                    on_finish_request=self.finishRequest,
+                    on_player_reply=self.playerReplied,
                     on_player_update=self.updatePlayer)
 
-        Clock.schedule_once(lambda _: self.confirm.bind(on_release=self.confirmed))
+        Clock.schedule_once(lambda _: self.confirm.bind(on_release=lambda _: self.rboCI.confirm()))
         Clock.schedule_once(self.bindTitleBar)
 
     def bindTitleBar(self, _: int):
         App.get_running_app().titleBar.actionsCtx.bind(on_disconnect=lambda _: self.rboCI.close())
 
-    def waitConfirm(self, _: EventDispatcher):
+    def askConfirm(self, target: int):
         self.confirm.disabled = False
-        self.players.beginRequest()
 
-    def confirmed(self, _: EventDispatcher):
-        self.confirm.disabled = True
-        self.rboCI.confirm()
+    def playerReplied(self, _: EventDispatcher, **args):
+        if args["id"] == self.rboCI.id:
+            self.confirm.disabled = True
 
-    def stopConfirm(self, _: EventDispatcher):
-        self.confirm.disabled = True
+        self.players.replied(args["id"])
+
+    def finishRequest(self, _: EventDispatcher):
         self.players.endRequest()
+        self.confirm.disabled = True
 
     def updatePlayer(self, _: EventDispatcher, **args):
         (id, update) = args.values()
