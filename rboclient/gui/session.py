@@ -271,7 +271,8 @@ class Session(Step, BoxLayout):
         App.get_running_app().titleBar.actionsCtx.bind(on_disconnect=lambda _: self.rboCI.close())
 
     def askConfirm(self, target: int):
-        self.confirm.disabled = False
+        if target == ALL_PLAYERS or target == self.rboCI.id:
+            self.confirm.disabled = False
 
     def playerReplied(self, _: EventDispatcher, **args):
         if args["id"] == self.rboCI.id:
