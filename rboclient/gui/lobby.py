@@ -209,7 +209,8 @@ class Lobby(Step, BoxLayout):
                     on_checking_players=lambda _: self.members.checkingPlayers(),
                     on_ask_checkpoint=self.askCheckpoint,
                     on_ask_yes_no=self.askYesNo,
-                    on_master_disconnected=self.masterDisconnected)
+                    on_master_disconnected=self.masterDisconnected,
+                    on_lobby_open=self.opened)
 
         Clock.schedule_once(lambda _: self.bindTitleBar(preparing))
 
@@ -251,9 +252,12 @@ class Lobby(Step, BoxLayout):
         app.setTitle("Lobby (Préparation)")
         self.logs.log("Préparation de la session dans [b]{delay} ms[/b]...".format(**args))
 
+    def opened(self, _: EventDispatcher = None):
+        self.open = True
+
     def masterDisconnected(self, _: EventDispatcher):
         app.setTitle("Lobby")
-        self.open = True
+        self.opened()
         self.members.lobbyOpened()
         self.logs.log("Membre maître déconnecté, préparation de la session annulée.")
 
