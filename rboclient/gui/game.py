@@ -70,7 +70,7 @@ class Game(FloatLayout):
         self.rboCI.bind(on_session_start=lambda _, **args: self.session(**args),
                         on_result_done=lambda _: self.lobby(),
                         on_result_crash=self.sessionCrash,
-                        on_result_checkpoint_error=PreparationErrorHandler("Impossible de charge le checkpoint"),
+                        on_result_checkpoint_error=PreparationErrorHandler("Impossible de charger le checkpoint"),
                         on_result_less_members=PreparationErrorHandler("Des joueurs sont manquants"),
                         on_result_unknown_players=PreparationErrorHandler("Des joueurs sont en trop"))
 
