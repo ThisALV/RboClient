@@ -49,7 +49,7 @@ class Book(ScrollableStack):
         self.content.add_widget(BookMsg(text))
 
     def sceneSwitch(self, _: EventDispatcher, scene: int):
-        self.newSection("Introduction" if scene == INTRODUCTION else "Scène {}".format(scene))
+        self.newSection("Introduction" if scene == INTRODUCTION else "Page {}".format(scene))
 
     def newSection(self, text: str) -> None:
         self.content.add_widget(BookSection(text))
