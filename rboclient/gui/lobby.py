@@ -68,7 +68,8 @@ class MemberStatus(Enum):
     READY = auto(),
     PARTICIPANT = auto(),
     CHECKPT = auto(),
-    CHECKING_PARTICIPANTS = auto()
+    CHECKING_PARTICIPANTS = auto(),
+    REVISING_SESSION = auto()
 
 
 class Member(BoxLayout):
@@ -85,7 +86,8 @@ class Member(BoxLayout):
         MemberStatus.READY: ("Prêt", [0, 1, 0]),
         MemberStatus.PARTICIPANT: ("Participant", [1, .6, 0]),
         MemberStatus.CHECKPT: ("Choisit le checkpoint...", [1, 1, 0]),
-        MemberStatus.CHECKING_PARTICIPANTS: ("Vérifie les joueurs...", [1, 1, 0])
+        MemberStatus.CHECKING_PARTICIPANTS: ("Vérifie les joueurs...", [1, 1, 0]),
+        MemberStatus.REVISING_SESSION: ("Corrige les paramètres...", [1, 1, 0])
     }
 
     def __init__(self, id: int, name: str, me: bool, **kwargs):
@@ -151,6 +153,9 @@ class Members(ScrollableStack):
     def checkingPlayers(self) -> None:
         self.members[self.master].status = MemberStatus.CHECKING_PARTICIPANTS
 
+    def revisingSession(self) -> None:
+        self.members[self.master].status = MemberStatus.REVISING_SESSION
+
     def prepareSession(self) -> None:
         for member in self.members.values():
             member.status = MemberStatus.PARTICIPANT
@@ -207,6 +212,7 @@ class Lobby(Step, BoxLayout):
                     on_prepare_session=self.prepareSession,
                     on_selecting_checkpoint=lambda _: self.members.selectingCheckpoint(),
                     on_checking_players=lambda _: self.members.checkingPlayers(),
+                    on_revising_parameters=lambda _: self.members.revisingSession(),
                     on_ask_checkpoint=self.askCheckpoint,
                     on_ask_yes_no=self.askYesNo,
                     on_master_disconnected=self.masterDisconnected,
@@ -254,11 +260,11 @@ class Lobby(Step, BoxLayout):
 
     def opened(self, _: EventDispatcher = None):
         self.open = True
+        self.members.lobbyOpened()
 
     def masterDisconnected(self, _: EventDispatcher):
         app.setTitle("Lobby")
         self.opened()
-        self.members.lobbyOpened()
         self.logs.log("Membre maître déconnecté, préparation de la session annulée.")
 
     def cancelPreparing(self, _: EventDispatcher):
