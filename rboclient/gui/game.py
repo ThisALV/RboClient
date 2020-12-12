@@ -61,11 +61,11 @@ class Game(FloatLayout):
         class PreparationErrorHandler:
             ctx = self
 
-            def __init__(self, name: str):
-                self.name = name
+            def __init__(self, reason: str):
+                self.reason = reason
 
-            def __call__(self, _: EventDispatcher):
-                self.ctx.sessionPreparationError(self.name)
+            def __call__(self, _: EventDispatcher, **args):
+                self.ctx.sessionPreparationError(self.reason, **args)
 
         self.rboCI.bind(on_session_start=lambda _, **args: self.session(**args),
                         on_result_done=lambda _: self.lobby(),
@@ -86,9 +86,13 @@ class Game(FloatLayout):
         self.lobby()
         self.step.logs.log("[b]La session a crashé.[/b]")
 
-    def sessionPreparationError(self, error: str):
+    def sessionPreparationError(self, error: str, **args):
         self.lobby(preparing=True)
         self.step.logs.log("La préparation de la session a échouée : [b]{}[/b]".format(error))
+
+        if "ids" in args:
+            ids = ", ".join([str(id) for id in args["ids"]])
+            self.step.logs.log("Identifiants des joueurs sauvegardés dans ce checkpoint : [b]{}[/b]".format(ids))
 
     def close(self, _: EventDispatcher, error: Failure):
         self.dispatch("on_close", error=error)
