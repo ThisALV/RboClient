@@ -79,15 +79,20 @@
 
 <Session>:
     orientation: "horizontal"
-    book: book
+    gameplay: gameplay
+    book: gameplay.book
     confirm: confirm
     players: players
     BoxLayout:
         orientation: "vertical"
         size_hint: (1.4, 1)
-        Book:
-            id: book
+        Gameplay:
+            id: gameplay
             size_hint: (1, 3.5)
+            Book:
+                id: book
+                pos_hint: {"x": 0, "y": 0}
+                size_hint: (1, 1)
         AnchorLayout:
             anchor_x: "center"
             anchor_y: "center"

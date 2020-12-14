@@ -7,6 +7,7 @@ from kivy.event import EventDispatcher
 from kivy.logger import Logger
 from kivy.properties import BooleanProperty, NumericProperty, ObjectProperty, StringProperty
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
 from rboclient.gui import app
 from rboclient.gui.game import Step
@@ -53,6 +54,68 @@ class Book(ScrollableStack):
 
     def newSection(self, text: str) -> None:
         self.content.add_widget(BookSection(text))
+
+
+class DiceRoll(BoxLayout):
+    """Simule un lancé de dés.
+
+    Affiche une animation de lancé de dés avec un message réglable.\n
+    Cela permet d'aider à le joueur à comprendre comment les stats ont été tirées.\n
+    Émet on_finished lorsque l'action est terminée.
+    """
+
+    message = StringProperty()
+    dices = NumericProperty()
+    bonus = NumericProperty()
+    result = NumericProperty()
+
+    def __init__(self, **kwargs):
+        self.register_event_type("on_finished")
+        super().__init__(**kwargs)
+
+
+class ActionInProgress(Exception):
+    def __init__(self):
+        super().__init__("The gameplay screen is already into an action")
+
+
+class Gameplay(FloatLayout):
+    """Zone de jeu de la session.
+
+    Initialement, affiche les logs de la partie.\n
+    rollDice() permet de déclencher l'écran de lancement de dés jusqu'à l'appel de back() qui retourne aux logs.
+    """
+
+    book = ObjectProperty()
+
+    def __init__(self, **kwargs):
+        self.register_event_type("on_action_finished")
+        super().__init__(**kwargs)
+
+        self.currentAction = None
+
+    def back(self, _: EventDispatcher):
+        if self.currentAction is None:
+            return
+
+        self.remove_widget(self.currentAction)
+        self.currentAction = None
+
+        self.dispatch("on_action_finished")
+
+    def action(self, action: EventDispatcher) -> None:
+        if self.currentAction is not None:
+            raise ActionInProgress()
+
+        self.currentAction = action
+        self.currentAction.pos_hint = {"x": 0, "y": 0}
+        self.currentAction.size_hint = (1, 1)
+        self.currentAction.bind(on_finished=self.back)
+
+        self.add_widget(self.currentAction)
+
+    def rollDice(self, message: str, dices: int, bonus: int, result: int) -> None:
+        pass
 
 
 class StatValue(Label):
@@ -228,7 +291,9 @@ class Session(Step, BoxLayout):
 
     name = StringProperty()
 
+    gameplay = ObjectProperty()
     book = ObjectProperty()
+
     confirm = ObjectProperty()
 
     details = ObjectProperty()
