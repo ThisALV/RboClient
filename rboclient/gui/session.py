@@ -5,8 +5,9 @@ from random import randrange
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.event import EventDispatcher
+from kivy.input import MotionEvent
 from kivy.logger import Logger
-from kivy.properties import BooleanProperty, ListProperty, NumericProperty, ObjectProperty, StringProperty
+from kivy.properties import BooleanProperty, ColorProperty, ListProperty, NumericProperty, ObjectProperty, StringProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
@@ -222,6 +223,8 @@ class StatsView(ScrollableStack):
     Pour masquer une stat, il faut lui affecter la valeur None en argument de refresh(stats). Si la stat n'est pas déjà présente, rien ne se passe.
     """
 
+    foreground = ColorProperty([1, 1, 1])
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -242,10 +245,10 @@ class StatsView(ScrollableStack):
                     self.stats.pop(stat)
                 else:
                     self.stats[stat].value = value
-            else:
-                if not hideStat:
-                    self.stats[stat] = StatValue(stat, value)
-                    self.content.add_widget(self.stats[stat])
+            elif not hideStat:
+                self.stats[stat] = StatValue(stat, value)
+                self.bind(foreground=self.stats[stat].setter("color"))
+                self.content.add_widget(self.stats[stat])
 
 
 class RequestReplied(Enum):
@@ -268,6 +271,8 @@ class Player(BoxLayout):
     isLeader = BooleanProperty(False)
     hasReplied = ObjectProperty(RequestReplied.WAITING)
 
+    selected = BooleanProperty(False)
+
     requestStatus = {
         RequestReplied.WAITING: ("", [0, 0, 0]),
         RequestReplied.NO: ("\u00d7", [1, .3, .3]),
@@ -281,6 +286,10 @@ class Player(BoxLayout):
 
     def on_hasReplied(self, _: EventDispatcher, hasReplied: RequestReplied):
         Logger.debug("Player {} : Replied ? \"{}\"".format(self.playerID, hasReplied))
+
+    def on_touch_down(self, touch: MotionEvent):
+        if self.collide_point(*touch.pos):
+            self.selected = not self.selected
 
 
 class PlayerNotFound(ValueError):
@@ -306,12 +315,19 @@ class Players(ScrollableStack):
 
         self.players = {}
         self.leader = None
+        self.selected = None
 
     def selection(self, player: Player, selected: bool):
         if selected:
             self.dispatch("on_enable", player.playerID)
+
+            if self.selected is not None:
+                self.players[self.selected].selected = False
+
+            self.selected = player.playerID
         else:
             self.dispatch("on_disable")
+            self.selected = None
 
     def on_enable(self, playerID: int):
         Logger.debug("Players : selected [{}]".format(playerID))
@@ -328,7 +344,7 @@ class Players(ScrollableStack):
 
         self.players[id] = player
         self.content.add_widget(player)
-        player.bind(on_selected=self.selection)
+        player.bind(selected=self.selection)
 
     def removePlayer(self, id: int) -> None:
         self.checkPlayerID(id)
@@ -360,6 +376,10 @@ class Players(ScrollableStack):
 
         self.leader = id
         self.players[self.leader].isLeader = True
+
+
+class Details(BoxLayout):
+    """Panneau central des détails du jeu"""
 
 
 class Request(Enum):
