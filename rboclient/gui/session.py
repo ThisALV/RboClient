@@ -1,11 +1,12 @@
 from enum import Enum, auto
 from math import nan
+from random import randrange
 
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.event import EventDispatcher
 from kivy.logger import Logger
-from kivy.properties import BooleanProperty, NumericProperty, ObjectProperty, StringProperty
+from kivy.properties import BooleanProperty, ListProperty, NumericProperty, ObjectProperty, StringProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
@@ -56,6 +57,67 @@ class Book(ScrollableStack):
         self.content.add_widget(BookSection(text))
 
 
+def diceFace(face: int) -> str:
+    "Retourne un caractère unicode \"face de dé\" correspondant à l'argument face."
+
+    return chr(0x2680 + face - 1)
+
+
+def randomFace() -> str:
+    "Retourne un caractère unicode \"face de dé\" correspondant à l'argument face."
+
+    return diceFace(randrange(1, 7))
+
+
+class Dices(Label):
+    """Anime un ou plusieurs dés qui seront lancés.
+
+    La propriété dices permet de renseigner combien de dés sont à jouer.\n
+    Lors que roll() est appelée avec le résultat de chacun des dés, l'animation de roulement des dés ralentit jusqu'à s'arrêter.
+    Après l'appel à roll(), les dés sont organisés pour reproduire le résultat du tirage reçu.
+    """
+
+    lastRollingDelayMs = 750
+
+    dices = NumericProperty()
+
+    rollingDices = StringProperty()
+    rollingDelayMs = NumericProperty(100)
+    rolled = BooleanProperty(False)
+    rollFinished = BooleanProperty(False)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.skipped = False
+        self.result = None
+
+        self.rolling()
+
+    def rolling(self, _: int = None):
+        if self.rollFinished:
+            self.text = " ".join([diceFace(dice) for dice in self.result])
+        else:
+            self.text = " ".join([randomFace() for i in range(self.dices)])
+
+            if self.skipped:
+                self.rollingDelayMs = Dices.lastRollingDelayMs
+                self.rolling()
+            else:
+                if self.rolled:
+                    self.rollingDelayMs *= 1.2
+
+                if self.rollFinished:
+                    self.rolling()
+                else:
+                    Clock.schedule_once(self.rolling, self.rollingDelayMs / 1000)
+
+    def roll(self, result: "list[int]", skip: bool = False) -> None:
+        self.result = result
+        self.rolled = True
+        self.skipped = skip
+
+
 class DiceRoll(BoxLayout):
     """Simule un lancé de dés.
 
@@ -67,11 +129,26 @@ class DiceRoll(BoxLayout):
     message = StringProperty()
     dices = NumericProperty()
     bonus = NumericProperty()
-    result = NumericProperty()
+    result = ListProperty()
+    total = NumericProperty()
 
-    def __init__(self, **kwargs):
+    rollAnimation = ObjectProperty()
+
+    def __init__(self, ctx: "Session", **kwargs):
         self.register_event_type("on_finished")
         super().__init__(**kwargs)
+
+        self.context = ctx
+
+    def on_finished(self):
+        Logger.debug("Gameplay : Dice roll finished")
+        self.context.rboCI.confirm()
+
+    def next(self, skip: bool = False) -> None:
+        if self.rollAnimation.rolled:
+            self.dispatch("on_finished")
+        else:
+            self.rollAnimation.roll(self.result, skip)
 
 
 class ActionInProgress(Exception):
@@ -94,6 +171,9 @@ class Gameplay(FloatLayout):
 
         self.currentAction = None
 
+    def on_action_finished(self):
+        pass
+
     def back(self, _: EventDispatcher):
         if self.currentAction is None:
             return
@@ -114,8 +194,8 @@ class Gameplay(FloatLayout):
 
         self.add_widget(self.currentAction)
 
-    def rollDice(self, message: str, dices: int, bonus: int, result: int) -> None:
-        pass
+    def rollDice(self, ctx: "Session", message: str, dices: int, bonus: int, result: "list[int]") -> None:
+        self.action(DiceRoll(ctx, message=message, dices=dices, bonus=bonus, result=result))
 
 
 class StatValue(Label):
@@ -282,12 +362,27 @@ class Players(ScrollableStack):
         self.players[self.leader].isLeader = True
 
 
+class Request(Enum):
+    CONFIRM = auto(),
+    DICE_ROLL = auto()
+
+
+class NoCurrentRequest(Exception):
+    def __init__(self):
+        super().__init__("There isn't any active request")
+
+
 class Session(Step, BoxLayout):
     """Session d'une partie.
 
     Gère tous les évènements qui peuvent avoir lieu au cours d'une partie (session).\n
     Actualise l'affichage en conséquence et propose un bouton "Confirmer" ainsi qu'une popup afin de répondre aux requêtes reçues.
     """
+
+    requests = {
+        Request.CONFIRM: "askConfirm",
+        Request.DICE_ROLL: "askDiceRoll"
+    }
 
     name = StringProperty()
 
@@ -313,21 +408,26 @@ class Session(Step, BoxLayout):
         class RequestHandler:
             context = self
 
-            def __init__(self, replyInput):
-                self.replyInput = replyInput
+            def __init__(self, requestType: Request):
+                self.requestType = requestType
 
             def __call__(self, _: EventDispatcher, **args):
                 session = self.context
                 session.players.beginRequest(args["target"])
 
-                self.replyInput(**args)
+                self.context.currentRequest = self.requestType
+                # Appel de la méthode en fonction du nom associé au type de la requête (voir Session.requests)
+                getattr(self.context, Session.requests[self.requestType])(**args)
 
         self.listen(on_text=self.book.print,
                     on_scene_switch=self.book.sceneSwitch,
-                    on_request_confirm=RequestHandler(self.askConfirm),
+                    on_request_confirm=RequestHandler(Request.CONFIRM),
+                    on_request_dice_roll=RequestHandler(Request.DICE_ROLL),
                     on_finish_request=self.finishRequest,
                     on_player_reply=self.playerReplied,
                     on_player_update=self.updatePlayer)
+
+        self.currentRequest = None
 
         Clock.schedule_once(lambda _: self.confirm.bind(on_release=lambda _: self.rboCI.confirm()))
         Clock.schedule_once(self.bindTitleBar)
@@ -335,13 +435,24 @@ class Session(Step, BoxLayout):
     def bindTitleBar(self, _: int):
         App.get_running_app().titleBar.actionsCtx.bind(on_disconnect=lambda _: self.rboCI.close())
 
-    def askConfirm(self, target: int):
-        if target == ALL_PLAYERS or target == self.rboCI.id:
+    def isTargetted(self, target: int) -> bool:
+        return target == ALL_PLAYERS or target == self.rboCI.id
+
+    def askConfirm(self, target: int) -> None:
+        if self.isTargetted(target):
             self.confirm.disabled = False
 
+    def askDiceRoll(self, target: int, message: str, dices: int, bonus: int, results: "dict[int, list[int]]") -> None:
+        if self.isTargetted(target):
+            self.gameplay.rollDice(self, message, dices, bonus, results[self.rboCI.id])
+
     def playerReplied(self, _: EventDispatcher, **args):
+        if self.currentRequest is None:
+            raise NoCurrentRequest()
+
         if args["id"] == self.rboCI.id:
-            self.confirm.disabled = True
+            if self.currentRequest == Request.CONFIRM:
+                self.confirm.disabled = True
 
         self.players.replied(args["id"])
 

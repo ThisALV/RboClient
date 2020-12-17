@@ -64,6 +64,28 @@ def yesNoRequest(data: Data) -> dict:
     return {"target": data.take(), "message": data.takeString()}
 
 
+def diceRollRequest(data: Data) -> dict:
+    args = {
+        "target": data.take(),
+        "message": data.takeString(),
+        "dices": data.take(),
+        "bonus": data.takeNumeric(4, signed=True),
+        "results": {}
+    }
+
+    count = data.take()
+    dices = args["dices"]
+
+    for i in range(count):
+        id = data.take()
+        args["results"][id] = [None] * dices
+
+        for dice in range(dices):
+            args["results"][id][dice] = data.take()
+
+    return args
+
+
 def text(data: Data) -> dict:
     return {"text": data.takeString()}
 
@@ -157,7 +179,8 @@ session = HandlerNode({
         0: HandlerLeaf("range", rangeRequest),
         1: HandlerLeaf("possibilities", possibilities),
         2: HandlerLeaf("confirm", confirmRequest),
-        3: HandlerLeaf("yes_no", yesNoRequest)
+        3: HandlerLeaf("yes_no", yesNoRequest),
+        4: HandlerLeaf("dice_roll", diceRollRequest)
     }, "request"),
     13: HandlerLeaf("finish_request"),
     1: HandlerLeaf("text", text),

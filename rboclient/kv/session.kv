@@ -23,6 +23,62 @@
     background: bright
     spacing: 2
 
+<Dices>:
+    rollFinished: self.rollingDelayMs >= self.lastRollingDelayMs
+    font_name: "DejaVuSans"
+    font_size: "120"
+    bold: True
+
+<DiceRoll>:
+    orientation: "vertical"
+    rollAnimation: rollAnimation
+    canvas.before:
+        Color:
+            rgb: dark
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    AnchorLayout:
+        anchor_x: "center"
+        anchor_y: "center"
+        padding: 15
+        BoxLayout:
+            orientation: "vertical"
+            Label:
+                font_size: 30
+                text: root.message
+                text_size: (self.width, None)
+                size: self.texture_size
+                halign: "center"
+            Label:
+                font_size: 20
+                italic: True
+                text: "" if root.bonus == 0 else "{} : {}".format("Bonus" if root.bonus > 0 else "Malus", root.bonus)
+            Label:
+                font_size: 25
+                text: "Résultat : " + str(sum(root.result) + root.bonus)
+                color: [1, 1, 1, 1 if rollAnimation.rollFinished else 0]
+    AnchorLayout:
+        anchor_x: "center"
+        anchor_y: "center"
+        padding: (5, 20)
+        Dices:
+            id: rollAnimation
+            dices: root.dices
+    BoxLayout:
+        orientation: "horizontal"
+        size_hint: (1, .2)
+        padding: 5
+        RboBtn:
+            size_hint: (.75, 1)
+            text: "Terminé" if rollAnimation.rolled else "Lancer les dés"
+            on_release: root.next()
+        RboBtn:
+            size_hint: (.25, 1)
+            text: ">>"
+            background_color: [.5, .5, .5]
+            on_release: root.next(skip=True)
+
 <StatValue>:
     size_hint: (.5, None)
     height: 15
@@ -80,7 +136,7 @@
 <Session>:
     orientation: "horizontal"
     gameplay: gameplay
-    book: gameplay.book
+    book: book
     confirm: confirm
     players: players
     BoxLayout:
