@@ -246,6 +246,16 @@ def moveWindow(x, y):
     Window.top -= y
 
 
+class TaskAlreadyRunning(Exception):
+    def __init__(self, taskName: str):
+        super().__init__(taskName + " is already running in ClientApp")
+
+
+class TaskNotFound(KeyError):
+    def __init__(self, taskName: str):
+        super().__init__(taskName + " doesn't exist")
+
+
 class ClientApp(App):
     "Application du client."
 
@@ -265,6 +275,8 @@ class ClientApp(App):
         if toBool(self.rbocfg.get("graphics", "maximized")):
             Clock.schedule_once(self.maximizeInit)
 
+        self.runningTasks = []
+
     def maximizeInit(self, _: int):
         Window.maximize()
         self.dispatch("on_init_maximized")
@@ -282,3 +294,18 @@ class ClientApp(App):
         super().on_start()
 
         self.titleBar = self.root.titleBar
+
+    def runTask(self, name: str) -> None:
+        if name in self.runningTasks:
+            raise TaskAlreadyRunning(name)
+
+        self.runningTasks.append(name)
+
+    def isRunning(self, name: str) -> bool:
+        return name in self.runningTasks
+
+    def stopTask(self, name: str) -> None:
+        if name not in self.runningTasks:
+            raise TaskNotFound(name)
+
+        self.runningTasks.remove(name)

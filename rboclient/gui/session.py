@@ -93,11 +93,15 @@ class Dices(Label):
         self.skipped = False
         self.result = None
 
+        App.get_running_app().runTask("game_dices_roll")
         self.rolling()
 
     def rolling(self, _: int = None):
+        client = App.get_running_app()
+        print("ROLLING", self)
         if self.rollFinished:
             self.text = " ".join([diceFace(dice) for dice in self.result])
+            client.stopTask("game_dices_roll")
         else:
             self.text = " ".join([randomFace() for i in range(self.dices)])
 
@@ -110,7 +114,7 @@ class Dices(Label):
 
                 if self.rollFinished:
                     self.rolling()
-                else:
+                elif client.isRunning("game_dices_roll"):
                     Clock.schedule_once(self.rolling, self.rollingDelayMs / 1000)
 
     def roll(self, result: "list[int]", skip: bool = False) -> None:

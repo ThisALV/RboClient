@@ -97,6 +97,9 @@ class Game(FloatLayout):
     def close(self, _: EventDispatcher, error: Failure):
         self.dispatch("on_close", error=error)
 
+        client = App.get_running_app()
+        [client.stopTask(task) for task in client.runningTasks if task.startswith("game_")]
+
     def on_close(self, error: Failure):
         Logger.info("Game : Closed : " + error.getErrorMessage())
 
