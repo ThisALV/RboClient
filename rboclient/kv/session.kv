@@ -145,6 +145,15 @@
             background: white if root.selected else dark
             foreground: dark if root.selected else white
 
+<StatsDetailLayout@AnchorLayout>:
+    anchor_x: "center"
+    anchor_y: "center"
+    padding: (0, 10)
+    size_hint: (.8, None)
+
+<StatsDetail@StatsView>:
+    background: darker
+
 <DetailsLayout>:
     # En attendant que le widget soit affiché (et donc qu'il ait un parent), on lui donne une taille nulle
     size_hint: (1, None)
@@ -174,23 +183,21 @@
         text: "Page : " + str(root.scene)
     Detail:
         text: "Leader : " + str(root.leader)
-    AnchorLayout:
-        anchor_x: "center"
-        anchor_y: "center"
-        StatsView:
+    DetailsTitle:
+        text: "Stats :"
+    StatsDetailLayout:
+        height: 150
+        StatsDetail:
             id: mainStats
-            background: middle
 
 <GlobalDetails>:
     stats: stats
     DetailsTitle:
-        text: "Statistiques globales :"
-    AnchorLayout:
-        anchor_x: "center"
-        anchor_y: "center"
-        StatsView:
+        text: "Stats globales :"
+    StatsDetailLayout:
+        height: 250
+        StatsDetail:
             id: stats
-            background: middle
 
 <PlayerDetails>:
     stats: stats
@@ -211,13 +218,10 @@
     Detail:
         text: "Leader ? " + ("Oui" if root.leader else "Non")
         color: [0, 1, 0] if root.leader else [1, 0, 0]
-    AnchorLayout:
-        anchor_x: "center"
-        anchor_y: "center"
-        StatsView:
+    StatsDetailLayout:
+        height: 100
+        StatsDetail:
             id: stats
-            size_hint: (.75, .75)
-            background: middle
 
 <Details>:
     gameDetails: gameDetails
