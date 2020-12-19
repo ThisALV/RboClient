@@ -145,11 +145,97 @@
             background: white if root.selected else dark
             foreground: dark if root.selected else white
 
+<DetailsLayout>:
+    # En attendant que le widget soit affiché (et donc qu'il ait un parent), on lui donne une taille nulle
+    size_hint: (1, None)
+    height: 0 if self.parent is None else self.parent.height / 2
+    padding: 15
+
+<DetailsTitle@Label>:
+    size_hint: (1, None)
+    height: 50
+    text_size: self.size
+    halign: "left"
+    font_size: 30
+    bold: True
+
+<Detail@Label>:
+    size_hint: (1, None)
+    height: 40
+    text_size: self.size
+    halign: "left"
+    font_size: 20
+
+<GameDetails>:
+    mainStats: mainStats
+    DetailsTitle:
+        text: root.gameName
+    Detail:
+        text: "Page : " + str(root.scene)
+    Detail:
+        text: "Leader : " + str(root.leader)
+    AnchorLayout:
+        anchor_x: "center"
+        anchor_y: "center"
+        StatsView:
+            id: mainStats
+            background: middle
+
+<GlobalDetails>:
+    stats: stats
+    DetailsTitle:
+        text: "Statistiques globales :"
+    AnchorLayout:
+        anchor_x: "center"
+        anchor_y: "center"
+        StatsView:
+            id: stats
+            background: middle
+
+<PlayerDetails>:
+    stats: stats
+    BoxLayout:
+        orientation: "horizontal"
+        size_hint: (1, None)
+        height: 50
+        DetailsTitle:
+            text: "[{}] {}".format(root.id, root.name)
+        AnchorLayout:
+            anchor_x: "right"
+            RboBtn:
+                size_hint: (None, None)
+                size: (30, 30)
+                text: "\u00d7"
+                font_size: 20
+                on_release: root.dispatch("on_close")
+    Detail:
+        text: "Leader ? " + ("Oui" if root.leader else "Non")
+        color: [0, 1, 0] if root.leader else [1, 0, 0]
+    AnchorLayout:
+        anchor_x: "center"
+        anchor_y: "center"
+        StatsView:
+            id: stats
+            size_hint: (.75, .75)
+            background: middle
+
+<Details>:
+    gameDetails: gameDetails
+    canvas.before:
+        Color:
+            rgb: middle
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    GameDetails:
+        id: gameDetails
+
 <Session>:
     orientation: "horizontal"
     gameplay: gameplay
     book: book
     confirm: confirm
+    detailsScreen: detailsScreen
     players: players
     BoxLayout:
         orientation: "vertical"
@@ -175,18 +261,10 @@
                 size_hint: (.6, .4)
                 text: "Confirmer"
                 disabled: True
-    BoxLayout:
-        orientation: "vertical"
-        size_hint: (.9, 1)
-        canvas.before:
-            Color:
-                rgb: middle
-            Rectangle:
-                pos: self.pos
-                size: self.size
-        Label:
-            text: root.name
-            font_size: 20
+    AnchorLayout:
+        anchor_x: "center"
+        anchor_y: "center"
+        id: detailsScreen
     Players:
         id: players
         size_hint: (.7, 1)

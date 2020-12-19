@@ -8,9 +8,11 @@ from kivy.event import EventDispatcher
 from kivy.input import MotionEvent
 from kivy.logger import Logger
 from kivy.properties import BooleanProperty, ColorProperty, ListProperty, NumericProperty, ObjectProperty, StringProperty
+from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
+from kivy.uix.stacklayout import StackLayout
 from rboclient.gui import app
 from rboclient.gui.game import Step
 from rboclient.gui.widgets import GameCtxActions, ScrollableStack
@@ -51,7 +53,7 @@ class Book(ScrollableStack):
     def print(self, _: EventDispatcher, text: str):
         self.content.add_widget(BookMsg(text))
 
-    def sceneSwitch(self, _: EventDispatcher, scene: int):
+    def sceneSwitch(self, scene: int):
         self.newSection("Introduction" if scene == INTRODUCTION else "Page {}".format(scene))
 
     def newSection(self, text: str) -> None:
@@ -98,7 +100,6 @@ class Dices(Label):
 
     def rolling(self, _: int = None):
         client = App.get_running_app()
-        print("ROLLING", self)
         if self.rollFinished:
             self.text = " ".join([diceFace(dice) for dice in self.result])
             client.stopTask("game_dices_roll")
@@ -320,24 +321,29 @@ class Players(ScrollableStack):
         self.players = {}
         self.leader = None
         self.selected = None
+        self.playerSwitch = False
 
     def selection(self, player: Player, selected: bool):
         if selected:
             self.dispatch("on_enable", player.playerID)
 
             if self.selected is not None:
+                self.playerSwitch = True
                 self.players[self.selected].selected = False
 
             self.selected = player.playerID
         else:
-            self.dispatch("on_disable")
-            self.selected = None
+            if self.playerSwitch:
+                self.playerSwitch = False
+            else:
+                self.dispatch("on_disable")
+                self.selected = None
 
     def on_enable(self, playerID: int):
-        Logger.debug("Players : selected [{}]".format(playerID))
+        Logger.debug("Players : Selected [{}]".format(playerID))
 
     def on_disable(self):
-        Logger.debug("Players : player unselected")
+        Logger.debug("Players : Player unselected")
 
     def checkPlayerID(self, id: int) -> None:
         if id not in self.players:
@@ -374,7 +380,7 @@ class Players(ScrollableStack):
         for player in self.players.values():
             player.hasReplied = RequestReplied.WAITING
 
-    def switchLeader(self, id: int) -> None:
+    def leaderSwitch(self, id: int) -> None:
         if self.leader is not None:
             self.players[self.leader].isLeader = False
 
@@ -382,8 +388,125 @@ class Players(ScrollableStack):
         self.players[self.leader].isLeader = True
 
 
-class Details(BoxLayout):
-    """Panneau central des détails du jeu"""
+class DetailsLayout(StackLayout):
+    """Layout commun à toutes les zones affichant les caractéristiques de la partie.
+    Occupe la moitié de la hauteur disponible (calculée à partir de self.parent.height).
+    """
+
+
+class GameDetails(DetailsLayout):
+    "1ère partie du panneau central : caractéristiques générales du jeu."
+
+    gameName = StringProperty()
+    scene = NumericProperty()
+    leader = NumericProperty(-1)  # Cet ID n'étant pas disponible, il marquera leader comme étant non-initialisée
+    mainStats = ObjectProperty()
+
+
+class GlobalDetails(DetailsLayout):
+    "2ème partie du panneau central : toutes les statistiques globales."
+
+    stats = ObjectProperty()
+
+
+class PlayerDetails(DetailsLayout):
+    """2ème partie du panneau central : toutes les caractéristiques d'un joueur.
+
+    Les propriétés id, name et leader permettent de mettre à jour les caractéristiques de base du joueur.\n
+    refreshStats() et refreshInventories() permettent de mettre à jour les autres caractéristiaues (stats et inventaires).\n
+    Lorsque le bouton Fermer est utilisé, un event on_close est émis.
+    """
+
+    id = NumericProperty()
+    name = StringProperty()
+    leader = BooleanProperty(False)
+
+    stats = ObjectProperty()
+    inventories = ObjectProperty()
+
+    def __init__(self, **kwargs):
+        self.register_event_type("on_close")
+        super().__init__(**kwargs)
+
+    def on_close(self):
+        Logger.debug("Detais : Player {} closed".format(self.id))
+
+    def refreshStats(self, stats: "dict[str, int]") -> None:
+        self.stats.refresh(stats)
+
+    def refreshInventories(self, inventories) -> None:
+        raise NotImplementedError()
+
+
+class Details(StackLayout):
+    """Panneau central des caractéristiques du jeu.
+
+    1ère partie consacrée aux caractéristiques générales de la partie : nom du jeu, scène, leader, etc.\n
+    2ème partie variable en fonction du joueur sélectionné.
+    Cette partie affiche l'entièreté des stats globales si aucun joueur n'est sélectionné.\n
+    refreshPlayers() met à jour les caractéristiques d'un joueur. showPlayer() et showGlobal() permettent de basculer d'un affichage à l'autre.\n
+    sceneSwitch() et leaderSwitch() permettent de mettre à jour les caractéristiques générales de la partie.
+    """
+
+    GLOBAL = 255
+
+    gameDetails = ObjectProperty()
+    specificDetails = ObjectProperty()
+
+    def __init__(self, ctx: "Session", **kwargs):
+        super().__init__(**kwargs)
+
+        self.context = ctx
+        self.context.players.bind(on_enable=self.showPlayer, on_disable=self.backToGlobal)
+
+        self.details = {Details.GLOBAL: GlobalDetails()}
+        self.specificDetails = self.details[Details.GLOBAL]
+        self.add_widget(self.specificDetails)
+
+        self.gameDetails.gameName = ctx.name
+
+    def on_playerdetails_closed(self):
+        pass
+
+    def playerClosed(self, _: EventDispatcher) -> None:
+        self.context.players.players[self.specificDetails.id].selected = False
+        self.backToGlobal()
+
+    def addPlayer(self, id: int, name: str) -> None:
+        player = PlayerDetails(id=id, name=name)
+        player.bind(on_close=self.playerClosed)
+
+        self.details[id] = player
+
+    def showPlayer(self, _: EventDispatcher, id: int) -> None:
+        self.remove_widget(self.specificDetails)
+        self.specificDetails = self.details[id]
+        self.add_widget(self.specificDetails)
+
+    def backToGlobal(self, _: EventDispatcher = None) -> None:
+        self.showPlayer(None, Details.GLOBAL)
+
+    def refreshMainGlobalStats(self, stats: "dict[str, int]") -> None:
+        self.gameDetails.mainStats.refresh(stats)
+
+    def refreshGlobalStats(self, stats: "dict[str, int]") -> None:
+        self.details[Details.GLOBAL].stats.refresh(stats)
+
+    def refreshPlayer(self, id: int, stats: "dict[str, int]", inventories=None) -> None:
+        if id == Details.GLOBAL or id not in self.details:
+            raise PlayerNotFound(id)
+
+        self.details[id].refreshStats(stats)
+
+    def sceneSwitch(self, scene: int) -> None:
+        self.gameDetails.scene = scene
+
+    def leaderSwitch(self, leader: int) -> None:
+        if self.gameDetails.leader != -1:
+            self.details[self.gameDetails.leader].leader = False
+
+        self.gameDetails.leader = leader
+        self.details[self.gameDetails.leader].leader = True
 
 
 class Request(Enum):
@@ -415,7 +538,7 @@ class Session(Step, BoxLayout):
 
     confirm = ObjectProperty()
 
-    details = ObjectProperty()
+    detailsScreen = ObjectProperty()
     players = ObjectProperty()
 
     def __init__(self, selfID: int, initialLeader: int, gameName: str, rboCI: RboCI, members: "dict[int, str]", **kwargs):
@@ -425,9 +548,15 @@ class Session(Step, BoxLayout):
         self.name = gameName
         self.members = members
 
+        self.details = Details(self)
+        self.detailsScreen.add_widget(self.details)
+
         for (id, name) in self.members.items():
+            self.details.addPlayer(id, name)
             self.players.addPlayer(id, name, id == selfID)
-        self.players.switchLeader(initialLeader)
+
+        self.players.leaderSwitch(initialLeader)
+        self.details.leaderSwitch(initialLeader)
 
         class RequestHandler:
             context = self
@@ -444,12 +573,14 @@ class Session(Step, BoxLayout):
                 getattr(self.context, Session.requests[self.requestType])(**args)
 
         self.listen(on_text=self.book.print,
-                    on_scene_switch=self.book.sceneSwitch,
+                    on_scene_switch=self.switchScene,
+                    on_leader_switch=self.switchLeader,
                     on_request_confirm=RequestHandler(Request.CONFIRM),
                     on_request_dice_roll=RequestHandler(Request.DICE_ROLL),
                     on_finish_request=self.finishRequest,
                     on_player_reply=self.playerReplied,
-                    on_player_update=self.updatePlayer)
+                    on_player_update=self.updatePlayer,
+                    on_global_stat_update=self.updateGlobalStat)
 
         self.currentRequest = None
 
@@ -461,6 +592,14 @@ class Session(Step, BoxLayout):
 
     def isTargetted(self, target: int) -> bool:
         return target == ALL_PLAYERS or target == self.rboCI.id
+
+    def switchScene(self, _: EventDispatcher, scene: int):
+        self.book.sceneSwitch(scene)
+        self.details.sceneSwitch(scene)
+
+    def switchLeader(self, _: EventDispatcher, id: int):
+        self.players.leaderSwitch(id)
+        self.details.leaderSwitch(id)
 
     def askConfirm(self, target: int) -> None:
         if self.isTargetted(target):
@@ -484,18 +623,47 @@ class Session(Step, BoxLayout):
         self.players.endRequest()
         self.confirm.disabled = True
 
+    def updateGlobalStat(self, _: EventDispatcher, **args):
+        name = args["name"]
+        hidden = args["hidden"]
+        value = args["value"]
+
+        mainStats = {}
+        allStats = {}
+        if args["main"]:
+            mainStats[name] = None if hidden else value
+        else:
+            mainStats[name] = None
+
+        if hidden:
+            allStats[name] = None
+        else:
+            allStats[name] = value
+
+        self.details.refreshMainGlobalStats(mainStats)
+        self.details.refreshGlobalStats(allStats)
+
     def updatePlayer(self, _: EventDispatcher, **args):
         (id, update) = args.values()
 
         statsUpdate = update["stats"]
-        showStats = {}
+
+        mainStats = {}
+        allStats = {}
         for (name, stat) in statsUpdate.items():
             main = stat["main"]
             hidden = stat["hidden"]
+            value = stat["value"]
 
             if main:
-                showStats[name] = None if hidden else stat["value"]
+                mainStats[name] = None if hidden else value
             else:
-                showStats[name] = None
+                mainStats[name] = None
 
-        self.players.refreshMainStats(id, showStats)
+            if hidden:
+                allStats[name] = None
+            else:
+                allStats[name] = value
+
+        self.players.refreshMainStats(id, mainStats)
+        self.details.refreshPlayer(id, allStats)
