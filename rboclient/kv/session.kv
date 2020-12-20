@@ -84,11 +84,26 @@
 
 <StatValue>:
     size_hint: (.5, None)
-    height: 15
-    halign: "left"
-    text_size: self.size
-    markup: True
-    text: "[b]{} :[/b] {}".format(self.name, self.value)
+    height: nameLabel.height
+    Label: # 3/4 de la largeur
+        id: nameLabel
+        size_hint: (None, None)
+        width: self.parent.width * (3/4)
+        text_size: (self.width, None)
+        height: self.texture_size[1]
+        halign: "center"
+        text: root.name
+        bold: True
+        color: root.color
+    Label: # 1/4 de la largeur
+        size_hint: (None, None)
+        width: self.parent.width / 4
+        height: nameLabel.height
+        text_size: self.size
+        valign: "center"
+        halign: "left"
+        text: ": " + str(root.value)
+        color: root.color
 
 <Player>:
     orientation: "vertical"

@@ -204,11 +204,12 @@ class Gameplay(FloatLayout):
         self.action(DiceRoll(ctx, message=message, dices=dices, bonus=bonus, result=result))
 
 
-class StatValue(Label):
-    "Paire clé/valuer d'une statistique d'une entité"
+class StatValue(StackLayout):
+    "Paire clé/valeur d'une statistique d'une entité"
 
     name = StringProperty()
     value = NumericProperty()
+    color = ColorProperty([1, 1, 1])
 
     def __init__(self, name: str, value: int, **kwargs):
         super().__init__(name=name, value=value, **kwargs)
