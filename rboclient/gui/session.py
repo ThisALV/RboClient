@@ -15,7 +15,7 @@ from kivy.uix.label import Label
 from kivy.uix.stacklayout import StackLayout
 from rboclient.gui import app
 from rboclient.gui.game import Step
-from rboclient.gui.widgets import GameCtxActions, ScrollableStack
+from rboclient.gui.widgets import DictionnaryView, GameCtxActions, ScrollableStack
 from rboclient.network.protocol import RboConnectionInterface as RboCI
 
 INTRODUCTION = 0
@@ -202,59 +202,6 @@ class Gameplay(FloatLayout):
 
     def rollDice(self, ctx: "Session", message: str, dices: int, bonus: int, result: "list[int]") -> None:
         self.action(DiceRoll(ctx, message=message, dices=dices, bonus=bonus, result=result))
-
-
-class StatValue(StackLayout):
-    "Paire clé/valeur d'une statistique d'une entité"
-
-    name = StringProperty()
-    value = NumericProperty()
-    color = ColorProperty([1, 1, 1])
-
-    def __init__(self, name: str, value: int, **kwargs):
-        super().__init__(name=name, value=value, **kwargs)
-
-
-class UnknownStat(ValueError):
-    def __init__(self, name: str):
-        super().__init__("Unknown stat \"{}\"".format(name))
-
-
-class StatsView(ScrollableStack):
-    """Apperçu des statistiques d'une entité.
-
-    Liste les statistiques d'une entitée sous la forme de labels "nom de stat : valeur" réparties dans deux colonnes.\n
-    Propose un refresh des données avec refresh(stats). Seuls les stats ayant des valeurs dans l'argument stats seront rafraîchies.\n
-    Les stats qui n'étaient pas encore présentes seront rajoutées.\n
-    Pour masquer une stat, il faut lui affecter la valeur None en argument de refresh(stats). Si la stat n'est pas déjà présente, rien ne se passe.
-    """
-
-    foreground = ColorProperty([1, 1, 1])
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        self.stats = {}
-        Clock.schedule_once(self.initContent)
-
-    def initContent(self, _: int):
-        self.content.padding = 15
-        self.content.spacing = 5
-
-    def refresh(self, stats: "dict[str, int]") -> None:
-        for (stat, value) in stats.items():
-            hideStat = value is None
-
-            if stat in self.stats:
-                if hideStat:
-                    self.content.remove_widget(self.stats[stat])
-                    self.stats.pop(stat)
-                else:
-                    self.stats[stat].value = value
-            elif not hideStat:
-                self.stats[stat] = StatValue(stat, value)
-                self.bind(foreground=self.stats[stat].setter("color"))
-                self.content.add_widget(self.stats[stat])
 
 
 class RequestReplied(Enum):

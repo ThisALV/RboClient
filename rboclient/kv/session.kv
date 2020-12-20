@@ -82,29 +82,6 @@
             background_color: [.5, .5, .5]
             on_release: root.next(skip=True)
 
-<StatValue>:
-    size_hint: (.5, None)
-    height: nameLabel.height
-    Label: # 3/4 de la largeur
-        id: nameLabel
-        size_hint: (None, None)
-        width: self.parent.width * (3/4)
-        text_size: (self.width, None)
-        height: self.texture_size[1]
-        halign: "center"
-        text: root.name
-        bold: True
-        color: root.color
-    Label: # 1/4 de la largeur
-        size_hint: (None, None)
-        width: self.parent.width / 4
-        height: nameLabel.height
-        text_size: self.size
-        valign: "center"
-        halign: "left"
-        text: ": " + str(root.value)
-        color: root.color
-
 <Player>:
     orientation: "vertical"
     size_hint: (1, None)
@@ -155,7 +132,7 @@
         anchor_x: "center"
         anchor_y: "center"
         padding: 10
-        StatsView:
+        DictionnaryView:
             id: stats
             background: white if root.selected else dark
             foreground: dark if root.selected else white
@@ -166,7 +143,7 @@
     padding: (0, 10)
     size_hint: (.8, None)
 
-<StatsDetail@StatsView>:
+<StatsDetail@DictionnaryView>:
     background: darker
 
 <DetailsLayout>:

@@ -9,6 +9,7 @@ from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
 from kivy.uix.scrollview import ScrollView
+from kivy.uix.stacklayout import StackLayout
 from kivy.uix.textinput import TextInput
 from rboclient.network.handlerstree import YesNoQuestion
 
@@ -175,6 +176,54 @@ class ScrollableStack(ScrollView):
 
     def __init__(self, bg: "list[int]" = background.defaultvalue, **kwargs):
         super().__init__(background=bg, **kwargs)
+
+
+class Pair(StackLayout):
+    "Paire clé/valeur d'un tableau"
+
+    key = StringProperty()
+    value = NumericProperty()
+    color = ColorProperty([1, 1, 1])
+
+    def __init__(self, key: str, value: int, **kwargs):
+        super().__init__(key=key, value=value, **kwargs)
+
+
+class DictionnaryView(ScrollableStack):
+    """Classe mère pour afficher un tableau scrollable verticalement de paires sous la forme "<clé> : <valeur>" avec deux colonnes.
+
+    La méthode refresh() permet de mettre à jour les données affichées.\n
+    Si une paire clé/valeur est présente, alors la valeur sera mise à jour en fonction de dict passé en argument,
+    sinon une nouvelle paire clé/valeur sera ajoutée dans la tableau.\n
+    Pour supprimer une paire du tableau, il faut passer la valeur None dans la paire clé/valeur correspondante en argument.
+    """
+
+    foreground = ColorProperty([1, 1, 1])
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.pairs = {}
+        Clock.schedule_once(self.initContent)
+
+    def initContent(self, _: int):
+        self.content.padding = 15
+        self.content.spacing = 5
+
+    def refresh(self, pairs: "dict[str, int]") -> None:
+        for (key, value) in pairs.items():
+            hidePair = value is None
+
+            if key in self.pairs:
+                if hidePair:
+                    self.content.remove_widget(self.pairs[key])
+                    self.pairs.pop(key)
+                else:
+                    self.pairs[key].value = value
+            elif not hidePair:
+                self.pairs[key] = Pair(key, value)
+                self.bind(foreground=self.pairs[key].setter("color"))
+                self.content.add_widget(self.pairs[key])
 
 
 class InputContent(BoxLayout):

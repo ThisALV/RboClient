@@ -119,6 +119,29 @@
                 pos: self.pos
                 size: self.size
 
+<Pair>:
+    size_hint: (.5, None)
+    height: keyLabel.height
+    Label: # 3/4 de la largeur
+        id: keyLabel
+        size_hint: (None, None)
+        width: self.parent.width * (3/4)
+        text_size: (self.width, None)
+        height: self.texture_size[1]
+        halign: "center"
+        text: root.key
+        bold: True
+        color: root.color
+    Label: # 1/4 de la largeur
+        size_hint: (None, None)
+        width: self.parent.width / 4
+        height: keyLabel.height
+        text_size: self.size
+        valign: "center"
+        halign: "left"
+        text: ": " + str(root.value)
+        color: root.color
+
 <InputContent>:
     orientation: "vertical"
     padding: 10
