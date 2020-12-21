@@ -108,16 +108,16 @@
     do_scroll_y: self.height < content.minimum_height
     effect_cls: "ScrollEffect"
     content: content
+    canvas.before:
+        Color:
+            rgb: self.background
+        Rectangle:
+            pos: self.pos
+            size: self.size
     StackLayout:
         id: content
         size_hint: (1, None)
         height: max(self.parent.height, self.minimum_height)
-        canvas.before:
-            Color:
-                rgb: root.background
-            Rectangle:
-                pos: self.pos
-                size: self.size
 
 <Pair>:
     size_hint: (.5, None)

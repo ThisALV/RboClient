@@ -336,6 +336,81 @@ class Players(ScrollableStack):
         self.players[self.leader].isLeader = True
 
 
+class Inventory(BoxLayout):
+    """Affichage d'un inventaire dans InventoriesView.
+
+    Ce widget affiche le nom de l'inventaire en question.
+    Ce nom est cliquable et permet de faire dérouler la DictionnaryView des objets contenus dans l'inventaire.\n
+    La DictionnaryView contenant les objets ainsi que leur quantité respective est mise à jour via la méthode refresh() de Inventory.\n
+    En plus des objets contenus, à chaque mise à jour un recomptage du nombre d'objets total dans l'inventaire est effectué pour être affiché.
+    La capacité de l'inventaire (via capacity) est également affichée.
+    """
+
+    name = StringProperty()
+    count = NumericProperty(0)
+    capacity = NumericProperty(-1)
+    shown = BooleanProperty(False)
+
+    title = ObjectProperty()
+    itemsView = ObjectProperty()
+
+    def __init__(self, name: str, **kwargs):
+        super().__init__(name=name, **kwargs)
+        self.itemsDict = DictionnaryView([.025, .025, .025])
+
+    def on_touch_down(self, touch: MotionEvent):
+        if not self.title.collide_point(*touch.pos):
+            return super().on_touch_down(touch)
+
+        if self.shown:
+            self.itemsView.remove_widget(self.itemsDict)
+        else:
+            self.itemsView.add_widget(self.itemsDict)
+
+        self.shown = not self.shown
+        return True
+
+    def refresh(self, items: "dict[str, int]") -> None:
+        self.itemsDict.refresh(items)
+        self.count = sum([pair.value for pair in self.itemsDict.pairs.values()])
+
+
+class UnknownInventory(KeyError):
+    def __init__(self, name: str):
+        super().__init__("Inventory \"{}\" doesn't exist".format(name))
+
+
+class InventoriesView(ScrollableStack):
+    """Affichage des inventaires d'un joueur.
+
+    Ce widget scrollable verticalement contient une liste d'inventaires dont les données peuvent être mises à jour avec la méthode refresh().\n
+    refresh() prend en paramètre une dict[str, tuple[int, dict[str, int]]] pour mettre à jour chaque inventaire nommée avec un dict[str, int].
+    Ce dict[str, int] met à jour chaque inventaire comme on met à jour une DictionnaryView.
+    Le int du tuple lui est utilisé pour mettre à jour la capacité de l'inventaire en question, la valeur None conserve la capacité actuelle.\n
+    Les inventaires sont ajoutés après construction à l'aide de la méthode addInventory() renseignant le nom de celui-ci.
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.inventories = {}
+
+    def addInventory(self, name: str) -> None:
+        self.inventories[name] = Inventory(name)
+        self.content.add_widget(self.inventories[name])
+
+    def refresh(self, inventories: "dict[str, tuple[int, dict[str, int]]]") -> None:
+        for (name, (capacity, inv)) in inventories.items():
+            if name not in self.inventories:
+                raise UnknownInventory(name)
+
+            inventory = self.inventories[name]
+            inventory.refresh(inv)
+
+            if capacity is not None:
+                inventory.capacity = capacity
+
+
 class DetailsLayout(StackLayout):
     """Layout commun à toutes les zones affichant les caractéristiques de la partie.
     Occupe la moitié de la hauteur disponible (calculée à partir de self.parent.height).
@@ -376,14 +451,22 @@ class PlayerDetails(DetailsLayout):
         self.register_event_type("on_close")
         super().__init__(**kwargs)
 
+        self.inventoriesInitialized = False
+
     def on_close(self):
         Logger.debug("Detais : Player {} closed".format(self.id))
 
     def refreshStats(self, stats: "dict[str, int]") -> None:
         self.stats.refresh(stats)
 
-    def refreshInventories(self, inventories) -> None:
-        raise NotImplementedError()
+    def refreshInventories(self, inventories: "dict[str, tuple[int, dict[str, int]]]") -> None:
+        if not self.inventoriesInitialized:
+            for name in inventories.keys():
+                self.inventories.addInventory(name)
+
+            self.inventoriesInitialized = True
+
+        self.inventories.refresh(inventories)
 
 
 class Details(StackLayout):
@@ -392,7 +475,7 @@ class Details(StackLayout):
     1ère partie consacrée aux caractéristiques générales de la partie : nom du jeu, scène, leader, etc.\n
     2ème partie variable en fonction du joueur sélectionné.
     Cette partie affiche l'entièreté des stats globales si aucun joueur n'est sélectionné.\n
-    refreshPlayers() met à jour les caractéristiques d'un joueur. showPlayer() et showGlobal() permettent de basculer d'un affichage à l'autre.\n
+    refreshPlayer() met à jour les caractéristiques d'un joueur. showPlayer() et showGlobal() permettent de basculer d'un affichage à l'autre.\n
     sceneSwitch() et leaderSwitch() permettent de mettre à jour les caractéristiques générales de la partie.
     """
 
@@ -440,11 +523,13 @@ class Details(StackLayout):
     def refreshGlobalStats(self, stats: "dict[str, int]") -> None:
         self.details[Details.GLOBAL].stats.refresh(stats)
 
-    def refreshPlayer(self, id: int, stats: "dict[str, int]", inventories=None) -> None:
+    def refreshPlayer(self, id: int, stats: "dict[str, int]", inventories: "dict[str, tuple[int, dict[str, int]]]") -> None:
         if id == Details.GLOBAL or id not in self.details:
             raise PlayerNotFound(id)
 
-        self.details[id].refreshStats(stats)
+        player = self.details[id]
+        player.refreshStats(stats)
+        player.refreshInventories(inventories)
 
     def sceneSwitch(self, scene: int) -> None:
         self.gameDetails.scene = scene
@@ -613,5 +698,19 @@ class Session(Step, BoxLayout):
             else:
                 allStats[name] = value
 
+        itemsUpdate = update["inventories"]
+        capacitiesUpdate = update["capacities"]
+
+        inventories = {}
+
+        for (name, inv) in itemsUpdate.items():
+            inventories[name] = (None, inv)
+
+        for (name, capacity) in capacitiesUpdate.items():
+            if name in inventories:
+                inventories[name] = (capacity, inventories[name][1])
+            else:
+                inventories[name] = (capacity, {})
+
         self.players.refreshMainStats(id, mainStats)
-        self.details.refreshPlayer(id, allStats)
+        self.details.refreshPlayer(id, allStats, inventories)

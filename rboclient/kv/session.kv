@@ -137,6 +137,31 @@
             background: white if root.selected else dark
             foreground: dark if root.selected else white
 
+<InventoriesView>:
+    background: darker
+
+<Inventory>:
+    orientation: "vertical"
+    title: title
+    size_hint: (1, None)
+    height: (50 * (self.count // 2 + 1) + 20) if self.shown else 20
+    itemsView: itemsView
+    Label:
+        id: title
+        size_hint: (1, None)
+        text_size: (self.width, 20)
+        size: self.texture_size
+        halign: "left"
+        font_size: 15
+        font_name: "DejaVuSans"
+        markup: True
+        text: "[b]{} {} :[/b] [i]{}/{}[/i]".format("\u25bc" if root.shown else "\u25ba", root.name, root.count, "\u221e" if root.capacity == -1 else root.capacity)
+    AnchorLayout:
+        id: itemsView
+        anchor_x: "center"
+        anchor_y: "center"
+        padding: (10, 0)
+
 <StatsDetailLayout@AnchorLayout>:
     anchor_x: "center"
     anchor_y: "center"
@@ -167,6 +192,9 @@
     halign: "left"
     font_size: 20
 
+<PlayerDetail@Detail>:
+    height: 30
+
 <GameDetails>:
     mainStats: mainStats
     DetailsTitle:
@@ -193,6 +221,7 @@
 
 <PlayerDetails>:
     stats: stats
+    inventories: inventories
     BoxLayout:
         orientation: "horizontal"
         size_hint: (1, None)
@@ -210,10 +239,35 @@
     Detail:
         text: "Leader ? " + ("Oui" if root.leader else "Non")
         color: [0, 1, 0] if root.leader else [1, 0, 0]
-    StatsDetailLayout:
-        height: 100
-        StatsDetail:
-            id: stats
+    ScrollView:
+        size_hint: (1, None)
+        height: 250
+        do_scroll_x: False
+        do_scroll_y: True
+        effect_cls: "ScrollEffect"
+        BoxLayout:
+            orientation: "vertical"
+            size_hint: (1, None)
+            height: 550
+            PlayerDetail:
+                text: "Statistiques :"
+            StatsDetailLayout:
+                size_hint: (1, None)
+                height: 150
+                StatsDetail:
+                    id: stats
+            PlayerDetail:
+                text: "Inventaires :"
+            AnchorLayout:
+                anchor_x: "center"
+                anchor_y: "center"
+                size_hint: (.8, None)
+                height: 300
+                padding: (0, 10)
+                InventoriesView:
+                    id: inventories
+            Widget:
+                # Pour prendre l'espace vide restant
 
 <Details>:
     gameDetails: gameDetails

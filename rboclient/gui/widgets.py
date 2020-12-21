@@ -200,8 +200,8 @@ class DictionnaryView(ScrollableStack):
 
     foreground = ColorProperty([1, 1, 1])
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, bg: "list[int]" = ScrollableStack.background.defaultvalue, **kwargs):
+        super().__init__(bg, **kwargs)
 
         self.pairs = {}
         Clock.schedule_once(self.initContent)
