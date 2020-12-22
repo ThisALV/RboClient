@@ -71,9 +71,6 @@ class GameLogs(ScrollableStack):
     def note(self, _: EventDispatcher, text: str):
         self.content.add_widget(LogsMsg(text, italic=True))
 
-    def sceneSwitch(self, scene: int):
-        self.title(None, "Introduction" if scene == INTRODUCTION else "Page {}".format(scene))
-
 
 def diceFace(face: int) -> str:
     "Retourne un caractère unicode \"face de dé\" correspondant à l'argument face."
@@ -436,7 +433,6 @@ class GameDetails(DetailsLayout):
     "1ère partie du panneau central : caractéristiques générales du jeu."
 
     gameName = StringProperty()
-    scene = NumericProperty()
     leader = NumericProperty(-1)  # Cet ID n'étant pas disponible, il marquera leader comme étant non-initialisée
     mainStats = ObjectProperty()
 
@@ -546,9 +542,6 @@ class Details(StackLayout):
         player.refreshStats(stats)
         player.refreshInventories(inventories)
 
-    def sceneSwitch(self, scene: int) -> None:
-        self.gameDetails.scene = scene
-
     def leaderSwitch(self, leader: int) -> None:
         if self.gameDetails.leader != -1:
             self.details[self.gameDetails.leader].leader = False
@@ -645,8 +638,7 @@ class Session(Step, BoxLayout):
         return target == ALL_PLAYERS or target == self.rboCI.id
 
     def switchScene(self, _: EventDispatcher, scene: int):
-        self.logs.sceneSwitch(scene)
-        self.details.sceneSwitch(scene)
+        Logger.info("Session : Go to scene {}".format(scene))
 
     def switchLeader(self, _: EventDispatcher, id: int):
         self.players.leaderSwitch(id)
