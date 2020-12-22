@@ -128,14 +128,18 @@
                 font_size: self.height
                 text: root.requestStatus[root.hasReplied][0]
                 color: root.requestStatus[root.hasReplied][1]
-    AnchorLayout:
-        anchor_x: "center"
-        anchor_y: "center"
-        padding: 10
-        DictionnaryView:
-            id: stats
-            background: white if root.selected else dark
-            foreground: dark if root.selected else white
+    Label:
+        size_hint: (1, None)
+        height: 40
+        text: "Stats les + importantes du joueur :"
+        text_size: self.size
+        halign: "left"
+        valign: "center"
+        color: dark if root.selected else white
+    DictionnaryView:
+        id: stats
+        background: white if root.selected else dark
+        foreground: dark if root.selected else white
 
 <InventoriesView>:
     background: darker
@@ -179,15 +183,17 @@
 
 <DetailsTitle@Label>:
     size_hint: (1, None)
-    height: 50
-    text_size: self.size
+    height: 100
+    text_size: (self.width, None)
+    size: self.texture_size
     halign: "left"
-    font_size: 30
+    valign: "center"
+    font_size: 25
     bold: True
 
 <Detail@Label>:
     size_hint: (1, None)
-    height: 40
+    height: 30
     text_size: self.size
     halign: "left"
     font_size: 20
@@ -197,23 +203,25 @@
 
 <GameDetails>:
     mainStats: mainStats
+    spacing: 10
     DetailsTitle:
         text: root.gameName
     Detail:
         text: "Page : " + str(root.scene)
     Detail:
         text: "Leader : " + str(root.leader)
-    DetailsTitle:
-        text: "Stats :"
-    StatsDetailLayout:
-        height: 150
-        StatsDetail:
-            id: mainStats
+    StackLayout:
+        DetailsTitle:
+            text: "Stats communes les + importantes :"
+        StatsDetailLayout:
+            height: 150
+            StatsDetail:
+                id: mainStats
 
 <GlobalDetails>:
     stats: stats
     DetailsTitle:
-        text: "Stats globales :"
+        text: "Toutes les stats communes :"
     StatsDetailLayout:
         height: 250
         StatsDetail:
@@ -227,8 +235,9 @@
         size_hint: (1, None)
         height: 50
         DetailsTitle:
-            text: "[{}] {}".format(root.id, root.name)
+            text: "Infos sur le joueur [{}] {} :".format(root.id, root.name)
         AnchorLayout:
+            size_hint: (.25, 1)
             anchor_x: "right"
             RboBtn:
                 size_hint: (None, None)
@@ -237,8 +246,9 @@
                 font_size: 20
                 on_release: root.dispatch("on_close")
     Detail:
-        text: "Leader ? " + ("Oui" if root.leader else "Non")
+        text: "Leader : " + ("\u2713" if root.leader else "\u00d7")
         color: [0, 1, 0] if root.leader else [1, 0, 0]
+        font_name: "DejaVuSans"
     ScrollView:
         size_hint: (1, None)
         height: 250
@@ -250,14 +260,14 @@
             size_hint: (1, None)
             height: 550
             PlayerDetail:
-                text: "Statistiques :"
+                text: "Toutes les stats du joueur :"
             StatsDetailLayout:
                 size_hint: (1, None)
                 height: 150
                 StatsDetail:
                     id: stats
             PlayerDetail:
-                text: "Inventaires :"
+                text: "Tous les inventaires du joueur :"
             AnchorLayout:
                 anchor_x: "center"
                 anchor_y: "center"
@@ -309,7 +319,7 @@
             RboBtn:
                 id: confirm
                 size_hint: (.6, .4)
-                text: "Confirmer"
+                text: "Continuer"
                 disabled: True
     AnchorLayout:
         anchor_x: "center"

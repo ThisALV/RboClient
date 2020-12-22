@@ -576,7 +576,7 @@ class Session(Step, BoxLayout):
 
     def __init__(self, selfID: int, initialLeader: int, gameName: str, rboCI: RboCI, members: "dict[int, str]", **kwargs):
         super().__init__(**kwargs)
-        self.init("Session on " + gameName, rboCI, app.TitleBarCtx.SESSION)
+        self.init("Session sur \"{}\"".format(gameName), rboCI, app.TitleBarCtx.SESSION)
 
         self.name = gameName
         self.members = members
