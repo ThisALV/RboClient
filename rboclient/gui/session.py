@@ -28,36 +28,51 @@ class SessionCtxActions(GameCtxActions):
     actions = ["disconnect"]
 
 
-class BookMsg(Label):
-    "Affiche un message du livre, s'insère dans un Book."
+class GameLog(Label):
+    "Classe mère pour afficher un message de log."
 
     def __init__(self, msg: str, **kwargs):
         super().__init__(text=msg, **kwargs)
 
 
-class BookSection(Label):
-    "Affiche le titre d'une section, s'insère dans un Book."
-
-    def __init__(self, msg: str, **kwargs):
-        super().__init__(text=msg, **kwargs)
+class LogsMsg(GameLog):
+    "Affiche un message de logs, s'insère dans un Logs."
 
 
-class Book(ScrollableStack):
-    """Représente le livre du jeu.
+class LogsTitle(GameLog):
+    "Affiche un message de titre, s'insère dans un Logs."
 
-    C'est ici que sont écrits l'histoire, les combats et l'historique de tout ce qu'il se passe durant la partie.\n
-    Peut être divisé en plusieurs sections en ajoutant un titre avec newSection().\n
-    sceneSwitch() appelle newSection() pour le cas d'un changement de scène.
+
+class GameLogs(ScrollableStack):
+    """Représente l'historique de la partie.
+
+    C'est ici que sont écrits l'histoire, les combats et tout ce qu'il peut se passer durant une partie.\n
+    Il existe 4 types de messages : normaux, importants, titre et note.
+    Ils peuvent être écrits en utilisant respectivement : print(), important(), title() et note().
     """
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        Clock.schedule_once(self.initContent)
+
+    def initContent(self, _: int):
+        self.content.spacing = 15
+
     def print(self, _: EventDispatcher, text: str):
-        self.content.add_widget(BookMsg(text))
+        self.content.add_widget(LogsMsg(text))
+
+    def important(self, _: EventDispatcher, text: str):
+        self.content.add_widget(LogsMsg(text, bold=True))
+
+    def title(self, _: EventDispatcher, text: str):
+        self.content.add_widget(LogsTitle(text))
+
+    def note(self, _: EventDispatcher, text: str):
+        self.content.add_widget(LogsMsg(text, italic=True))
 
     def sceneSwitch(self, scene: int):
-        self.newSection("Introduction" if scene == INTRODUCTION else "Page {}".format(scene))
-
-    def newSection(self, text: str) -> None:
-        self.content.add_widget(BookSection(text))
+        self.title(None, "Introduction" if scene == INTRODUCTION else "Page {}".format(scene))
 
 
 def diceFace(face: int) -> str:
@@ -567,7 +582,7 @@ class Session(Step, BoxLayout):
     name = StringProperty()
 
     gameplay = ObjectProperty()
-    book = ObjectProperty()
+    logs = ObjectProperty()
 
     confirm = ObjectProperty()
 
@@ -605,7 +620,10 @@ class Session(Step, BoxLayout):
                 # Appel de la méthode en fonction du nom associé au type de la requête (voir Session.requests)
                 getattr(self.context, Session.requests[self.requestType])(**args)
 
-        self.listen(on_text=self.book.print,
+        self.listen(on_text_normal=self.logs.print,
+                    on_text_important=self.logs.important,
+                    on_text_title=self.logs.title,
+                    on_text_note=self.logs.note,
                     on_scene_switch=self.switchScene,
                     on_leader_switch=self.switchLeader,
                     on_request_confirm=RequestHandler(Request.CONFIRM),
@@ -627,7 +645,7 @@ class Session(Step, BoxLayout):
         return target == ALL_PLAYERS or target == self.rboCI.id
 
     def switchScene(self, _: EventDispatcher, scene: int):
-        self.book.sceneSwitch(scene)
+        self.logs.sceneSwitch(scene)
         self.details.sceneSwitch(scene)
 
     def switchLeader(self, _: EventDispatcher, id: int):

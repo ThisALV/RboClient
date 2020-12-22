@@ -4,24 +4,21 @@
     DisconnectAction:
         id: disconnect
 
-<BookMsg>:
+<GameLog>:
     size_hint: (1, None)
-    italic: True
-    markup: True
-    font_size: 15
     text_size: (self.width, None)
     size: self.texture_size
     halign: "center"
 
-<BookSection>:
-    size_hint: (1, None)
-    height: 50
-    bold: True
-    font_size: 20
+<LogsMsg>:
+    font_size: 17
 
-<Book>:
+<LogsTitle>:
+    font_size: 30
+    bold: True
+
+<GameLogs>:
     background: bright
-    spacing: 2
 
 <Dices>:
     rollFinished: self.rollingDelayMs >= self.lastRollingDelayMs
@@ -293,7 +290,7 @@
 <Session>:
     orientation: "horizontal"
     gameplay: gameplay
-    book: book
+    logs: logs
     confirm: confirm
     detailsScreen: detailsScreen
     players: players
@@ -303,8 +300,8 @@
         Gameplay:
             id: gameplay
             size_hint: (1, 3.5)
-            Book:
-                id: book
+            GameLogs:
+                id: logs
                 pos_hint: {"x": 0, "y": 0}
                 size_hint: (1, 1)
         AnchorLayout:

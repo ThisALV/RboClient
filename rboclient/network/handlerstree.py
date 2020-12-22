@@ -183,7 +183,12 @@ session = HandlerNode({
         4: HandlerLeaf("dice_roll", diceRollRequest)
     }, "request"),
     13: HandlerLeaf("finish_request"),
-    1: HandlerLeaf("text", text),
+    1: HandlerNode({
+        0: HandlerLeaf("normal", text),
+        1: HandlerLeaf("important", text),
+        2: HandlerLeaf("title", text),
+        3: HandlerLeaf("note", text)
+    }, "text"),
     2: HandlerLeaf("player_update", playerUpdate),
     3: HandlerLeaf("global_stat_update", globalStat),
     4: HandlerLeaf("player_die", id),
