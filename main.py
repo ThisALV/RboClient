@@ -16,6 +16,8 @@ address=
 port=
 playerID=
 name=
+localhost=False
+master=False
 
 [graphics]
 width={}
