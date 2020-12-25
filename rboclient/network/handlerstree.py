@@ -141,6 +141,10 @@ def delay(data: Data) -> dict:
     return {"delay": data.takeNumeric(8)}
 
 
+def playerDeath(data: Data) -> dict:
+    return {"id": data.take(), "reason": data.takeString()}
+
+
 registering = HandlerNode({
     0: HandlerLeaf("registered", members),
     1: HandlerLeaf("invalid_request"),
@@ -191,7 +195,7 @@ session = HandlerNode({
     }, "text"),
     2: HandlerLeaf("player_update", playerUpdate),
     3: HandlerLeaf("global_stat_update", globalStat),
-    4: HandlerLeaf("player_die", id),
+    4: HandlerLeaf("player_die", playerDeath),
     5: HandlerLeaf("scene_switch", scene),
     6: HandlerLeaf("player_reply", reply),
     7: HandlerNode({
