@@ -79,7 +79,7 @@ def diceFace(face: int) -> str:
 
 
 def randomFace() -> str:
-    "Retourne un caractère unicode \"face de dé\" correspondant à l'argument face."
+    "Retourne un caractère unicode \"face de dé\" au hasard."
 
     return diceFace(randrange(1, 7))
 
