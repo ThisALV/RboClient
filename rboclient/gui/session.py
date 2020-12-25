@@ -48,7 +48,9 @@ class GameLogs(ScrollableStack):
 
     C'est ici que sont écrits l'histoire, les combats et tout ce qu'il peut se passer durant une partie.\n
     Il existe 4 types de messages : normaux, importants, titre et note.
-    Ils peuvent être écrits en utilisant respectivement : print(), important(), title() et note().
+    Ils peuvent être écrits en utilisant respectivement : print(), important(), title() et note().\n
+    Un autre type de message peut être utilisé pour afficher la mort d'un joueur avec playerDeath().
+    Les arguments sont l'ID, le nom du joueur et la raison de sa mort.
     """
 
     def __init__(self, **kwargs):
@@ -70,6 +72,10 @@ class GameLogs(ScrollableStack):
 
     def note(self, _: EventDispatcher, text: str):
         self.content.add_widget(LogsMsg(text, italic=True))
+
+    def playerDeath(self, playerID: int, playerName: str, reason: str) -> None:
+        self.content.add_widget(LogsMsg("Le joueur [{}] {} est mort : {}".format(playerID, playerName, reason),
+                                        italic=True, bold=True, color=[1, .4, .4]))
 
 
 def diceFace(face: int) -> str:
@@ -319,6 +325,9 @@ class Players(ScrollableStack):
     def removePlayer(self, id: int) -> None:
         self.checkPlayerID(id)
 
+        if self.selected == id:
+            self.players[id].selected = False
+
         self.content.remove_widget(self.players[id])
         self.players.pop(id)
 
@@ -341,11 +350,16 @@ class Players(ScrollableStack):
             player.hasReplied = RequestReplied.WAITING
 
     def leaderSwitch(self, id: int) -> None:
-        if self.leader is not None:
+        if self.leader in self.players:
             self.players[self.leader].isLeader = False
 
         self.leader = id
         self.players[self.leader].isLeader = True
+
+    def getName(self, id: int) -> None:
+        self.checkPlayerID(id)
+
+        return self.players[id].name
 
 
 class Inventory(BoxLayout):
@@ -487,7 +501,8 @@ class Details(StackLayout):
     2ème partie variable en fonction du joueur sélectionné.
     Cette partie affiche l'entièreté des stats globales si aucun joueur n'est sélectionné.\n
     refreshPlayer() met à jour les caractéristiques d'un joueur. showPlayer() et showGlobal() permettent de basculer d'un affichage à l'autre.\n
-    sceneSwitch() et leaderSwitch() permettent de mettre à jour les caractéristiques générales de la partie.
+    sceneSwitch() et leaderSwitch() permettent de mettre à jour les caractéristiques générales de la partie.\n
+    Un joueur déconnecté ou mort peut-être retiré avec removePlayer() prenant l'ID du joueur en argument.
     """
 
     GLOBAL = 255
@@ -506,6 +521,10 @@ class Details(StackLayout):
         self.add_widget(self.specificDetails)
 
         self.gameDetails.gameName = ctx.name
+
+    def checkPlayerID(self, id: int) -> None:
+        if id == Details.GLOBAL or id not in self.details:
+            raise PlayerNotFound(id)
 
     def on_playerdetails_closed(self):
         pass
@@ -542,8 +561,12 @@ class Details(StackLayout):
         player.refreshStats(stats)
         player.refreshInventories(inventories)
 
+    def removePlayer(self, id: int) -> None:
+        self.checkPlayerID(id)
+        self.details.pop(id)  # Le joueur est sensé avoir été préalablement déselectionné
+
     def leaderSwitch(self, leader: int) -> None:
-        if self.gameDetails.leader != -1:
+        if self.gameDetails.leader != -1 and self.gameDetails.leader in self.details:
             self.details[self.gameDetails.leader].leader = False
 
         self.gameDetails.leader = leader
@@ -624,7 +647,8 @@ class Session(Step, BoxLayout):
                     on_finish_request=self.finishRequest,
                     on_player_reply=self.playerReplied,
                     on_player_update=self.updatePlayer,
-                    on_global_stat_update=self.updateGlobalStat)
+                    on_global_stat_update=self.updateGlobalStat,
+                    on_player_die=self.playerDie)
 
         self.currentRequest = None
 
@@ -665,6 +689,15 @@ class Session(Step, BoxLayout):
     def finishRequest(self, _: EventDispatcher):
         self.players.endRequest()
         self.confirm.disabled = True
+
+    def playerDie(self, _: EventDispatcher, id: int, reason: str):
+        name = self.players.getName(id)
+
+        self.players.removePlayer(id)
+        self.details.removePlayer(id)
+        self.members.pop(id)
+
+        self.logs.playerDeath(id, name, reason)
 
     def updateGlobalStat(self, _: EventDispatcher, **args):
         name = args["name"]
