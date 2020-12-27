@@ -233,7 +233,8 @@ class Player(BoxLayout):
 
     Affiche les informations basiques (identifiant, nom et stats principales) à propos d'un joueur.\n
     Indique également lors d'une requête s'il a déjà répondu à celle-ci ou non.\n
-    Peut être sélectionné ou désélectionné (propriété selected), foreground/background color s'inversent en conséquence.
+    Peut être sélectionné ou désélectionné (propriété selected), foreground/background color s'inversent en conséquence.\n
+    Une propriété dead permet de mettre à jour le style du texte lorsque le joueur meurt.
     """
 
     playerID = NumericProperty()
@@ -241,8 +242,10 @@ class Player(BoxLayout):
     isSelf = BooleanProperty()
     isLeader = BooleanProperty(False)
     hasReplied = ObjectProperty(RequestReplied.WAITING)
+    dead = BooleanProperty(False)
 
     selected = BooleanProperty(False)
+    foreground = ColorProperty()
 
     requestStatus = {
         RequestReplied.WAITING: ("", [0, 0, 0]),
@@ -276,7 +279,8 @@ class Players(ScrollableStack):
     Il est possible de rafraîchir l'apperçu des stats principales d'un joueur avec refreshMainStats(playerID).\n
     Cette liste s'occupe également de gérer les statuts des joueurs pendant une requête (a répondu ou non).
     Pour cela il faut utiliser beginRequest(), replied(playerID) et endRequest().\n
-    Enfin permet de désigner un leader parmis les joueurs avec leader(playerID).
+    Enfin permet de désigner un leader parmis les joueurs avec leader(playerID).\n
+    Un joueur mort peut être signalé avec la méthode dead() prenant aussi l'ID en argument.
     """
 
     def __init__(self, **kwargs):
@@ -337,7 +341,7 @@ class Players(ScrollableStack):
         self.players[id].stats.refresh(stats)
 
     def beginRequest(self, target: int) -> None:
-        targets = self.players.values() if target == ALL_PLAYERS else [self.players[target]]
+        targets = [p for p in self.players.values() if not p.dead] if target == ALL_PLAYERS else [self.players[target]]
 
         for player in targets:
             player.hasReplied = RequestReplied.NO
@@ -360,6 +364,14 @@ class Players(ScrollableStack):
         self.checkPlayerID(id)
 
         return self.players[id].name
+
+    def alive(self, id: int) -> bool:
+        return not self.players[id].dead
+
+    def dead(self, id: int) -> None:
+        self.checkPlayerID(id)
+
+        self.players[id].dead = True
 
 
 class Inventory(BoxLayout):
@@ -502,7 +514,7 @@ class Details(StackLayout):
     Cette partie affiche l'entièreté des stats globales si aucun joueur n'est sélectionné.\n
     refreshPlayer() met à jour les caractéristiques d'un joueur. showPlayer() et showGlobal() permettent de basculer d'un affichage à l'autre.\n
     sceneSwitch() et leaderSwitch() permettent de mettre à jour les caractéristiques générales de la partie.\n
-    Un joueur déconnecté ou mort peut-être retiré avec removePlayer() prenant l'ID du joueur en argument.
+    Un joueur déconnecté peut être retiré avec removePlayer() prenant l'ID du joueur en argument.
     """
 
     GLOBAL = 255
@@ -647,8 +659,7 @@ class Session(Step, BoxLayout):
                     on_finish_request=self.finishRequest,
                     on_player_reply=self.playerReplied,
                     on_player_update=self.updatePlayer,
-                    on_global_stat_update=self.updateGlobalStat,
-                    on_player_die=self.playerDie)
+                    on_global_stat_update=self.updateGlobalStat)
 
         self.currentRequest = None
 
@@ -659,7 +670,7 @@ class Session(Step, BoxLayout):
         App.get_running_app().titleBar.actionsCtx.bind(on_disconnect=lambda _: self.rboCI.close())
 
     def isTargetted(self, target: int) -> bool:
-        return target == ALL_PLAYERS or target == self.rboCI.id
+        return (target == ALL_PLAYERS and self.players.alive(self.rboCI.id)) or target == self.rboCI.id
 
     def switchScene(self, _: EventDispatcher, scene: int):
         Logger.info("Session : Go to scene {}".format(scene))
@@ -693,10 +704,7 @@ class Session(Step, BoxLayout):
     def playerDie(self, _: EventDispatcher, id: int, reason: str):
         name = self.players.getName(id)
 
-        self.players.removePlayer(id)
-        self.details.removePlayer(id)
-        self.members.pop(id)
-
+        self.players.dead(id)
         self.logs.playerDeath(id, name, reason)
 
     def updateGlobalStat(self, _: EventDispatcher, **args):
@@ -721,6 +729,11 @@ class Session(Step, BoxLayout):
 
     def updatePlayer(self, _: EventDispatcher, **args):
         (id, update) = args.values()
+
+        death = update["death"]
+        if death is not None:
+            self.players.dead(id)
+            self.logs.playerDeath(id, self.players.getName(id), death)
 
         statsUpdate = update["stats"]
 

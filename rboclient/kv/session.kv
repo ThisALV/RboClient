@@ -1,5 +1,7 @@
 #:kivy 2.0.0
 
+#:set deadPlayer [.4, 0, 0]
+
 <SessionCtxActions>:
     DisconnectAction:
         id: disconnect
@@ -85,6 +87,7 @@
     height: 150
     padding: 15
     stats: stats
+    foreground: deadPlayer if self.dead else (dark if self.selected else white)
     canvas.before:
         Color:
             rgb: white if self.selected else dark
@@ -100,7 +103,8 @@
             Label:
                 size_hint: (None, 1)
                 width: self.height
-                color: dark
+                color: deadPlayer if root.dead else dark
+                strikethrough: root.dead
                 text: str(root.playerID)
                 font_size: 20 if root.selected else 15
                 bold: True
@@ -114,7 +118,8 @@
             bold: root.isSelf
             text: root.name
             font_size: 20
-            color: dark if root.selected else white
+            color: root.foreground
+            strikethrough: root.dead
         AnchorLayout:
             anchor_x: "right"
             Label:
@@ -132,11 +137,11 @@
         text_size: self.size
         halign: "left"
         valign: "center"
-        color: dark if root.selected else white
+        color: root.foreground
     DictionnaryView:
         id: stats
         background: white if root.selected else dark
-        foreground: dark if root.selected else white
+        foreground: root.foreground
 
 <InventoriesView>:
     background: darker
