@@ -20,6 +20,7 @@ from rboclient.network.protocol import RboConnectionInterface as RboCI
 
 INTRODUCTION = 0
 ALL_PLAYERS = 255
+ACTIVE_PLAYERS = ALL_PLAYERS - 1
 
 
 class SessionCtxActions(GameCtxActions):
@@ -341,7 +342,12 @@ class Players(ScrollableStack):
         self.players[id].stats.refresh(stats)
 
     def beginRequest(self, target: int) -> None:
-        targets = [p for p in self.players.values() if not p.dead] if target == ALL_PLAYERS else [self.players[target]]
+        if target == ALL_PLAYERS:
+            targets = self.players.values()
+        elif target == ACTIVE_PLAYERS:
+            targets = [p for p in self.players.values() if not p.dead]
+        else:
+            targets = [self.players[target]]
 
         for player in targets:
             player.hasReplied = RequestReplied.NO
@@ -670,7 +676,7 @@ class Session(Step, BoxLayout):
         App.get_running_app().titleBar.actionsCtx.bind(on_disconnect=lambda _: self.rboCI.close())
 
     def isTargetted(self, target: int) -> bool:
-        return (target == ALL_PLAYERS and self.players.alive(self.rboCI.id)) or target == self.rboCI.id
+        return target == ALL_PLAYERS or (target == ACTIVE_PLAYERS and self.players.alive(self.rboCI.id)) or target == self.rboCI.id
 
     def switchScene(self, _: EventDispatcher, scene: int):
         Logger.info("Session : Go to scene {}".format(scene))
