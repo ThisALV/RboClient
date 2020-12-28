@@ -61,7 +61,7 @@ def possibilities(data: Data) -> dict:
 
 
 def yesNoRequest(data: Data) -> dict:
-    return {"target": data.take(), "message": data.takeString()}
+    return {"target": data.take(), "question": data.takeString()}
 
 
 def diceRollRequest(data: Data) -> dict:

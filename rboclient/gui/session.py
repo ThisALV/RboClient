@@ -15,7 +15,7 @@ from kivy.uix.label import Label
 from kivy.uix.stacklayout import StackLayout
 from rboclient.gui import app
 from rboclient.gui.game import Step
-from rboclient.gui.widgets import DictionnaryView, GameCtxActions, ScrollableStack
+from rboclient.gui.widgets import DictionnaryView, GameCtxActions, ScrollableStack, YesNoPopup
 from rboclient.network.protocol import RboConnectionInterface as RboCI
 
 INTRODUCTION = 0
@@ -598,7 +598,8 @@ class Details(StackLayout):
 
 class Request(Enum):
     CONFIRM = auto(),
-    DICE_ROLL = auto()
+    DICE_ROLL = auto(),
+    YES_NO = auto()
 
 
 class NoCurrentRequest(Exception):
@@ -615,7 +616,8 @@ class Session(Step, BoxLayout):
 
     requests = {
         Request.CONFIRM: "askConfirm",
-        Request.DICE_ROLL: "askDiceRoll"
+        Request.DICE_ROLL: "askDiceRoll",
+        Request.YES_NO: "askYesNo"
     }
 
     name = StringProperty()
@@ -667,6 +669,7 @@ class Session(Step, BoxLayout):
                     on_leader_switch=self.switchLeader,
                     on_request_confirm=RequestHandler(Request.CONFIRM),
                     on_request_dice_roll=RequestHandler(Request.DICE_ROLL),
+                    on_request_yes_no=RequestHandler(Request.YES_NO),
                     on_finish_request=self.finishRequest,
                     on_player_reply=self.playerReplied,
                     on_player_update=self.updatePlayer,
@@ -698,6 +701,14 @@ class Session(Step, BoxLayout):
     def askDiceRoll(self, target: int, message: str, dices: int, bonus: int, results: "dict[int, list[int]]") -> None:
         if self.isTargetted(target):
             self.gameplay.rollDice(self, message, dices, bonus, results[self.rboCI.id])
+
+    def askYesNo(self, target: int, question: str) -> None:
+        if not self.isTargetted(target):
+            return
+
+        requestPopup = YesNoPopup(question)
+        requestPopup.open()
+        requestPopup.bind(on_reply=lambda _, reply: self.rboCI.replyYesNo(reply))
 
     def playerReplied(self, _: EventDispatcher, **args):
         if self.currentRequest is None:
