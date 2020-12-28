@@ -290,6 +290,8 @@ class YesNoBtn(AnchorLayout):
 
 
 class YesNoContent(BoxLayout):
+    "Initialise le contenu d'une YesNoPopup et émet on_choose lorsque le choix est fait."
+
     questions = {
         YesNoQuestion.MissingParticipants: "Manque-t-il des participants ?",
         YesNoQuestion.RetryCheckpoint: "Choisir un autre checkpoint ?",
@@ -300,21 +302,26 @@ class YesNoContent(BoxLayout):
     yes = ObjectProperty()
     no = ObjectProperty()
 
-    def __init__(self, question: YesNoQuestion, **kwargs):
+    def __init__(self, question, **kwargs):
         self.register_event_type("on_choose")
         super().__init__(**kwargs)
 
         self.yes.bind(on_click=lambda _: self.dispatch("on_choose", True))
         self.no.bind(on_click=lambda _: self.dispatch("on_choose", False))
 
-        self.question = YesNoContent.questions[question]
+        self.question = YesNoContent.questions[question] if type(question) == YesNoQuestion else question
 
     def on_choose(self, chosen: bool):
         pass
 
 
 class YesNoPopup(Popup):
-    "Cette popup permet de répondre Oui ou Non à une question posée."
+    """Cette popup permet de répondre Oui ou Non à une question posée.
+
+    L'évènement on_reply est émit lorsque le choix a été fait.\n
+    Si question passé au constructeur est une YesNoQuestion, alors le titre et la question correspondante sera affichée.\n
+    Sinon, s'il s'agit d'une str, alors le titre sera "Demande" et la question affichée sera celle passée en argument.
+    """
 
     questions = {
         YesNoQuestion.MissingParticipants: "Participants",
@@ -322,9 +329,9 @@ class YesNoPopup(Popup):
         YesNoQuestion.RetryCheckpoint: "Checkpoint"
     }
 
-    def __init__(self, question: YesNoQuestion, **kwargs):
+    def __init__(self, question, **kwargs):
         self.register_event_type("on_reply")
-        super().__init__(title=YesNoPopup.questions[question], **kwargs)
+        super().__init__(title=YesNoPopup.questions[question] if type(question) == YesNoQuestion else "Demande", **kwargs)
 
         self.content = YesNoContent(question)
         self.content.bind(on_choose=lambda _, chosen: self.dispatch("on_reply", chosen))
