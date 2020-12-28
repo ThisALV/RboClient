@@ -50,8 +50,9 @@ class GameLogs(ScrollableStack):
     C'est ici que sont écrits l'histoire, les combats et tout ce qu'il peut se passer durant une partie.\n
     Il existe 4 types de messages : normaux, importants, titre et note.
     Ils peuvent être écrits en utilisant respectivement : print(), important(), title() et note().\n
-    Un autre type de message peut être utilisé pour afficher la mort d'un joueur avec playerDeath().
-    Les arguments sont l'ID, le nom du joueur et la raison de sa mort.
+    Les types de message côté client sont utilisables avec : playerDeath(), playerDisconnection().
+    playerDeath() : les arguments sont l'ID, le nom du joueur et la raison de sa mort.
+    playerDisconnection() : les arguments sont l'ID et le nom du joueur.
     """
 
     def __init__(self, **kwargs):
@@ -76,6 +77,10 @@ class GameLogs(ScrollableStack):
 
     def playerDeath(self, playerID: int, playerName: str, reason: str) -> None:
         self.content.add_widget(LogsMsg("Le joueur [{}] {} est mort : {}".format(playerID, playerName, reason),
+                                        italic=True, bold=True, color=[1, .4, .4]))
+
+    def playerDisconnection(self, playerID: int, playerName: str) -> None:
+        self.content.add_widget(LogsMsg("Le joueur [{}] {} a été déconnecté.".format(playerID, playerName),
                                         italic=True, bold=True, color=[1, .4, .4]))
 
 
@@ -665,7 +670,8 @@ class Session(Step, BoxLayout):
                     on_finish_request=self.finishRequest,
                     on_player_reply=self.playerReplied,
                     on_player_update=self.updatePlayer,
-                    on_global_stat_update=self.updateGlobalStat)
+                    on_global_stat_update=self.updateGlobalStat,
+                    on_player_crash=self.playerCrash)
 
         self.currentRequest = None
 
@@ -707,11 +713,18 @@ class Session(Step, BoxLayout):
         self.players.endRequest()
         self.confirm.disabled = True
 
-    def playerDie(self, _: EventDispatcher, id: int, reason: str):
+    def playerCrash(self, _: EventDispatcher, id: int):
         name = self.players.getName(id)
 
+        self.players.removePlayer(id)
+        self.details.removePlayer(id)
+        self.members.pop(id)
+
+        self.logs.playerDisconnection(id, name)
+
+    def playerDie(self, _: EventDispatcher, id: int, reason: str):
         self.players.dead(id)
-        self.logs.playerDeath(id, name, reason)
+        self.logs.playerDeath(id, self.players.getName(id), reason)
 
     def updateGlobalStat(self, _: EventDispatcher, **args):
         name = args["name"]
