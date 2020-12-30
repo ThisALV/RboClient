@@ -95,6 +95,7 @@ class RboInputRow(BoxLayout):
 class RboOption(BoxLayout):
     "Case à cocher accompagnée d'un label."
 
+    enabled = BooleanProperty(False)
     label = StringProperty()
     group = ObjectProperty()
 
@@ -118,7 +119,6 @@ class RboFillOption(RboOption):
     fill = StringProperty()
 
     ckeckbox = ObjectProperty()
-    enabled = BooleanProperty(False)
 
     def on_enabled(self, _: EventDispatcher, enabled: bool):
         target = self.input.ids[self.field]
@@ -260,11 +260,11 @@ class InputPopup(Popup):
     inputType = ObjectProperty()
     value = StringProperty()
 
-    def __init__(self, **kwargs):
+    def __init__(self, *inputArgs, **kwargs):
         self.register_event_type("on_validate")
         super().__init__(title=self.title, **kwargs)
 
-        self.content = InputContent(input=self.inputType(), **kwargs)
+        self.content = InputContent(input=self.inputType(*inputArgs), **kwargs)
         self.content.bind(on_submit=lambda _: self.dispatch("on_validate", self.value))
 
     def on_validate(self, value: str):
