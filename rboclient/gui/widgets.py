@@ -280,6 +280,7 @@ class TextInputPopup(InputPopup):
     "Cette popup affiche une zone de saisie (de texte)."
 
     title = StringProperty("Choisir un checkpoint")
+    value = ObjectProperty("")
     inputType = ObjectProperty(CheckpointInput)
 
     def __init__(self, **kwargs):
