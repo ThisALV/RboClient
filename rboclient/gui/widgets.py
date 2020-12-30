@@ -96,6 +96,7 @@ class RboOption(BoxLayout):
     "Case à cocher accompagnée d'un label."
 
     label = StringProperty()
+    group = ObjectProperty()
 
     def toggle(self) -> None:
         self.checkbox.active = True
