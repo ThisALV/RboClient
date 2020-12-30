@@ -98,6 +98,14 @@ class RboOption(BoxLayout):
     label = StringProperty()
     group = ObjectProperty()
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        Clock.schedule_once(self.initGroup)
+
+    def initGroup(self, _: int):
+        if self.group is not None:
+            self.checkbox.group = self.group
+
     def toggle(self) -> None:
         self.checkbox.active = True
 
