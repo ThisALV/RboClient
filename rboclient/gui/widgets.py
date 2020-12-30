@@ -258,7 +258,7 @@ class InputPopup(Popup):
 
     title = StringProperty("InputPopup")
     inputType = ObjectProperty()
-    value = StringProperty()
+    value = ObjectProperty()
 
     def __init__(self, *inputArgs, **kwargs):
         self.register_event_type("on_validate")
