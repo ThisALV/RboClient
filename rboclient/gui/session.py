@@ -15,7 +15,7 @@ from kivy.uix.label import Label
 from kivy.uix.stacklayout import StackLayout
 from rboclient.gui import app
 from rboclient.gui.game import Step
-from rboclient.gui.widgets import DictionnaryView, GameCtxActions, ScrollableStack, YesNoPopup
+from rboclient.gui.widgets import DictionnaryView, InputPopup, GameCtxActions, RboOption, ScrollableStack, YesNoPopup
 from rboclient.network.protocol import RboConnectionInterface as RboCI
 
 INTRODUCTION = 0
@@ -596,10 +596,51 @@ class Details(StackLayout):
         self.details[self.gameDetails.leader].leader = True
 
 
+class OptionsInput(BoxLayout):
+    "Groupe de radio buttons permettant de sélectionner une seule option."
+
+    selected = NumericProperty()
+
+    def __init__(self, *inputArgs, **kwargs):
+        super().__init__(**kwargs)
+
+        self.optionsID = {}
+
+        id = 1
+        for option in inputArgs[0]:
+            btn = RboOption(label=option, group=self)
+            btn.bind(enabled=self.select)
+
+            self.add_widget(btn)
+            self.optionsID[btn] = id
+            id += 1
+
+        self.children[-1].toggle()
+
+    def select(self, btn: RboOption, selected: bool):
+        if selected:
+            self.selected = self.optionsID[btn]
+
+
+class OptionsPopup(InputPopup):
+    "Cette popup affiche une liste de cases à cocher à choix unique."
+
+    title = StringProperty("Demande")
+    value = ObjectProperty(1)
+    inputType = ObjectProperty(OptionsInput)
+
+    def __init__(self, options: "list[str]", **kwargs):
+        super().__init__(options, **kwargs)
+
+        self.size = (350, 550)
+        self.content.input.bind(selected=self.setter("value"))
+
+
 class Request(Enum):
     CONFIRM = auto(),
     DICE_ROLL = auto(),
-    YES_NO = auto()
+    YES_NO = auto(),
+    OPTIONS = auto()
 
 
 class NoCurrentRequest(Exception):
@@ -617,7 +658,8 @@ class Session(Step, BoxLayout):
     requests = {
         Request.CONFIRM: "askConfirm",
         Request.DICE_ROLL: "askDiceRoll",
-        Request.YES_NO: "askYesNo"
+        Request.YES_NO: "askYesNo",
+        Request.OPTIONS: "ask"
     }
 
     name = StringProperty()
@@ -659,7 +701,9 @@ class Session(Step, BoxLayout):
 
                 self.context.currentRequest = self.requestType
                 # Appel de la méthode en fonction du nom associé au type de la requête (voir Session.requests)
-                getattr(self.context, Session.requests[self.requestType])(**args)
+                # Si et seulement si le joueur est ciblé par la requête
+                if session.isTargetted(args["target"]):
+                    getattr(self.context, Session.requests[self.requestType])(**args)
 
         self.listen(on_text_normal=self.logs.print,
                     on_text_important=self.logs.important,
@@ -670,6 +714,7 @@ class Session(Step, BoxLayout):
                     on_request_confirm=RequestHandler(Request.CONFIRM),
                     on_request_dice_roll=RequestHandler(Request.DICE_ROLL),
                     on_request_yes_no=RequestHandler(Request.YES_NO),
+                    on_request_options=RequestHandler(Request.OPTIONS),
                     on_finish_request=self.finishRequest,
                     on_player_reply=self.playerReplied,
                     on_player_update=self.updatePlayer,
@@ -677,6 +722,7 @@ class Session(Step, BoxLayout):
                     on_player_crash=self.playerCrash)
 
         self.currentRequest = None
+        self.requestPopup = None
 
         Clock.schedule_once(lambda _: self.confirm.bind(on_release=lambda _: self.rboCI.confirm()))
         Clock.schedule_once(self.bindTitleBar)
@@ -695,20 +741,20 @@ class Session(Step, BoxLayout):
         self.details.leaderSwitch(id)
 
     def askConfirm(self, target: int) -> None:
-        if self.isTargetted(target):
-            self.confirm.disabled = False
+        self.confirm.disabled = False
 
     def askDiceRoll(self, target: int, message: str, dices: int, bonus: int, results: "dict[int, list[int]]") -> None:
-        if self.isTargetted(target):
-            self.gameplay.rollDice(self, message, dices, bonus, results[self.rboCI.id])
+        self.gameplay.rollDice(self, message, dices, bonus, results[self.rboCI.id])
 
     def askYesNo(self, target: int, question: str) -> None:
-        if not self.isTargetted(target):
-            return
+        self.requestPopup = YesNoPopup(question)
+        self.requestPopup.open()
+        self.requestPopup.bind(on_reply=lambda _, reply: self.rboCI.replyYesNo(reply))
 
-        requestPopup = YesNoPopup(question)
-        requestPopup.open()
-        requestPopup.bind(on_reply=lambda _, reply: self.rboCI.replyYesNo(reply))
+    def ask(self, target: int, message: str, options: "list[str]") -> None:
+        self.requestPopup = OptionsPopup(options)
+        self.requestPopup.open()
+        self.requestPopup.bind(on_validate=lambda _, reply: self.rboCI.reply(reply))
 
     def playerReplied(self, _: EventDispatcher, **args):
         if self.currentRequest is None:
@@ -723,6 +769,12 @@ class Session(Step, BoxLayout):
     def finishRequest(self, _: EventDispatcher):
         self.players.endRequest()
         self.confirm.disabled = True
+
+        if self.requestPopup is not None and (self.currentRequest == Request.YES_NO or self.currentRequest == Request.OPTIONS):
+            self.requestPopup.dismiss()
+            self.requestPopup = None
+
+        self.currentRequest = None
 
     def playerCrash(self, _: EventDispatcher, id: int):
         name = self.players.getName(id)
