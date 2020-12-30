@@ -49,13 +49,14 @@ def rangeRequest(data: Data) -> dict:
     return {"target": data.take(), "message": data.takeString(), "min": data.take(), "max": data.take()}
 
 
-def possibilities(data: Data) -> dict:
-    args = {"target": data.take(), "message": data.takeString(), "options": {}}
+def options(data: Data) -> dict:
+    args = {"target": data.take(), "message": data.takeString()}
+
     count = data.take()
+    args["options"] = [None] * count
 
     for i in range(count):
-        id = data.take()
-        args["options"][id] = data.takeString()
+        args["options"][i] = data.takeString()
 
     return args
 
@@ -177,7 +178,7 @@ lobby = HandlerNode({
 session = HandlerNode({
     0: HandlerNode({
         0: HandlerLeaf("range", rangeRequest),
-        1: HandlerLeaf("possibilities", possibilities),
+        1: HandlerLeaf("options", options),
         2: HandlerLeaf("confirm", confirmRequest),
         3: HandlerLeaf("yes_no", yesNoRequest),
         4: HandlerLeaf("dice_roll", diceRollRequest)
