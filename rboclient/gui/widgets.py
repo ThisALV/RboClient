@@ -186,6 +186,9 @@ class ScrollableStack(ScrollView):
     def __init__(self, bg: "list[int]" = background.defaultvalue, **kwargs):
         super().__init__(background=bg, **kwargs)
 
+    def on_background(self, _: EventDispatcher, bg):
+        pass
+
 
 class Pair(StackLayout):
     "Paire clé/valeur d'un tableau"

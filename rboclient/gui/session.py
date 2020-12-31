@@ -596,26 +596,26 @@ class Details(StackLayout):
         self.details[self.gameDetails.leader].leader = True
 
 
-class OptionsInput(BoxLayout):
-    "Groupe de radio buttons permettant de sélectionner une seule option."
+class OptionsInput(ScrollableStack):
+    "Groupe de radio buttons permettant de sélectionner une seule option. Possède une taille fixe et est scrollable s'il y a trop d'options"
 
     selected = NumericProperty()
 
-    def __init__(self, *inputArgs, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, options: "list[str]", bg: "list[int]" = ScrollableStack.background.defaultvalue, **kwargs):
+        super().__init__(bg, **kwargs)
 
         self.optionsID = {}
 
         id = 1
-        for option in inputArgs[0]:
+        for option in options:
             btn = RboOption(label=option, group=self)
             btn.bind(enabled=self.select)
 
-            self.add_widget(btn)
+            self.content.add_widget(btn)
             self.optionsID[btn] = id
             id += 1
 
-        self.children[-1].toggle()
+        self.content.children[-1].toggle()
 
     def select(self, btn: RboOption, selected: bool):
         if selected:
@@ -629,8 +629,8 @@ class OptionsPopup(InputPopup):
     value = ObjectProperty(1)
     inputType = ObjectProperty(OptionsInput)
 
-    def __init__(self, options: "list[str]", **kwargs):
-        super().__init__(options, **kwargs)
+    def __init__(self, options: "list[str]", bg: "list[int]" = ScrollableStack.background.defaultvalue, **kwargs):
+        super().__init__(options, bg, **kwargs)
         self.content.input.bind(selected=self.setter("value"))
 
 
@@ -750,7 +750,7 @@ class Session(Step, BoxLayout):
         self.requestPopup.bind(on_reply=lambda _, reply: self.rboCI.replyYesNo(reply))
 
     def ask(self, target: int, message: str, options: "list[str]") -> None:
-        self.requestPopup = OptionsPopup(options)
+        self.requestPopup = OptionsPopup(options, [.1, .1, .1])
         self.requestPopup.open()
         self.requestPopup.bind(on_validate=lambda _, reply: self.rboCI.reply(reply))
 
