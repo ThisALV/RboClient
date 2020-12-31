@@ -275,9 +275,9 @@ class InputPopup(Popup):
 
     def __init__(self, *inputArgs, **kwargs):
         self.register_event_type("on_validate")
-        super().__init__(title=self.title, **kwargs)
+        super().__init__(**kwargs)
 
-        self.content = InputContent(input=self.inputType(*inputArgs), **kwargs)
+        self.content = InputContent(input=self.inputType(*inputArgs))
         self.content.bind(on_submit=lambda _: self.dispatch("on_validate", self.value))
 
     def on_validate(self, value: str):
