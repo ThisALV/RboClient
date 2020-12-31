@@ -620,6 +620,8 @@ class OptionsInput(ScrollableStack):
     def select(self, btn: RboOption, selected: bool):
         if selected:
             self.selected = self.optionsID[btn]
+        elif all(not option.enabled for option in self.content.children):
+            btn.toggle()
 
 
 class OptionsPopup(InputPopup):
