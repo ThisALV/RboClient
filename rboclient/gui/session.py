@@ -15,7 +15,7 @@ from kivy.uix.label import Label
 from kivy.uix.stacklayout import StackLayout
 from rboclient.gui import app
 from rboclient.gui.game import Step
-from rboclient.gui.widgets import DictionnaryView, InputPopup, GameCtxActions, RboOption, ScrollableStack, YesNoPopup
+from rboclient.gui.widgets import DictionnaryView, InputPopup, GameCtxActions, NumericRboInput, RboOption, ScrollableStack, YesNoPopup
 from rboclient.network.protocol import RboConnectionInterface as RboCI
 
 INTRODUCTION = 0
@@ -636,11 +636,45 @@ class OptionsPopup(InputPopup):
         self.content.input.bind(selected=self.setter("value"))
 
 
+class NumberInput(NumericRboInput):
+    value = NumericProperty()
+
+    def __init__(self, min: int = None, max: int = None, **kwargs):
+        super().__init__(**kwargs)
+        self.inserting = False
+
+    def on_text(self, _: EventDispatcher, newText: str):
+        if len(newText) == 0 and not self.inserting:
+            self.text = "0"
+
+    def insert_text(self, substr: str, from_undo: bool = False):
+        if self.text == "0":
+            self.inserting = True
+            self.text = ""
+            self.inserting = False
+
+        if not super().insert_text(substr, from_undo):
+            self.text = "0"
+
+
+class NumberInputPopup(InputPopup):
+    "Cette popup affiche un champs de saisie pour une valeur numérique délimitée."
+
+    title = StringProperty("Demande")
+    value = ObjectProperty(0)
+    inputType = ObjectProperty(NumberInput)
+
+    def __init__(self, min: int, max: int, **kwargs):
+        super().__init__(min, max, **kwargs)
+        self.content.input.bind(value=self.setter("value"))
+
+
 class Request(Enum):
     CONFIRM = auto(),
     DICE_ROLL = auto(),
     YES_NO = auto(),
-    OPTIONS = auto()
+    OPTIONS = auto(),
+    NUMBER = auto()
 
 
 class NoCurrentRequest(Exception):
@@ -659,7 +693,8 @@ class Session(Step, BoxLayout):
         Request.CONFIRM: "askConfirm",
         Request.DICE_ROLL: "askDiceRoll",
         Request.YES_NO: "askYesNo",
-        Request.OPTIONS: "ask"
+        Request.OPTIONS: "ask",
+        Request.NUMBER: "askNumber"
     }
 
     name = StringProperty()
@@ -715,6 +750,7 @@ class Session(Step, BoxLayout):
                     on_request_dice_roll=RequestHandler(Request.DICE_ROLL),
                     on_request_yes_no=RequestHandler(Request.YES_NO),
                     on_request_options=RequestHandler(Request.OPTIONS),
+                    on_request_number=RequestHandler(Request.NUMBER),
                     on_finish_request=self.finishRequest,
                     on_player_reply=self.playerReplied,
                     on_player_update=self.updatePlayer,
@@ -752,7 +788,15 @@ class Session(Step, BoxLayout):
         self.requestPopup.bind(on_reply=lambda _, reply: self.rboCI.replyYesNo(reply))
 
     def ask(self, target: int, message: str, options: "list[str]") -> None:
-        self.requestPopup = OptionsPopup(options, [.1, .1, .1])
+        self.requestPopup = OptionsPopup(options, [.1, .1, .1], title=message)
+        self.requestPopup.open()
+        self.requestPopup.bind(on_validate=lambda _, reply: self.rboCI.reply(reply))
+
+    def askNumber(self, target: int, question: str, min: int, max: int) -> None:
+        self.requestPopup = NumberInputPopup(min, max, title=question)
+        self.requestPopup.content.input.size_hint = (.6, None)
+        self.requestPopup.content.input.height = 40
+
         self.requestPopup.open()
         self.requestPopup.bind(on_validate=lambda _, reply: self.rboCI.reply(reply))
 
@@ -770,7 +814,8 @@ class Session(Step, BoxLayout):
         self.players.endRequest()
         self.confirm.disabled = True
 
-        if self.requestPopup is not None and (self.currentRequest == Request.YES_NO or self.currentRequest == Request.OPTIONS):
+        haveRequestPopup = self.currentRequest == Request.YES_NO or self.currentRequest == Request.OPTIONS or self.currentRequest == Request.NUMBER
+        if self.requestPopup is not None and haveRequestPopup:
             self.requestPopup.dismiss()
             self.requestPopup = None
 

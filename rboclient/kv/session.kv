@@ -302,6 +302,17 @@
     background: ""
     background_color: bright
 
+<NumberInput>:
+    size_hint: (1, None)
+    height: 30
+    text: "0"
+    # self.value va être mise à jour avant d'avoir vérifier si les inputs étaient bien des chiffres
+    value: int(self.text) if self.text.isdigit() else 0
+
+<NumberInputPopup>:
+    size_hint: (None, None)
+    size: (300, 250)
+
 <Session>:
     orientation: "horizontal"
     gameplay: gameplay
