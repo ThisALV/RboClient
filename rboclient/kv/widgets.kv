@@ -154,23 +154,29 @@
     AnchorLayout:
         anchor_x: "center"
         anchor_y: "center"
+        size_hint: (1, None)
+        height: 40
         RboBtn:
+            size_hint: (.75, None)
+            height: 30
             text: "Valider"
             on_release: root.dispatch("on_submit")
 
 <InputPopup>:
-    size_hint: (None, None)
-    size: (300, 150)
     auto_dismiss: False
     title_color: popupTitle
     separator_height: 2
     separator_color: popupTitle
 
 <CheckpointInput>:
-    size_hint: (.7, None)
+    size_hint: (.8, None)
     height: 30
     id: input
     hint_text: "Nom (vide pour aucun)"
+
+<TextInputPopup>:
+    size_hint: (None, None)
+    size: (300, 175)
 
 <YesNoBtn>:
     anchor_x: "center"

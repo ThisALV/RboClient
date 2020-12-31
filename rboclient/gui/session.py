@@ -631,8 +631,6 @@ class OptionsPopup(InputPopup):
 
     def __init__(self, options: "list[str]", **kwargs):
         super().__init__(options, **kwargs)
-
-        self.size = (350, 550)
         self.content.input.bind(selected=self.setter("value"))
 
 
