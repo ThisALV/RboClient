@@ -158,11 +158,13 @@ class NumericRboInput(RboInput):
     "N'autorise que l'entrée de chiffres, est invalide s'il contient autre chose."
 
     digits = NumericProperty()
+    min = NumericProperty(0)
     max = NumericProperty(+inf)
 
     def valid(self) -> bool:
         try:
-            return super().valid() and int(self.text) <= self.max
+            numericValue = int(self.text)
+            return super().valid() and numericValue <= self.max and numericValue >= self.min
         except ValueError:
             return False
 
