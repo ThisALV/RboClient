@@ -161,6 +161,9 @@ class NumericRboInput(RboInput):
     min = NumericProperty(0)
     max = NumericProperty(+inf)
 
+    def __init__(self, min: int, max: int, **kwargs):
+        super().__init__(min=min, max=max, **kwargs)
+
     def valid(self) -> bool:
         try:
             numericValue = int(self.text)
