@@ -176,15 +176,16 @@ class NumericRboInput(RboInput):
         except ValueError:
             return False
 
-    def insert_text(self, substr: str, from_undo: bool = False):
+    def insert_text(self, substr: str, from_undo: bool = False) -> bool:
         if len(self.text) + len(substr) > self.digits:
-            return
+            return False
 
         for c in substr:
             if c not in "0123456789":
-                return
+                return False
 
-        return super().insert_text(substr, from_undo)
+        super().insert_text(substr, from_undo)
+        return True
 
 
 class ScrollableStack(ScrollView):
