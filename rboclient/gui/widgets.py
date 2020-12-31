@@ -157,7 +157,7 @@ class PlayerInput(RboInputRow):
 class NumericRboInput(RboInput):
     "N'autorise que l'entrée de chiffres, est invalide s'il contient autre chose."
 
-    digits = NumericProperty()
+    digits = NumericProperty(+inf)
     min = NumericProperty(0)
     max = NumericProperty(+inf)
 
