@@ -1,6 +1,5 @@
 from enum import Enum, auto
 
-import kivy
 import kivy.input
 import rboclient
 from kivy.app import App
@@ -12,14 +11,13 @@ from kivy.input.motionevent import MotionEvent
 from kivy.lang.builder import Builder
 from kivy.logger import Logger
 from kivy.properties import BooleanProperty, ObjectProperty, StringProperty
-from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
-from kivy.uix.popup import Popup
 from rboclient.gui.game import Game
 from rboclient.gui.home import Home, HomeCtxActions
 from rboclient.gui.lobby import LobbyCtxActions
 from rboclient.gui.session import SessionCtxActions
+from rboclient.gui.widgets import ErrorPopup
 from rboclient.misc import toBool
 from rboclient.network import handlerstree
 from rboclient.network.protocol import Mode
@@ -33,21 +31,6 @@ kivy.require("2.0.0")
 
 def setTitle(title: str) -> None:
     App.get_running_app().titleBar.title = "Rbo - " + title
-
-
-class ErrorMessage(AnchorLayout):
-    text = StringProperty()
-
-
-class ErrorPopup(Popup):
-    "Popup d'affichant une erreur dans le thème de l'application avec un message d'erreur."
-
-    def __init__(self, title: str, msg: str):
-        super().__init__(title=title, content=ErrorMessage(text=msg))
-
-    def on_touch_down(self, _):
-        self.dismiss()
-        return True
 
 
 class WindowButton(Label):
@@ -101,7 +84,7 @@ class TitleBarCtx(Enum):
 
 
 class TitleBar(BoxLayout):
-    "Barre de titre sur-mesure adaptant ses actions contextuels au contexte (accueil, lobby ou session)."
+    "Barre de titre sur-mesure adaptant ses actions contextuelles au contexte (accueil, lobby ou session)."
 
     contexts = {
         TitleBarCtx.HOME: HomeCtxActions,

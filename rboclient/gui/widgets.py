@@ -249,6 +249,21 @@ class DictionnaryView(ScrollableStack):
                 self.content.add_widget(self.pairs[key])
 
 
+class ErrorMessage(AnchorLayout):
+    text = StringProperty()
+
+
+class ErrorPopup(Popup):
+    "Popup d'affichant une erreur dans le thème de l'application avec un message d'erreur."
+
+    def __init__(self, title: str, msg: str):
+        super().__init__(title=title, content=ErrorMessage(text=msg))
+
+    def on_touch_down(self, _):
+        self.dismiss()
+        return True
+
+
 class InputContent(BoxLayout):
     input = ObjectProperty()
     form = ObjectProperty()
