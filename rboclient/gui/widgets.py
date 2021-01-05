@@ -194,7 +194,7 @@ class ScrollableStack(ScrollView):
     background = ColorProperty([0, 0, 0])
     content = ObjectProperty()
 
-    def __init__(self, bg: "list[int]" = background.defaultvalue, **kwargs):
+    def __init__(self, bg: "list[float]" = background.defaultvalue, **kwargs):
         super().__init__(background=bg, **kwargs)
 
     def on_background(self, _: EventDispatcher, bg):
@@ -223,7 +223,7 @@ class DictionnaryView(ScrollableStack):
 
     foreground = ColorProperty([1, 1, 1])
 
-    def __init__(self, bg: "list[int]" = ScrollableStack.background.defaultvalue, **kwargs):
+    def __init__(self, bg: "list[float]" = ScrollableStack.background.defaultvalue, **kwargs):
         super().__init__(bg, **kwargs)
 
         self.pairs = {}

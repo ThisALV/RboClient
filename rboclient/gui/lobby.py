@@ -44,7 +44,7 @@ class LogMessage(Label):
 
     background = ColorProperty([0, 0, 0])
 
-    def __init__(self, msg: str, bg: "list[int]", **kwargs):
+    def __init__(self, msg: str, bg: "list[float]", **kwargs):
         super().__init__(text=msg, background=bg, **kwargs)
 
 

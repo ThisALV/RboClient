@@ -601,7 +601,7 @@ class OptionsInput(ScrollableStack):
 
     selected = NumericProperty()
 
-    def __init__(self, options: "list[str]", bg: "list[int]" = ScrollableStack.background.defaultvalue, **kwargs):
+    def __init__(self, options: "list[str]", bg: "list[float]" = ScrollableStack.background.defaultvalue, **kwargs):
         super().__init__(bg, **kwargs)
 
         self.optionsID = {}
@@ -631,7 +631,7 @@ class OptionsPopup(InputPopup):
     value = ObjectProperty(1)
     inputType = ObjectProperty(OptionsInput)
 
-    def __init__(self, options: "list[str]", bg: "list[int]" = ScrollableStack.background.defaultvalue, **kwargs):
+    def __init__(self, options: "list[str]", bg: "list[float]" = ScrollableStack.background.defaultvalue, **kwargs):
         super().__init__(options, bg, **kwargs)
         self.content.input.bind(selected=self.setter("value"))
 
