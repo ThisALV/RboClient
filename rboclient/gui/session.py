@@ -1,5 +1,4 @@
 from enum import Enum, auto
-from math import nan
 from random import randrange
 
 from kivy.app import App
@@ -8,14 +7,13 @@ from kivy.event import EventDispatcher
 from kivy.input import MotionEvent
 from kivy.logger import Logger
 from kivy.properties import BooleanProperty, ColorProperty, ListProperty, NumericProperty, ObjectProperty, StringProperty
-from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
 from kivy.uix.stacklayout import StackLayout
 from rboclient.gui import app
 from rboclient.gui.game import Step
-from rboclient.gui.widgets import DictionnaryView, InputPopup, GameCtxActions, NumericRboInput, RboOption, ScrollableStack, YesNoPopup
+from rboclient.gui.widgets import DictionnaryView, ErrorPopup, InputPopup, GameCtxActions, NumericRboInput, RboOption, ScrollableStack, YesNoPopup
 from rboclient.network.protocol import RboConnectionInterface as RboCI
 
 INTRODUCTION = 0
@@ -734,11 +732,24 @@ class Session(Step, BoxLayout):
                 session = self.context
                 session.players.beginRequest(args["target"])
 
-                self.context.currentRequest = self.requestType
+                self.context.currentRequest = (self.requestType, args)
                 # Appel de la méthode en fonction du nom associé au type de la requête (voir Session.requests)
                 # Si et seulement si le joueur est ciblé par la requête
                 if session.isTargetted(args["target"]):
-                    getattr(self.context, Session.requests[self.requestType])(**args)
+                    self.context.enableReplyInput()
+
+        class InvalidReplyHandler:
+            context = self
+
+            def __init__(self, reason: str):
+                self.errorMessage = reason
+
+            def __call__(self, _: EventDispatcher, **args):
+                requestArgs = self.context.currentRequest[1]
+                errorPopup = ErrorPopup("Réponse invalide", self.errorMessage.format(**requestArgs))
+
+                errorPopup.open()
+                errorPopup.bind(on_dismiss=self.context.enableReplyInput)
 
         self.listen(on_text_normal=self.logs.print,
                     on_text_important=self.logs.important,
@@ -751,13 +762,17 @@ class Session(Step, BoxLayout):
                     on_request_yes_no=RequestHandler(Request.YES_NO),
                     on_request_options=RequestHandler(Request.OPTIONS),
                     on_request_number=RequestHandler(Request.NUMBER),
+                    on_reply_out_of_range=InvalidReplyHandler("Votre réponse doit se situer entre {min} et {max} inclus."),
+                    on_reply_invalid_length=InvalidReplyHandler("La réponse doit faire exactement 1 octet."),
+                    on_reply_confirm_expected=InvalidReplyHandler("La réponse était sensée être une confirmation (bouton \"Continuer\")."),
+                    on_reply_too_late=self.replyIgnored,
                     on_finish_request=self.finishRequest,
                     on_player_reply=self.playerReplied,
                     on_player_update=self.updatePlayer,
                     on_global_stat_update=self.updateGlobalStat,
                     on_player_crash=self.playerCrash)
 
-        self.currentRequest = None
+        self.currentRequest = (None, None)  # Le premier élément contient le type de la requête, le second les arguments associés à cette requête
         self.requestPopup = None
 
         Clock.schedule_once(lambda _: self.confirm.bind(on_release=lambda _: self.rboCI.confirm()))
@@ -765,6 +780,12 @@ class Session(Step, BoxLayout):
 
     def bindTitleBar(self, _: int):
         App.get_running_app().titleBar.actionsCtx.bind(on_disconnect=lambda _: self.rboCI.close())
+
+    def replyIgnored(self, _: EventDispatcher):
+        self.logs.important(None, "Vous avez répondu trop tard, votre réponse a été ignorée.")  # "None" car n'est pas le handler direct d'un event
+
+    def enableReplyInput(self, _: EventDispatcher = None):
+        getattr(self, self.requests[self.currentRequest[0]])(**self.currentRequest[1])
 
     def isTargetted(self, target: int) -> bool:
         return target == ALL_PLAYERS or (target == ACTIVE_PLAYERS and self.players.alive(self.rboCI.id)) or target == self.rboCI.id
@@ -814,6 +835,7 @@ class Session(Step, BoxLayout):
         self.players.endRequest()
         self.confirm.disabled = True
 
+        # Dans le cas où une requête se termine avant que le joueur n'ait eu le temps de répondre
         haveRequestPopup = self.currentRequest == Request.YES_NO or self.currentRequest == Request.OPTIONS or self.currentRequest == Request.NUMBER
         if self.requestPopup is not None and haveRequestPopup:
             self.requestPopup.dismiss()

@@ -196,7 +196,7 @@ session = HandlerNode({
     6: HandlerLeaf("player_reply", reply),
     7: HandlerNode({
         0: HandlerLeaf("validated"),
-        1: HandlerLeaf("late"),
+        1: HandlerLeaf("too_late"),
         2: HandlerLeaf("out_of_range"),
         3: HandlerLeaf("invalid_length"),
         4: HandlerLeaf("confirm_expected")
