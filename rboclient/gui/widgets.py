@@ -254,7 +254,7 @@ class ErrorMessage(AnchorLayout):
 
 
 class ErrorPopup(Popup):
-    "Popup d'affichant une erreur dans le thème de l'application avec un message d'erreur."
+    "Popup affichant une erreur dans le thème de l'application avec un message d'erreur."
 
     def __init__(self, title: str, msg: str):
         super().__init__(title=title, content=ErrorMessage(text=msg))

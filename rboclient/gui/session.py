@@ -235,7 +235,7 @@ class RequestReplied(Enum):
 
 
 class Player(BoxLayout):
-    """Apperçu des informations d'un joueur.
+    """Aperçu des informations d'un joueur.
 
     Affiche les informations basiques (identifiant, nom et stats principales) à propos d'un joueur.\n
     Indique également lors d'une requête s'il a déjà répondu à celle-ci ou non.\n
