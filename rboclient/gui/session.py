@@ -775,8 +775,12 @@ class Session(Step, BoxLayout):
         self.currentRequest = (None, None)  # Le premier élément contient le type de la requête, le second les arguments associés à cette requête
         self.requestPopup = None
 
-        Clock.schedule_once(lambda _: self.confirm.bind(on_release=lambda _: self.rboCI.confirm()))
+        Clock.schedule_once(lambda _: self.confirm.bind(on_release=self.confirmBtnReleased))
         Clock.schedule_once(self.bindTitleBar)
+
+    def confirmBtnReleased(self, _: EventDispatcher):
+        self.rboCI.confirm()
+        self.confirm.disabled = True
 
     def bindTitleBar(self, _: int):
         App.get_running_app().titleBar.actionsCtx.bind(on_disconnect=lambda _: self.rboCI.close())
