@@ -781,6 +781,10 @@ class Session(Step, BoxLayout):
     def hasOpenRequestPopup(self) -> bool:
         return self.requestPopup is not None
 
+    def closeRequestPopup(self) -> None:
+        self.requestPopup.dismiss()
+        self.requestPopup = None
+
     def confirmBtnReleased(self, _: EventDispatcher):
         self.rboCI.confirm()
         self.confirm.disabled = True
@@ -844,8 +848,7 @@ class Session(Step, BoxLayout):
 
         # Dans le cas où une requête se termine avant que le joueur n'ait eu le temps de répondre
         if self.hasOpenRequestPopup():
-            self.requestPopup.dismiss()
-            self.requestPopup = None
+            self.closeRequestPopup()
 
         self.currentRequest = None
 
