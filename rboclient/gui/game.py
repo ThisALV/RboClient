@@ -72,7 +72,8 @@ class Game(FloatLayout):
                         on_result_crash=self.sessionCrash,
                         on_result_checkpoint_error=PreparationErrorHandler("Impossible de charger le checkpoint"),
                         on_result_less_members=PreparationErrorHandler("Des joueurs sont manquants"),
-                        on_result_unknown_players=PreparationErrorHandler("Des joueurs sont en trop"))
+                        on_result_unknown_players=PreparationErrorHandler("Des joueurs sont en trop"),
+                        on_result_no_player_alive=PreparationErrorHandler("Aucun des joueurs présents n'est encore en vie dans le checkpoint chargé"))
 
     def session(self, name: str) -> None:
         # step.members est le widget Members possédant le membre dict members

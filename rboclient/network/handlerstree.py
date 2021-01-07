@@ -169,7 +169,8 @@ lobby = HandlerNode({
         1: HandlerLeaf("crash"),
         2: HandlerLeaf("checkpoint_error"),
         3: HandlerLeaf("less_members", ids),
-        4: HandlerLeaf("unknown_players", ids)
+        4: HandlerLeaf("unknown_players", ids),
+        5: HandlerLeaf("no_player_alive")
     }, "result"),
     10: HandlerLeaf("master_disconnected"),
     11: HandlerLeaf("lobby_open")
