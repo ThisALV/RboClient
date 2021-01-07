@@ -778,6 +778,9 @@ class Session(Step, BoxLayout):
         Clock.schedule_once(lambda _: self.confirm.bind(on_release=self.confirmBtnReleased))
         Clock.schedule_once(self.bindTitleBar)
 
+    def hasOpenRequestPopup(self) -> bool:
+        return self.requestPopup is not None
+
     def confirmBtnReleased(self, _: EventDispatcher):
         self.rboCI.confirm()
         self.confirm.disabled = True
@@ -840,8 +843,7 @@ class Session(Step, BoxLayout):
         self.confirm.disabled = True
 
         # Dans le cas où une requête se termine avant que le joueur n'ait eu le temps de répondre
-        haveRequestPopup = self.currentRequest == Request.YES_NO or self.currentRequest == Request.OPTIONS or self.currentRequest == Request.NUMBER
-        if self.requestPopup is not None and haveRequestPopup:
+        if self.hasOpenRequestPopup():
             self.requestPopup.dismiss()
             self.requestPopup = None
 
