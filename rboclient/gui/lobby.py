@@ -8,9 +8,10 @@ from kivy.properties import BooleanProperty, ColorProperty, NumericProperty, Obj
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
+from kivy.uix.popup import Popup
 from rboclient.gui import app
 from rboclient.gui.game import Step
-from rboclient.gui.widgets import GameCtxActions, ScrollableStack, TextInputPopup, YesNoPopup
+from rboclient.gui.widgets import ErrorPopup, GameCtxActions, ScrollableStack, TextInputPopup, YesNoPopup
 from rboclient.network.protocol import RboConnectionInterface as RboCI
 
 
@@ -184,7 +185,7 @@ class Lobby(Step, BoxLayout):
 
     open = BooleanProperty(True)
 
-    def __init__(self, rboCI: RboCI, members: "dict[int, tuple[str, bool]]", selfIncluded: bool = False, preparing: bool = False, **kwargs):
+    def __init__(self, rboCI: RboCI, members: "dict[int, tuple[str, bool]]", selfIncluded: bool = False, preparing: bool = False, errorMessage: str = None, **kwargs):
         super().__init__(**kwargs)
         self.init("Lobby", rboCI, app.TitleBarCtx.LOBBY)
 
@@ -202,6 +203,14 @@ class Lobby(Step, BoxLayout):
 
         if preparing:
             self.members.prepareSession()
+
+        if errorMessage is None:
+            self.errorMessage = None
+        else:
+            self.errorMessage = ErrorPopup("Erreur lors de la session", errorMessage)
+
+            self.errorMessage.bind(on_dismiss=self.errorMessageDismissed)
+            self.errorMessage.open()
 
         self.listen(on_member_registered=self.memberRegistered,
                     on_member_ready=self.readyMember,
@@ -227,17 +236,26 @@ class Lobby(Step, BoxLayout):
         self.bind(open=actionsCtx.setter("open"))
         self.open = not preparing
 
+    def errorMessageDismissed(self, _: EventDispatcher):
+        self.errorMessage = None
+
+    def afterErrorMessage(self, popup: Popup) -> None:
+        if self.errorMessage is None:
+            popup.open()
+        else:
+            self.errorMessage.bind(on_dismiss=lambda _: popup.open())
+
     def askCheckpoint(self, _: EventDispatcher):
         input = TextInputPopup()
 
         input.bind(on_validate=lambda _, text_input: self.rboCI.replyCheckpoint(text_input))
-        input.open()
+        self.afterErrorMessage(input)
 
     def askYesNo(self, _: EventDispatcher, **args):
         input = YesNoPopup(**args)
 
         input.bind(on_reply=lambda _, reply: self.rboCI.replyYesNo(reply))
-        input.open()
+        self.afterErrorMessage(input)
 
     def memberRegistered(self, _: EventDispatcher, **args):
         self.members.registered(**args)

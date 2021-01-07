@@ -54,6 +54,7 @@ class Game(FloatLayout):
 
         self.listenStepSwitch()
 
+        self.errorMessage = None
         self.step = None
         self.switch(Lobby(self.rboCI, members))
 
@@ -80,20 +81,27 @@ class Game(FloatLayout):
         players = dict((id, member.name) for (id, member) in self.step.members.members.items())
         self.switch(Session(self.rboCI.id, self.step.master, name, self.rboCI, players))
 
-    def lobby(self, preparing: bool = False) -> None:
-        self.switch(Lobby(self.rboCI, dict((id, (name, False)) for (id, name) in self.step.members.items()), selfIncluded=True, preparing=preparing))
+    def lobby(self, preparing: bool = False, error: str = None) -> None:
+        self.switch(Lobby(self.rboCI, dict((id, (name, False)) for (id, name) in self.step.members.items()), selfIncluded=True, preparing=preparing, errorMessage=error))
 
     def sessionCrash(self, _: EventDispatcher):
-        self.lobby()
+        self.lobby(error="La session a crashé")
         self.step.logs.log("[b]La session a crashé.[/b]")
 
     def sessionPreparationError(self, error: str, **args):
-        self.lobby(preparing=True)
-        self.step.logs.log("La préparation de la session a échouée : [b]{}[/b]".format(error))
+        invalidIDs = "ids" in args
 
-        if "ids" in args:
+        logMessage = "La préparation de la session a échouée : [b]{}[/b].".format(error)
+        popupMessage = error
+        if invalidIDs:
             ids = ", ".join([str(id) for id in args["ids"]])
-            self.step.logs.log("Identifiants des joueurs sauvegardés dans ce checkpoint : [b]{}[/b]".format(ids))
+            popupMessage += "\nIdentifiants attendus : {}".format(ids)
+            logMessage += "\nIdentifiants attendus : [b]{}[/b]".format(ids)
+        else:
+            popupMessage = error
+
+        self.lobby(preparing=True, error=popupMessage)
+        self.step.logs.log(logMessage)
 
     def close(self, _: EventDispatcher, error: Failure):
         self.dispatch("on_close", error=error)
