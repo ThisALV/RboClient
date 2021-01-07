@@ -106,6 +106,9 @@ class Game(FloatLayout):
     def switch(self, step: Step):
         App.get_running_app().titleBar.switch(step.titleBarCtx)
 
+        if type(self.step) == Session and self.step.hasOpenRequestPopup():
+            self.step.closeRequestPopup()
+
         if self.step is not None:
             self.remove_widget(self.step)
             self.step.stopListen()
