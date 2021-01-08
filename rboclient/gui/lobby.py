@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from math import inf
+from math import nan, isnan
 
 from kivy.app import App
 from kivy.clock import Clock
@@ -107,13 +107,13 @@ class Members(ScrollableStack):
     Elle affiche également leur statut : identifiant, pseudo et ce qu'ils sont en train de faire.
     """
 
-    master = NumericProperty()
+    previousMaster = nan
+    master = NumericProperty(nan)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
         self.members = {}
-        self.master = +inf
 
         Clock.schedule_once(self.initContent)
 
@@ -125,32 +125,31 @@ class Members(ScrollableStack):
         if id not in self.members:
             raise MemberNotFound(id)
 
-    def refreshMaster(self):
-        master = +inf
-        for id in self.members.keys():
-            if id < master:
-                master = id
+    def on_master(self, _: EventDispatcher, newMasterID: int):
+        masterDisconnected = self.previousMaster not in self.members
+        firstMaster = isnan(self.previousMaster)
 
-        if self.master in self.members:
-            self.members[self.master].master = False
+        if not firstMaster and not masterDisconnected:
+            self.members[self.previousMaster].master = False
 
-        self.master = master
-        self.members[self.master].master = True
+        if not isnan(newMasterID):
+            self.checkMember(newMasterID)
+            self.members[newMasterID].master = True
+
+        self.previousMaster = newMasterID
 
     def registered(self, id: int, name: str, me: bool = False) -> None:
-        if id in self.members.keys():
+        if id in self.members:
             raise ValueError("Multiple members with same ID")
 
         self.members[id] = Member(id, name, me)
         self.content.add_widget(self.members[id])
-        self.refreshMaster()
 
     def unregistered(self, id: int) -> None:
         self.checkMember(id)
 
         self.content.remove_widget(self.members[id])
         self.members.pop(id)
-        self.refreshMaster()
 
     def toggleReady(self, id: int) -> None:
         self.checkMember(id)
@@ -228,6 +227,8 @@ class Lobby(Step, BoxLayout):
                     on_member_ready=self.readyMember,
                     on_member_disconnected=self.memberUnregistered,
                     on_member_crashed=self.memberUnregistered,
+                    on_master_switch_new=self.masterUpdated,
+                    on_master_switch_none=self.masterReset,
                     on_preparing_session=self.preparingSession,
                     on_cancel_preparing=self.cancelPreparing,
                     on_prepare_session=self.prepareSession,
@@ -277,6 +278,12 @@ class Lobby(Step, BoxLayout):
         args["name"] = self.members.name(**args)
         self.logs.log("[i]{name} [{id}] vient de quitter le lobby.[/i]".format(**args))
         self.members.unregistered(args["id"])
+
+    def masterUpdated(self, _: EventDispatcher, id: int):
+        self.members.master = id
+
+    def masterReset(self, _: EventDispatcher):
+        self.members.master = nan
 
     def readyMember(self, _: EventDispatcher, **args):
         self.members.toggleReady(**args)

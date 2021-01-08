@@ -155,6 +155,10 @@ lobby = HandlerNode({
     1: HandlerLeaf("member_ready", id),
     2: HandlerLeaf("member_disconnected", id),
     3: HandlerLeaf("member_crashed", id),
+    16: HandlerNode({
+        0: HandlerLeaf("new", id),
+        1: HandlerLeaf("none")
+    }, "master_switch"),
     4: HandlerLeaf("preparing_session", delay),
     12: HandlerLeaf("cancel_preparing"),
     5: HandlerLeaf("prepare_session", id),
