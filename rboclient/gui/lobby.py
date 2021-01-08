@@ -95,6 +95,11 @@ class Member(BoxLayout):
         super().__init__(id=id, name=name, me=me, **kwargs)
 
 
+class MemberNotFound(ValueError):
+    def __init__(self, id: int):
+        super().__init__("Member [{}] doesn't exist".format(id))
+
+
 class Members(ScrollableStack):
     """Liste des membres.
 
@@ -116,7 +121,11 @@ class Members(ScrollableStack):
         self.content.padding = 5
         self.content.spacing = 5
 
-    def refreshMaster(self) -> None:
+    def checkMember(self, id: int) -> None:
+        if id not in self.members:
+            raise MemberNotFound(id)
+
+    def refreshMaster(self):
         master = +inf
         for id in self.members.keys():
             if id < master:
@@ -137,14 +146,15 @@ class Members(ScrollableStack):
         self.refreshMaster()
 
     def unregistered(self, id: int) -> None:
-        if id not in self.members.keys():
-            raise ValueError("Unknown member ID")
+        self.checkMember(id)
 
         self.content.remove_widget(self.members[id])
         self.members.pop(id)
         self.refreshMaster()
 
     def toggleReady(self, id: int) -> None:
+        self.checkMember(id)
+
         member = self.members[id]
         member.status = MemberStatus.WAITING if member.status == MemberStatus.READY else MemberStatus.READY
 
@@ -166,9 +176,11 @@ class Members(ScrollableStack):
             member.status = MemberStatus.WAITING
 
     def name(self, id: int) -> str:
+        self.checkMember(id)
         return self.members[id].name
 
     def ready(self, id: int) -> bool:
+        self.checkMember(id)
         return self.members[id].status == MemberStatus.READY
 
 
