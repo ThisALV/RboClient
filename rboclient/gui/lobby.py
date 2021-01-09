@@ -246,6 +246,9 @@ class Lobby(Step, BoxLayout):
         actionsCtx = App.get_running_app().titleBar.actionsCtx
         actionsCtx.bind(on_disconnect=self.disconnect, on_ready=self.ready)
 
+        if type(actionsCtx) != LobbyCtxActions:
+            return  # En cas d'erreur, il est possible que l'on ait déjà quitté le lobby
+
         self.bind(open=actionsCtx.setter("open"))
         self.open = not preparing
 
