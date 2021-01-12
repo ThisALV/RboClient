@@ -212,7 +212,8 @@ class Main(BoxLayout):
                              on_invalid_request=RegistrationError("Requête d'inscription invalide."),
                              on_unavailable_id=RegistrationError("L'identifiant {} n'est pas disponible.".format(self.connection.id)),
                              on_unavailable_name=RegistrationError("Le nom \"{}\" n'est pas disponible".format(self.connection.name)),
-                             on_unavailable_session=RegistrationError("La session est déjà en préparation."))
+                             on_unavailable_session=RegistrationError("La session est déjà en préparation."),
+                             on_reserved_id=RegistrationError("L'identifiant \"{}\" est réservé pour un usage spécifique par le serveur.".format(self.connection.id)))
 
     def game(self, _: EventDispatcher, members: "dict[int, tuple[str, bool]]") -> None:
         game = Game(self.connection, members)

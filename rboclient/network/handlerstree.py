@@ -147,7 +147,8 @@ registering = HandlerNode({
     1: HandlerLeaf("invalid_request"),
     2: HandlerLeaf("unavailable_id"),
     3: HandlerLeaf("unavailable_name"),
-    4: HandlerLeaf("unavailable_session")
+    4: HandlerLeaf("unavailable_session"),
+    5: HandlerLeaf("reserved_id")
 })
 
 lobby = HandlerNode({
