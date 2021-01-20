@@ -22,7 +22,7 @@ master=False
 [graphics]
 width={}
 height={}
-maximized=
+fullscreen=
 
 """.format(*defaultWindowSize)
 

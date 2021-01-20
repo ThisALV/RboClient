@@ -36,9 +36,8 @@
     font_name: "DejaVuSans"
     font_size: 20
 
-<SizeButton>:
-    text: "\u21f2" if self.maximized else "\u25a1"
-    on_press: self.maximized = not self.maximized
+<FullscreenButton>:
+    text: "\u21f2" if self.enabled else "\u21f1"
 
 <TitleBar>:
     orientation: "horizontal"
@@ -65,7 +64,7 @@
             WindowButton:
                 text: "\u005f"
                 on_press: app.root_window.minimize()
-            SizeButton:
+            FullscreenButton:
             WindowButton:
                 color: [.7, 0, 0, 1]
                 text: "\u00d7"

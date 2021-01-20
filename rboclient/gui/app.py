@@ -51,30 +51,36 @@ class WindowButton(Label):
         pass
 
 
-class SizeButton(WindowButton):
+class InvalidWindowState(ValueError):
+    """Levée si la fenêtre n'est pas dans un état "plein écran" ou non."""
+
+    def __init__(self, state):
+        super().__init__("This window state isn't valid :", state)
+
+
+class FullscreenButton(WindowButton):
     "Bouton de la barre de titre agrandissant ou restaurant la fenêtre. Le texte contenu change en conséquence."
 
-    maximized = BooleanProperty(False)
+    enabled = BooleanProperty();
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        class Setter:
-            def __init__(self, btn: SizeButton, value: bool):
-                self.btn = btn
-                self.value = value
+        Window.bind(fullscreen=self.updateState)
+        self.updateState(None, Window.fullscreen)
 
-            def __call__(self, _: EventDispatcher) -> None:
-                self.btn.maximized = self.value
+    @staticmethod
+    def checkWindowState(fullscreen) -> None:
+        if fullscreen == True or fullscreen == "fake":  # noqa E712, Window.fullscreen n'est pas obligatoirement un booléen
+            raise InvalidWindowState(fullscreen)
 
-        Window.bind(on_restore=Setter(self, False), on_maximize=Setter(self, True))
-        App.get_running_app().bind(on_init_maximized=Setter(self, True))
+    def on_press(self):
+        self.checkWindowState(Window.fullscreen)
+        Window.fullscreen = "auto" if Window.fullscreen == False else False  # noqa E712, Window.fullscreen n'est pas obligatoirement un booléen
 
-    def on_maximized(self, _: EventDispatcher, maximized: bool):
-        if maximized:
-            Window.maximize()
-        else:
-            Window.restore()
+    def updateState(self, _: EventDispatcher, fullscreen):
+        self.checkWindowState(fullscreen)
+        self.enabled = fullscreen == "auto"
 
 
 class TitleBarCtx(Enum):
@@ -246,7 +252,6 @@ class ClientApp(App):
     titleBar = ObjectProperty()
 
     def __init__(self, cfg: ConfigParser, defaultSize: "tuple[int, int]", **kwargs):
-        self.register_event_type("on_init_maximized")
         super().__init__(**kwargs)
         self.rbocfg = cfg
 
@@ -256,17 +261,13 @@ class ClientApp(App):
             Window.size = defaultSize
             Logger.warn("ClientApp : Invalid window size values, default size applied.")
 
-        if toBool(self.rbocfg.get("graphics", "maximized")):
-            Clock.schedule_once(self.maximizeInit)
+        if toBool(self.rbocfg.get("graphics", "fullscreen")):
+            Clock.schedule_once(self.fullscreenInit)
 
         self.runningTasks = []
 
-    def maximizeInit(self, _: int):
-        Window.maximize()
-        self.dispatch("on_init_maximized")
-
-    def on_init_maximized(self):
-        Logger.debug("ClientApp : Maximized at app initialization.")
+    def fullscreenInit(self, _: int):
+        Window.fullscreen = "auto"
 
     def build(self):
         for kv in ["home", "lobby", "session", "config", "cfgsections", "widgets"]:

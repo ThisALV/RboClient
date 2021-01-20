@@ -39,12 +39,12 @@ class Graphics(BoxLayout):
     paths = {
         "width": ["windowWidth", "text"],
         "height": ["windowHeight", "text"],
-        "maximized": ["maximizedOption", "enabled"]
+        "fullscreen": ["fullscreenOption", "enabled"]
     }
 
     windowWidth = ObjectProperty()
     windowHeight = ObjectProperty()
-    maximizedOption = ObjectProperty()
+    fullscreenOption = ObjectProperty()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -54,5 +54,5 @@ class Graphics(BoxLayout):
         self.windowWidth.text = config.get("graphics", "width")
         self.windowHeight.text = config.get("graphics", "height")
 
-        if toBool(config.get("graphics", "maximized")):
-            self.maximizedOption.toggle()
+        if toBool(config.get("graphics", "fullscreen")):
+            self.fullscreenOption.toggle()
