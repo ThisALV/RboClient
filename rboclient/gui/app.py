@@ -5,7 +5,7 @@ import rboclient
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.config import ConfigParser
-from kivy.core.window import Window
+from kivy.core.window import Keyboard, Window
 from kivy.event import EventDispatcher
 from kivy.input.motionevent import MotionEvent
 from kivy.lang.builder import Builder
@@ -76,7 +76,7 @@ class FullscreenButton(WindowButton):
 
     def on_press(self):
         self.checkWindowState(Window.fullscreen)
-        Window.fullscreen = "auto" if Window.fullscreen == False else False  # noqa E712, Window.fullscreen n'est pas obligatoirement un booléen
+        toggleFullscreen()
 
     def updateState(self, _: EventDispatcher, fullscreen):
         self.checkWindowState(fullscreen)
@@ -236,6 +236,10 @@ def moveWindow(x, y):
     Window.top -= y
 
 
+def toggleFullscreen():
+    Window.fullscreen = "auto" if Window.fullscreen == False else False  # noqa E712, Window.fullscreen n'est pas obligatoirement un booléen
+
+
 class TaskAlreadyRunning(Exception):
     def __init__(self, taskName: str):
         super().__init__(taskName + " is already running in ClientApp")
@@ -262,12 +266,15 @@ class ClientApp(App):
             Logger.warn("ClientApp : Invalid window size values, default size applied.")
 
         if toBool(self.rbocfg.get("graphics", "fullscreen")):
-            Clock.schedule_once(self.fullscreenInit)
+            Clock.schedule_once(lambda _: toggleFullscreen())
+
+        Window.bind(on_key_down=self.keyboardPressed)
 
         self.runningTasks = []
 
-    def fullscreenInit(self, _: int):
-        Window.fullscreen = "auto"
+    def keyboardPressed(self, _: EventDispatcher, key: str, *__):
+        if Keyboard.keycodes["f11"] == key:
+            toggleFullscreen()
 
     def build(self):
         for kv in ["home", "lobby", "session", "config", "cfgsections", "widgets"]:
