@@ -272,9 +272,13 @@ class ClientApp(App):
 
         self.runningTasks = []
 
-    def keyboardPressed(self, _: EventDispatcher, key: str, *__):
+    def keyboardPressed(self, _: EventDispatcher, key: str, *__) -> bool:
         if Keyboard.keycodes["f11"] == key:
             toggleFullscreen()
+        elif Keyboard.keycodes["f1"] == key:
+            return True
+
+        return False
 
     def build(self):
         for kv in ["home", "lobby", "session", "config", "cfgsections", "widgets"]:
