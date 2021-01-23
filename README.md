@@ -8,6 +8,21 @@ To learn more about the Rbo project, a game for creating and playing classic rol
 
 [Get familiar with the gameplay and/or the interface](https://github.com/ThisALV/RpgBookOnline/wiki)
 
+## Table of contents
+
+   * [RboClient](#rboclient)
+      * [Table of contents](#table-of-contents)
+      * [Install](#install)
+         * [Prerequisites](#prerequisites)
+            * [Git](#git)
+            * [Python interpreter](#python-interpreter)
+            * [Kivy (GUI library)](#kivy-gui-library)
+            * [Twisted (networking library)](#twisted-networking-library)
+         * [Steps](#steps)
+      * [Quick and Easy install (For Windows)](#quick-and-easy-install-for-windows)
+      * [Run](#run)
+
+
 ## Install
 
 ### Prerequisites
